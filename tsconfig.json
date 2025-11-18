@@ -7,9 +7,6 @@
     "paths": {
       "@/*": [
         "./*"
-      ],
-      "@rork-ai/toolkit-sdk": [
-        "@rork-ai/toolkit-sdk"
       ]
     }
   },

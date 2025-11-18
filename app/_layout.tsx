@@ -57,7 +57,7 @@ function RootLayout() {
     </QueryClientProvider>
   );
 }
-export default function RorkRootLayoutWrapper() {
+export default function RootLayoutWrapper() {
   return (
     <RootLayout />
   );

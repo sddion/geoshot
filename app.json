@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "GeoShot Clone Clone",
+    "name": "GeoShot Camera",
     "slug": "geoshot-camera-f2p6sfyz-hlahocvy",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "rork-app",
+    "scheme": "geoshot-camera-app",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
@@ -15,7 +15,7 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "app.rork.geoshot-camera-f2p6sfyz-hlahocvy",
+      "bundleIdentifier": "app.geoshot-camera-f2p6sfyz-hlahocvy",
       "infoPlist": {
         "NSPhotoLibraryUsageDescription": "Allow $(PRODUCT_NAME) to access your photos.",
         "NSPhotoLibraryAddUsageDescription": "Allow $(PRODUCT_NAME) to save photos.",
@@ -34,7 +34,7 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "app.rork.geoshot_camera_f2p6sfyz_hlahocvy",
+      "package": "app.geoshot_camera_f2p6sfyz_hlahocvy",
       "permissions": [
         "READ_EXTERNAL_STORAGE",
         "WRITE_EXTERNAL_STORAGE",
@@ -61,7 +61,7 @@
       [
         "expo-router",
         {
-          "origin": "https://rork.com/"
+          "origin": "https://geoshot.com/"
         }
       ],
       "expo-font",
