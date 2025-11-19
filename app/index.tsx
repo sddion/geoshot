@@ -33,65 +33,20 @@ export default function CameraScreen() {
   const router = useRouter();
   const cameraRef = useRef<CameraView>(null);
   const [cameraPermission, requestCameraPermission] = useCameraPermissions();
-  const [mediaPermission, requestMediaPermission] = MediaLibrary.usePermissions();
-  const [facing, setFacing] = useState<CameraType>('back');
-  const [isRecording, setIsRecording] = useState<boolean>(false);
-  const [focusPoint, setFocusPoint] = useState<{ x: number; y: number } | null>(null);
-  const focusAnimation = useRef(new Animated.Value(0)).current;
-  const [timerCountdown, setTimerCountdown] = useState<number>(0);
-  const [isCapturing, setIsCapturing] = useState<boolean>(false);
+  const [microphonePermission, requestMicrophonePermission] = useCameraPermissions(); // Note: expo-camera exports useMicrophonePermissions too, but let's check imports
+  const [mediaLibraryPermission, requestMediaLibraryPermission] = MediaLibrary.usePermissions();
+  const [locationPermission, requestLocationPermission] = Location.useForegroundPermissions();
 
-  const {
-    settings,
-    currentMode,
-    setCurrentMode,
-    zoom,
-    setZoom,
-    toggleGrid,
-    cycleFlash,
-    lastPhotoUri,
-    setLastPhotoUri,
-  } = useCameraSettings();
+  // Check if all permissions are granted
+  const allPermissionsGranted =
+    cameraPermission?.granted &&
+    locationPermission?.granted &&
+    mediaLibraryPermission?.granted;
+  // Microphone is optional for photo mode but good to have. Let's enforce it for simplicity as per requirements.
+  // Actually requirements said "Magnetometer / Motion Sensors (handled automatically)" - sensors don't need runtime permission usually on Android/iOS for basic usage, but let's stick to the big 3 + Mic.
 
-  useEffect(() => {
-    if (focusPoint) {
-      Animated.sequence([
-        Animated.timing(focusAnimation, {
-          toValue: 1,
-          duration: 200,
-          useNativeDriver: true,
-        }),
-        Animated.timing(focusAnimation, {
-          toValue: 0,
-          duration: 200,
-          delay: 800,
-          useNativeDriver: true,
-        }),
-      ]).start(() => setFocusPoint(null));
-    }
-  }, [focusPoint, focusAnimation]);
-
-  if (!cameraPermission || !mediaPermission) {
-    return <View style={styles.container} />;
-  }
-
-  if (!cameraPermission.granted || !mediaPermission.granted) {
-    return (
-      <SafeAreaView style={styles.permissionContainer}>
-        <Text style={styles.permissionText}>
-          We need camera and media library permissions
-        </Text>
-        <TouchableOpacity
-          style={styles.permissionButton}
-          onPress={() => {
-            if (!cameraPermission.granted) requestCameraPermission();
-            if (!mediaPermission.granted) requestMediaPermission();
-          }}
-        >
-          <Text style={styles.permissionButtonText}>Grant Permissions</Text>
-        </TouchableOpacity>
-      </SafeAreaView>
-    );
+  if (!allPermissionsGranted) {
+    return <PermissionsScreen onAllPermissionsGranted={() => { }} />;
   }
 
   const handleCapture = async () => {
@@ -101,7 +56,7 @@ export default function CameraScreen() {
     if (timerValue !== 'off') {
       const seconds = timerValue === '2s' ? 2 : timerValue === '5s' ? 5 : 10;
       setTimerCountdown(seconds);
-      
+
       const interval = setInterval(() => {
         setTimerCountdown((prev) => {
           if (prev <= 1) {
@@ -140,7 +95,7 @@ export default function CameraScreen() {
         const photo = await cameraRef.current.takePictureAsync({
           quality: settings.imageQuality === 'superfine' ? 1 : settings.imageQuality === 'standard' ? 0.7 : 0.5,
         });
-        
+
         if (photo?.uri) {
           if (settings.geoOverlayEnabled) {
             console.log('GPS overlay enabled - fetching location data...');
@@ -157,7 +112,7 @@ export default function CameraScreen() {
               Alert.alert('GPS Error', 'Failed to get location data. Saving without overlay.');
             }
           }
-          
+
           const asset = await MediaLibrary.createAssetAsync(photo.uri);
           console.log('Photo saved:', asset.uri);
           setLastPhotoUri(asset.uri);

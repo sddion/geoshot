@@ -61,6 +61,7 @@ export default function GeoPreviewScreen() {
         quality: 1,
       });
 
+      // Save the photo to the gallery with minimal media library interaction
       const asset = await MediaLibrary.createAssetAsync(uri);
       console.log('Photo with GPS overlay saved:', asset.uri);
       setLastPhotoUri(asset.uri);
