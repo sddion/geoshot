@@ -140,10 +140,10 @@ export default function SettingsScreen() {
 
       <Section title="PHOTO">
         <SettingRow
-          label="Photo aspect ratio"
-          value={settings.photoAspectRatio.toUpperCase()}
+          label="Aspect ratio"
+          value={settings.photoAspectRatio}
           onPress={() => {
-            const ratios = ['1:1', '4:3', '16:9', 'full'] as const;
+            const ratios = ['4:3', '16:9', '1:1'] as const;
             const currentIndex = ratios.indexOf(settings.photoAspectRatio);
             const newValue = ratios[(currentIndex + 1) % ratios.length];
             updateSetting('photoAspectRatio', newValue);
@@ -161,37 +161,19 @@ export default function SettingsScreen() {
         />
         <SettingRow
           label="Image quality"
-          value={settings.imageQuality === 'low' ? 'Low' : settings.imageQuality === 'standard' ? 'Standard' : 'Superfine'}
+          value={settings.imageQuality === 'normal' ? 'Normal' : settings.imageQuality === 'fine' ? 'Fine' : 'Superfine'}
           onPress={() => {
-            const qualities = ['low', 'standard', 'superfine'] as const;
+            const qualities = ['normal', 'fine', 'superfine'] as const;
             const currentIndex = qualities.indexOf(settings.imageQuality);
             const newValue = qualities[(currentIndex + 1) % qualities.length];
             updateSetting('imageQuality', newValue);
           }}
         />
         <SettingRow
-          label="Automatically add timestamp watermark"
-          showToggle
-          toggleValue={settings.autoTimestamp}
-          onToggle={(value) => updateSetting('autoTimestamp', value)}
-        />
-        <SettingRow
-          label="Automatically add logo watermark"
-          showToggle
-          toggleValue={settings.autoLogo}
-          onToggle={(value) => updateSetting('autoLogo', value)}
-        />
-        <SettingRow
-          label="Gesture to zoom"
+          label="Gesture zoom"
           showToggle
           toggleValue={settings.gestureZoom}
           onToggle={(value) => updateSetting('gestureZoom', value)}
-        />
-        <SettingRow
-          label="HDR (High Dynamic Range)"
-          showToggle
-          toggleValue={settings.hdrEnabled}
-          onToggle={(value) => updateSetting('hdrEnabled', value)}
         />
       </Section>
 
@@ -222,34 +204,15 @@ export default function SettingsScreen() {
           toggleValue={settings.videoStabilization}
           onToggle={(value) => updateSetting('videoStabilization', value)}
         />
-        <SettingRow
-          label="Audio recording"
-          showToggle
-          toggleValue={settings.audioRecording}
-          onToggle={(value) => updateSetting('audioRecording', value)}
-        />
-      </Section>
-
-      <Section title="GPS OVERLAY">
-        <SettingRow
-          label="Geo Overlay Mode"
-          showToggle
-          toggleValue={settings.geoOverlayEnabled}
-          onToggle={(value) => updateSetting('geoOverlayEnabled', value)}
-        />
-        <Text style={styles.sectionDescription}>
-          When enabled, photos will include GPS data, address, weather, and a map overlay.
-        </Text>
       </Section>
 
       <Section title="ADVANCED">
         <TouchableOpacity style={styles.dangerButton} onPress={handleReset}>
           <Text style={styles.dangerButtonText}>Reset Camera Settings</Text>
         </TouchableOpacity>
-        
+
         <View style={styles.aboutContainer}>
-          <Text style={styles.aboutTitle}>GeoShot Camera</Text>
-          <Text style={styles.aboutText}>Version 1.0.0</Text>
+          <Text style={styles.aboutTitle}>GeoShot v1.0.0</Text>
           <Text style={styles.aboutText}>
             A professional camera app with GPS overlay capabilities
           </Text>

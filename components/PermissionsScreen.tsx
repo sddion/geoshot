@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Linking, Platform, AppState } from 'react-native';
+import React, { useEffect, useState, useCallback } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Linking, AppState } from 'react-native';
 import { Camera } from 'lucide-react-native';
 import { useCameraPermissions, useMicrophonePermissions } from 'expo-camera';
 import * as Location from 'expo-location';
@@ -18,7 +18,7 @@ export default function PermissionsScreen({ onAllPermissionsGranted }: Permissio
     // Track if we are checking permissions to avoid flickering
     const [isChecking, setIsChecking] = useState(true);
 
-    const checkPermissions = async () => {
+    const checkPermissions = useCallback(async () => {
         setIsChecking(true);
 
         // Check all statuses
@@ -32,11 +32,11 @@ export default function PermissionsScreen({ onAllPermissionsGranted }: Permissio
         }
 
         setIsChecking(false);
-    };
+    }, [cameraPermission, microphonePermission, locationPermission, mediaLibraryPermission, onAllPermissionsGranted]);
 
     useEffect(() => {
         checkPermissions();
-    }, [cameraPermission, microphonePermission, locationPermission, mediaLibraryPermission]);
+    }, [cameraPermission, microphonePermission, locationPermission, mediaLibraryPermission, checkPermissions]); // Added checkPermissions to dependencies
 
     // Re-check when app comes to foreground (in case user changed settings)
     useEffect(() => {
@@ -49,7 +49,7 @@ export default function PermissionsScreen({ onAllPermissionsGranted }: Permissio
         return () => {
             subscription.remove();
         };
-    }, []);
+    }, [checkPermissions]);
 
     const handleRequestPermissions = async () => {
         if (!cameraPermission?.granted) await requestCameraPermission();
@@ -75,9 +75,9 @@ export default function PermissionsScreen({ onAllPermissionsGranted }: Permissio
                     <Camera size={48} color="#fff" />
                 </View>
 
-                <Text style={styles.title}>Welcome to GeoShot</Text>
+                <Text style={styles.title}>Permissions Required</Text>
                 <Text style={styles.subtitle}>
-                    To provide the best experience, we need access to a few things:
+                    We need access to your Camera, Microphone, Location, and Photo Library to function correctly. Please enable them in settings.
                 </Text>
 
                 <View style={styles.permissionList}>
@@ -105,16 +105,16 @@ export default function PermissionsScreen({ onAllPermissionsGranted }: Permissio
 
                 <TouchableOpacity
                     style={styles.button}
-                    onPress={handleRequestPermissions}
+                    onPress={openSettings}
                 >
-                    <Text style={styles.buttonText}>Grant Permissions</Text>
+                    <Text style={styles.buttonText}>Open App Settings</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
                     style={styles.secondaryButton}
-                    onPress={openSettings}
+                    onPress={handleRequestPermissions}
                 >
-                    <Text style={styles.secondaryButtonText}>Open Settings</Text>
+                    <Text style={styles.secondaryButtonText}>Try Again</Text>
                 </TouchableOpacity>
             </View>
         </View>

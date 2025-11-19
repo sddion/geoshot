@@ -1,5 +1,5 @@
 import { Image } from 'expo-image';
-import { GeoData, getMapImageUrl } from '@/utils/geoOverlay';
+import { GeoData } from '@/utils/geoOverlay';
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import {
@@ -8,88 +8,116 @@ import {
   Gauge,
   Mountain,
   Compass,
+  Navigation,
 } from 'lucide-react-native';
 
 interface GeoOverlayProps {
-  geoData: GeoData;
+  geoData: GeoData | null;
+  mapTile: string | null;
   imageWidth: number;
-  imageHeight: number;
+  imageHeight?: number; // Optional, if not provided, it just takes necessary height
 }
 
-export default function GeoOverlay({ geoData, imageWidth, imageHeight }: GeoOverlayProps) {
-  const mapUrl = getMapImageUrl(geoData.latitude, geoData.longitude, 200, 120, 14);
+export default function GeoOverlay({ geoData, mapTile, imageWidth }: GeoOverlayProps) {
+  if (!geoData) {
+    // Skeleton / Loading state
+    return (
+      <View style={[styles.container, { width: imageWidth }]}>
+        <View style={styles.overlay}>
+          <Text style={{ color: 'white' }}>Acquiring GPS...</Text>
+        </View>
+      </View>
+    );
+  }
 
   const formatDate = (isoString: string) => {
     const date = new Date(isoString);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
+    // Format: Wednesday, 19/11/2025 03:24 AM GMT +05:30
+    const dayName = date.toLocaleDateString('en-US', { weekday: 'long' });
+    const dateStr = date.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    const timeStr = date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+    const offset = -date.getTimezoneOffset();
+    const offsetSign = offset >= 0 ? '+' : '-';
+    const offsetHours = Math.floor(Math.abs(offset) / 60).toString().padStart(2, '0');
+    const offsetMins = (Math.abs(offset) % 60).toString().padStart(2, '0');
+
+    return `${dayName}, ${dateStr} ${timeStr} GMT ${offsetSign}${offsetHours}:${offsetMins}`;
   };
 
   return (
-    <View style={[styles.container, { width: imageWidth, height: imageHeight }]}>
+    <View style={[styles.container, { width: imageWidth }]}>
       <View style={styles.overlay}>
-        <View style={styles.header}>
+        <View style={styles.contentRow}>
+          {/* Left: Map Thumbnail */}
           <View style={styles.mapContainer}>
-            <Image
-              source={{ uri: mapUrl }}
-              style={styles.map}
-              contentFit="cover"
-            />
+            {mapTile && (
+              <Image
+                source={{ uri: mapTile }}
+                style={styles.map}
+                contentFit="cover"
+              />
+            )}
+            <View style={styles.pinOverlay}>
+              <MapPin size={24} color="#FF5252" fill="#FF5252" />
+            </View>
+            <View style={styles.osmBranding}>
+              <Text style={styles.osmText}>© OpenStreetMap</Text>
+            </View>
           </View>
-          <View style={styles.headerInfo}>
+
+          {/* Right: Main Info */}
+          <View style={styles.mainInfo}>
             <Text style={styles.placeName} numberOfLines={1}>
               {geoData.placeName}
             </Text>
             <Text style={styles.address} numberOfLines={2}>
-              {geoData.address}
+              {geoData.plusCode}, {geoData.address}
             </Text>
             <Text style={styles.coords}>
-              {geoData.latitude.toFixed(6)}, {geoData.longitude.toFixed(6)}
+              Lat {geoData.latitude.toFixed(6)}° Long {geoData.longitude.toFixed(6)}°
             </Text>
-            <Text style={styles.plusCode}>{geoData.plusCode}</Text>
             <Text style={styles.dateTime}>{formatDate(geoData.dateTime)}</Text>
           </View>
         </View>
 
-        <View style={styles.footer}>
-          {geoData.speed !== null && (
-            <View style={styles.dataItem}>
-              <Gauge size={16} color="#fff" />
-              <Text style={styles.dataText}>{Math.round(geoData.speed * 3.6)} km/h</Text>
-            </View>
-          )}
+        {/* Bottom Row: Metrics */}
+        <View style={styles.metricsRow}>
+          {/* Speed */}
+          <View style={styles.metricItem}>
+            <Gauge size={16} color="#4CAF50" />
+            <Text style={styles.metricText}>
+              {geoData.speed ? Math.round(geoData.speed * 3.6) : 0} km/h
+            </Text>
+          </View>
 
-          {geoData.altitude !== null && (
-            <View style={styles.dataItem}>
-              <Mountain size={16} color="#fff" />
-              <Text style={styles.dataText}>{Math.round(geoData.altitude)}m</Text>
-            </View>
-          )}
+          {/* Altitude */}
+          <View style={styles.metricItem}>
+            <Mountain size={16} color="#2196F3" />
+            <Text style={styles.metricText}>
+              {geoData.altitude ? Math.round(geoData.altitude) : 0} m
+            </Text>
+          </View>
 
-          {geoData.magneticField !== null && (
-            <View style={styles.dataItem}>
-              <Compass size={16} color="#fff" />
-              <Text style={styles.dataText}>{geoData.magneticField.toFixed(1)}µT</Text>
-            </View>
-          )}
+          {/* Magnetic Field */}
+          <View style={styles.metricItem}>
+            <Compass size={16} color="#FFC107" />
+            <Text style={styles.metricText}>
+              {geoData.magneticField ? geoData.magneticField.toFixed(0) : 0} µT
+            </Text>
+          </View>
 
-          {geoData.temperature !== null && (
-            <View style={styles.dataItem}>
-              <Thermometer size={16} color="#fff" />
-              <Text style={styles.dataText}>
-                {Math.round(geoData.temperature)}°C {geoData.weatherCondition}
-              </Text>
-            </View>
-          )}
+          {/* Weather */}
+          <View style={styles.metricItem}>
+            <Thermometer size={16} color="#FF9800" />
+            <Text style={styles.metricText}>
+              {geoData.temperature ? Math.round(geoData.temperature) : '--'}°C {geoData.weatherCondition}
+            </Text>
+          </View>
 
-          <View style={styles.dataItem}>
-            <MapPin size={16} color="#fff" />
-            <Text style={styles.dataText}>GPS</Text>
+          {/* GPS Lock Indicator */}
+          <View style={styles.metricItem}>
+            <Navigation size={16} color="#fff" />
+            <Text style={styles.metricText}>GPS</Text>
           </View>
         </View>
       </View>
@@ -99,77 +127,93 @@ export default function GeoOverlay({ geoData, imageWidth, imageHeight }: GeoOver
 
 const styles = StyleSheet.create({
   container: {
-    position: 'relative' as const,
+    // No fixed height, let it grow
   },
   overlay: {
-    position: 'absolute' as const,
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.75)',
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
     padding: 12,
+    borderRadius: 0, // Edge to edge look usually
   },
-  header: {
+  contentRow: {
     flexDirection: 'row',
     gap: 12,
     marginBottom: 12,
   },
   mapContainer: {
-    width: 100,
-    height: 100,
+    width: 80,
+    height: 80,
     borderRadius: 8,
     overflow: 'hidden',
     backgroundColor: '#333',
+    position: 'relative',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.2)',
   },
   map: {
     width: '100%',
     height: '100%',
   },
-  headerInfo: {
+  pinOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingBottom: 8, // Lift pin slightly
+  },
+  osmBranding: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    padding: 1,
+  },
+  osmText: {
+    color: 'white',
+    fontSize: 6,
+    textAlign: 'center',
+  },
+  mainInfo: {
     flex: 1,
     justifyContent: 'center',
   },
   placeName: {
     fontSize: 16,
-    fontWeight: '700' as const,
+    fontWeight: '700',
     color: '#fff',
     marginBottom: 4,
   },
   address: {
     fontSize: 11,
-    color: '#ccc',
-    lineHeight: 14,
+    color: '#ddd',
     marginBottom: 4,
+    lineHeight: 14,
   },
   coords: {
-    fontSize: 10,
-    color: '#888',
-    fontFamily: 'monospace',
-    marginBottom: 2,
-  },
-  plusCode: {
-    fontSize: 10,
-    color: '#888',
-    fontFamily: 'monospace',
+    fontSize: 11,
+    color: '#ddd',
     marginBottom: 4,
+    fontFamily: 'monospace',
   },
   dateTime: {
     fontSize: 10,
     color: '#aaa',
   },
-  footer: {
+  metricsRow: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255,255,255,0.1)',
+    paddingTop: 8,
   },
-  dataItem: {
+  metricItem: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
   },
-  dataText: {
+  metricText: {
     fontSize: 11,
-    fontWeight: '600' as const,
     color: '#fff',
+    fontWeight: '600',
   },
 });

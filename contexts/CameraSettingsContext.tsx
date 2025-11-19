@@ -6,8 +6,8 @@ export type CameraMode = 'photo' | 'video' | 'night' | 'portrait';
 export type FlashMode = 'auto' | 'on' | 'off';
 export type GridStyle = 'off' | '3x3' | 'golden';
 export type Timer = 'off' | '2s' | '5s' | '10s';
-export type AspectRatio = '1:1' | '4:3' | '16:9' | 'full';
-export type ImageQuality = 'low' | 'standard' | 'superfine';
+export type AspectRatio = '1:1' | '4:3' | '16:9';
+export type ImageQuality = 'normal' | 'fine' | 'superfine';
 export type PhotoResolution = '1080p' | '4k' | '8k' | 'max';
 export type VideoResolution = '720p' | '1080p' | '4k';
 export type VideoFPS = 30 | 60 | 120;
@@ -25,16 +25,11 @@ export interface CameraSettings {
   photoAspectRatio: AspectRatio;
   photoResolution: PhotoResolution;
   imageQuality: ImageQuality;
-  autoTimestamp: boolean;
-  autoLogo: boolean;
   gestureZoom: boolean;
   videoResolution: VideoResolution;
   videoFPS: VideoFPS;
   videoStabilization: boolean;
-  audioRecording: boolean;
-  hdrEnabled: boolean;
   flashMode: FlashMode;
-  showGrid: boolean;
   geoOverlayEnabled: boolean;
 }
 
@@ -48,18 +43,13 @@ const defaultSettings: CameraSettings = {
   touchToCapture: false,
   photoAspectRatio: '4:3',
   photoResolution: '4k',
-  imageQuality: 'superfine',
-  autoTimestamp: false,
-  autoLogo: false,
+  imageQuality: 'fine',
   gestureZoom: true,
   videoResolution: '1080p',
   videoFPS: 30,
   videoStabilization: true,
-  audioRecording: true,
-  hdrEnabled: true,
   flashMode: 'auto',
-  showGrid: false,
-  geoOverlayEnabled: false,
+  geoOverlayEnabled: true, // Default to ON, toggle from camera view
 };
 
 const STORAGE_KEY = '@geoshot_camera_settings';
@@ -69,7 +59,7 @@ export const [CameraSettingsProvider, useCameraSettings] = createContextHook(() 
   const [isLoaded, setIsLoaded] = useState<boolean>(false);
   const [lastPhotoUri, setLastPhotoUri] = useState<string | null>(null);
   const [currentMode, setCurrentMode] = useState<CameraMode>('photo');
-  const [zoom, setZoom] = useState<number>(1);
+  const [zoom, setZoom] = useState<number>(0);
 
   useEffect(() => {
     loadSettings();
@@ -79,7 +69,7 @@ export const [CameraSettingsProvider, useCameraSettings] = createContextHook(() 
     if (isLoaded) {
       saveSettings();
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [settings, isLoaded]);
 
   const loadSettings = async () => {
@@ -120,10 +110,6 @@ export const [CameraSettingsProvider, useCameraSettings] = createContextHook(() 
     }
   };
 
-  const toggleGrid = () => {
-    setSettings((prev) => ({ ...prev, showGrid: !prev.showGrid }));
-  };
-
   const cycleFlash = () => {
     setSettings((prev) => {
       const modes: FlashMode[] = ['auto', 'on', 'off'];
@@ -144,7 +130,6 @@ export const [CameraSettingsProvider, useCameraSettings] = createContextHook(() 
     setCurrentMode,
     zoom,
     setZoom,
-    toggleGrid,
     cycleFlash,
   };
 });

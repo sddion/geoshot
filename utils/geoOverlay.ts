@@ -1,5 +1,6 @@
 import * as Location from 'expo-location';
 import { Magnetometer } from 'expo-sensors';
+import * as FileSystem from 'expo-file-system/legacy';
 
 export interface GeoData {
   latitude: number;
@@ -15,9 +16,11 @@ export interface GeoData {
   magneticField: number | null;
 }
 
+const USER_AGENT = 'GeoShotCamera/1.0 (contact@geoshot.app)';
+
 export async function getGeoData(): Promise<GeoData | null> {
   try {
-    const { status } = await Location.requestForegroundPermissionsAsync();
+    const { status } = await Location.getForegroundPermissionsAsync();
     if (status !== 'granted') {
       console.log('Location permission not granted');
       return null;
@@ -29,11 +32,14 @@ export async function getGeoData(): Promise<GeoData | null> {
 
     const { latitude, longitude, altitude, speed } = location.coords;
 
-    const address = await getReverseGeocode(latitude, longitude);
-    const weather = await getWeather(latitude, longitude);
-    
+    // Parallelize independent fetches
+    const [address, weather, magneticField] = await Promise.all([
+      getReverseGeocode(latitude, longitude),
+      getWeather(latitude, longitude),
+      getMagneticField()
+    ]);
+
     const plusCode = generatePlusCode(latitude, longitude);
-    const magneticField = await getMagneticField();
 
     return {
       latitude,
@@ -60,8 +66,16 @@ async function getReverseGeocode(
 ): Promise<{ fullAddress: string; placeName: string }> {
   try {
     const response = await fetch(
-      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18`
+      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18`,
+      {
+        headers: {
+          'User-Agent': USER_AGENT,
+        },
+      }
     );
+
+    if (!response.ok) throw new Error('Nominatim error');
+
     const data = await response.json();
 
     const address = data.address || {};
@@ -132,7 +146,6 @@ async function getMagneticField(): Promise<number | null> {
   try {
     const isAvailable = await Magnetometer.isAvailableAsync();
     if (!isAvailable) {
-      console.log('Magnetometer not available');
       return null;
     }
 
@@ -145,10 +158,11 @@ async function getMagneticField(): Promise<number | null> {
         resolve(magnitude);
       });
 
+      // Timeout after 1s
       setTimeout(() => {
         subscription.remove();
         resolve(null);
-      }, 2000);
+      }, 1000);
     });
   } catch (error) {
     console.error('Magnetometer error:', error);
@@ -156,27 +170,78 @@ async function getMagneticField(): Promise<number | null> {
   }
 }
 
-export function getMapImageUrl(
+// Tile Caching Logic
+const TILE_CACHE_DIR = ((FileSystem as any).cacheDirectory || (FileSystem as any).documentDirectory) + 'osm_tiles/';
+
+async function ensureCacheDir() {
+  const dirInfo = await FileSystem.getInfoAsync(TILE_CACHE_DIR);
+  if (!dirInfo.exists) {
+    await FileSystem.makeDirectoryAsync(TILE_CACHE_DIR, { intermediates: true });
+  }
+}
+
+export async function getCachedMapTile(
   lat: number,
   lon: number,
-  width: number = 300,
-  height: number = 200,
   zoom: number = 15
-): string {
-  const tileSize = 256;
-  const centerX = ((lon + 180) / 360) * Math.pow(2, zoom) * tileSize;
-  const centerY =
-    ((1 -
-      Math.log(
-        Math.tan((lat * Math.PI) / 180) + 1 / Math.cos((lat * Math.PI) / 180)
-      ) /
+): Promise<string> {
+  try {
+    await ensureCacheDir();
+
+    const tileSize = 256;
+    const centerX = ((lon + 180) / 360) * Math.pow(2, zoom) * tileSize;
+    const centerY =
+      ((1 -
+        Math.log(
+          Math.tan((lat * Math.PI) / 180) + 1 / Math.cos((lat * Math.PI) / 180)
+        ) /
         Math.PI) /
-      2) *
-    Math.pow(2, zoom) *
-    tileSize;
-  
-  const tileX = Math.floor(centerX / tileSize);
-  const tileY = Math.floor(centerY / tileSize);
-  
-  return `https://tile.openstreetmap.org/${zoom}/${tileX}/${tileY}.png`;
+        2) *
+      Math.pow(2, zoom) *
+      tileSize;
+
+    const tileX = Math.floor(centerX / tileSize);
+    const tileY = Math.floor(centerY / tileSize);
+
+    const fileName = `${zoom}_${tileX}_${tileY}.png`;
+    const fileUri = TILE_CACHE_DIR + fileName;
+
+    const fileInfo = await FileSystem.getInfoAsync(fileUri);
+
+    if (fileInfo.exists) {
+      return fileUri;
+    }
+
+    const url = `https://tile.openstreetmap.org/${zoom}/${tileX}/${tileY}.png`;
+
+    // Download with User-Agent
+    const downloadRes = await FileSystem.downloadAsync(url, fileUri, {
+      headers: {
+        'User-Agent': USER_AGENT
+      }
+    });
+
+    if (downloadRes.status === 200) {
+      return downloadRes.uri;
+    }
+
+    return url; // Fallback to remote URL if download fails
+  } catch (error) {
+    console.error('Tile cache error:', error);
+    // Fallback calculation without caching
+    const tileSize = 256;
+    const centerX = ((lon + 180) / 360) * Math.pow(2, zoom) * tileSize;
+    const centerY =
+      ((1 -
+        Math.log(
+          Math.tan((lat * Math.PI) / 180) + 1 / Math.cos((lat * Math.PI) / 180)
+        ) /
+        Math.PI) /
+        2) *
+      Math.pow(2, zoom) *
+      tileSize;
+    const tileX = Math.floor(centerX / tileSize);
+    const tileY = Math.floor(centerY / tileSize);
+    return `https://tile.openstreetmap.org/${zoom}/${tileX}/${tileY}.png`;
+  }
 }

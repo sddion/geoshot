@@ -1,0 +1,109 @@
+import { useState, useEffect, useRef } from 'react';
+import * as Location from 'expo-location';
+import { Magnetometer } from 'expo-sensors';
+import { getGeoData, GeoData, getCachedMapTile } from './geoOverlay';
+
+export function useLiveGeoData(enabled: boolean) {
+    const [data, setData] = useState<GeoData | null>(null);
+    const [mapTile, setMapTile] = useState<string | null>(null);
+    const [loading, setLoading] = useState(true);
+
+    // Refs for throttling
+    const lastFullUpdate = useRef<number>(0);
+    const FULL_UPDATE_INTERVAL = 15000; // 15 seconds for weather/address
+
+    useEffect(() => {
+        let locationSub: Location.LocationSubscription | null = null;
+        let magSub: any = null;
+        let isMounted = true;
+
+        const startUpdates = async () => {
+            if (!enabled) return;
+
+            try {
+                // Initial full fetch
+                const initialData = await getGeoData();
+                if (isMounted && initialData) {
+                    setData(initialData);
+                    lastFullUpdate.current = Date.now();
+
+                    // Fetch map tile
+                    const tile = await getCachedMapTile(initialData.latitude, initialData.longitude);
+                    setMapTile(tile);
+                }
+                setLoading(false);
+
+                // Live Location Updates (Speed, Altitude)
+                locationSub = await Location.watchPositionAsync(
+                    {
+                        accuracy: Location.Accuracy.High,
+                        timeInterval: 1000,
+                        distanceInterval: 0,
+                    },
+                    async (location) => {
+                        if (!isMounted) return;
+
+                        const now = Date.now();
+                        const shouldFullUpdate = now - lastFullUpdate.current > FULL_UPDATE_INTERVAL;
+
+                        if (shouldFullUpdate) {
+                            // Refresh everything
+                            const fullData = await getGeoData();
+                            if (fullData) {
+                                setData(fullData);
+                                lastFullUpdate.current = now;
+                                const tile = await getCachedMapTile(fullData.latitude, fullData.longitude);
+                                setMapTile(tile);
+                            }
+                        } else {
+                            // Just update fast changing values
+                            setData((prev) => {
+                                if (!prev) return null;
+                                return {
+                                    ...prev,
+                                    latitude: location.coords.latitude,
+                                    longitude: location.coords.longitude,
+                                    altitude: location.coords.altitude,
+                                    speed: location.coords.speed,
+                                    dateTime: new Date().toISOString(),
+                                };
+                            });
+                        }
+                    }
+                );
+
+                // Magnetometer Updates
+                if (await Magnetometer.isAvailableAsync()) {
+                    Magnetometer.setUpdateInterval(1000);
+                    magSub = Magnetometer.addListener((result) => {
+                        if (!isMounted) return;
+                        const magnitude = Math.sqrt(
+                            result.x * result.x + result.y * result.y + result.z * result.z
+                        );
+                        setData((prev) => {
+                            if (!prev) return null;
+                            return { ...prev, magneticField: magnitude };
+                        });
+                    });
+                }
+
+            } catch (error) {
+                console.error('Live geo data error:', error);
+            }
+        };
+
+        if (enabled) {
+            startUpdates();
+        } else {
+            setLoading(false);
+        }
+
+        return () => {
+            isMounted = false;
+            if (locationSub) locationSub.remove();
+            if (magSub) magSub.remove();
+        };
+    }, [enabled]);
+
+    return { data, mapTile, loading };
+}
