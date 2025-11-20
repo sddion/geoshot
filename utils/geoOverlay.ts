@@ -171,7 +171,7 @@ async function getMagneticField(): Promise<number | null> {
 }
 
 // Tile Caching Logic
-const TILE_CACHE_DIR = ((FileSystem as any).cacheDirectory || (FileSystem as any).documentDirectory) + 'osm_tiles/';
+const TILE_CACHE_DIR = (FileSystem.cacheDirectory || FileSystem.documentDirectory || '') + 'osm_tiles/';
 
 async function ensureCacheDir() {
   const dirInfo = await FileSystem.getInfoAsync(TILE_CACHE_DIR);

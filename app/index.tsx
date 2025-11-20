@@ -26,6 +26,8 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import { getGeoData } from '@/utils/geoOverlay';
+import { saveVideoGPSData } from '@/utils/videoGPSData';
+import { GeoData } from '@/utils/geoOverlay';
 import Constants from 'expo-constants';
 
 const isExpoGo = (typeof expo !== 'undefined' && globalThis.expo?.modules?.ExponentConstants?.executionEnvironment === 'STORE_CLIENT') ||
@@ -93,6 +95,11 @@ export default function CameraScreen() {
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [allPermissionsGranted, setAllPermissionsGranted] = useState<boolean>(false);
   const overlayRef = useRef<View>(null);
+
+  // GPS data collection for video recording
+  const [recordingGPSData, setRecordingGPSData] = useState<GeoData[]>([]);
+  const [recordingStartTime, setRecordingStartTime] = useState<string>('');
+  const gpsCollectionInterval = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const {
     currentMode,
@@ -245,21 +252,23 @@ export default function CameraScreen() {
 
 
 
-  const processVideoWithOverlay = async (videoUri: string) => {
+  const processVideoWithOverlay = async (videoUri: string, gpsData: GeoData[], startTime: string, duration: number) => {
     setIsProcessing(true);
     try {
-      // For now, just save the video directly
-      // The overlay is shown live on screen during recording via the GeoOverlay component
-      // Full overlay compositing would require native video processing
-
+      // Save the video to media library
       const asset = await MediaLibrary.createAssetAsync(videoUri);
       setLastPhotoUri(asset.uri);
 
-      showToast('Video saved successfully!');
+      // Save GPS data alongside the video
+      const endTime = new Date().toISOString();
+      await saveVideoGPSData(asset.uri, gpsData, startTime, endTime, duration);
+
+      console.log(`Video saved with ${gpsData.length} GPS data points`);
+      showToast(`Video saved with GPS data (${gpsData.length} points)!`);
     } catch (error) {
       console.error('Processing error:', error);
       showToast('Failed to save video');
-      // Fallback - still try to save
+      // Fallback - still try to save video without GPS data
       try {
         await MediaLibrary.createAssetAsync(videoUri);
       } catch (fallbackError) {
@@ -306,30 +315,66 @@ export default function CameraScreen() {
             clearInterval(recordingInterval.current);
             recordingInterval.current = null;
           }
+          // Clear GPS collection interval
+          if (gpsCollectionInterval.current) {
+            clearInterval(gpsCollectionInterval.current);
+            gpsCollectionInterval.current = null;
+          }
           setRecordingDuration(0);
         } else {
           // Start recording
           setIsRecording(true);
           setRecordingDuration(0);
+
+          // Initialize GPS data collection
+          const startTime = new Date().toISOString();
+          setRecordingStartTime(startTime);
+          setRecordingGPSData([]);
+
+          // Collect initial GPS data
+          if (settings.geoOverlayEnabled && liveGeoData) {
+            setRecordingGPSData([liveGeoData]);
+          }
+
           // Start recording timer
           recordingInterval.current = setInterval(() => {
             setRecordingDuration(prev => prev + 1);
           }, 1000);
 
+          // Start GPS data collection (every 2 seconds)
+          if (settings.geoOverlayEnabled) {
+            gpsCollectionInterval.current = setInterval(async () => {
+              const gpsData = await getGeoData();
+              if (gpsData) {
+                setRecordingGPSData(prev => [...prev, gpsData]);
+              }
+            }, 2000);
+          }
+
           // Start recording (this will resolve when stopRecording is called)
           cameraRef.current.recordAsync().then(async (video) => {
             if (video?.uri) {
-              if (settings.geoOverlayEnabled && overlayRef.current) {
-                await processVideoWithOverlay(video.uri);
+              if (settings.geoOverlayEnabled && recordingGPSData.length > 0) {
+                await processVideoWithOverlay(video.uri, recordingGPSData, recordingStartTime, recordingDuration);
               } else {
                 MediaLibrary.createAssetAsync(video.uri).then((asset) => {
                   console.log('Video saved:', asset.uri);
                   setLastPhotoUri(asset.uri);
                 });
               }
+              // Reset GPS data
+              setRecordingGPSData([]);
+              setRecordingStartTime('');
             }
           }).catch((error) => {
             console.error('Recording error:', error);
+            // Clean up on error
+            if (gpsCollectionInterval.current) {
+              clearInterval(gpsCollectionInterval.current);
+              gpsCollectionInterval.current = null;
+            }
+            setRecordingGPSData([]);
+            setRecordingStartTime('');
           });
         }
       } else {
@@ -356,7 +401,7 @@ export default function CameraScreen() {
             if (geoData) {
               console.log('GPS data retrieved:', geoData);
               router.push({
-                pathname: '/geo-preview' as any,
+                pathname: '/geo-preview',
                 params: { photoUri: photo.uri },
               });
               setIsCapturing(false);
@@ -547,7 +592,7 @@ export default function CameraScreen() {
             {!isRecording ? (
               <TouchableOpacity
                 style={styles.iconButton}
-                onPress={() => router.push('/settings' as any)}
+                onPress={() => router.push('/settings')}
               >
                 <MaterialCommunityIcons name="cog" size={24} color="#fff" />
               </TouchableOpacity>

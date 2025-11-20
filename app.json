@@ -10,8 +10,7 @@
     "newArchEnabled": true,
     "splash": {
       "image": "./assets/images/splash-screen.png",
-      "resizeMode": "cover",
-      "backgroundColor": "#ffffff"
+      "resizeMode": "contain"
     },
     "ios": {
       "supportsTablet": true,
@@ -101,6 +100,15 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "jsEngine": "hermes",
+    "extra": {
+      "router": {
+        "origin": "https://geoshot.vercel.app/"
+      },
+      "eas": {
+        "projectId": "c8732536-7240-49fb-86d1-019130736091"
+      }
     }
   }
 }

@@ -14,7 +14,7 @@ export function useLiveGeoData(enabled: boolean) {
 
     useEffect(() => {
         let locationSub: Location.LocationSubscription | null = null;
-        let magSub: any = null;
+        let magSub: { remove: () => void } | null = null;
         let isMounted = true;
 
         const startUpdates = async () => {
