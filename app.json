@@ -2,15 +2,15 @@
   "expo": {
     "name": "GeoShot Camera",
     "slug": "geoshot-camera",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "geoshot-camera-app",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/images/splash-icon.png",
-      "resizeMode": "contain",
+      "image": "./assets/images/splash-screen.png",
+      "resizeMode": "cover",
       "backgroundColor": "#ffffff"
     },
     "ios": {
@@ -31,8 +31,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "foregroundImage": "./assets/images/adaptive-icon.png"
       },
       "package": "app.geoshot.camera",
       "permissions": [
@@ -61,7 +60,7 @@
       [
         "expo-router",
         {
-          "origin": "https://geoshot.com/"
+          "origin": "https://geoshot.vercel.app/"
         }
       ],
       "expo-font",

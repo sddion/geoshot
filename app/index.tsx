@@ -6,18 +6,7 @@ import { useRouter } from 'expo-router';
 import GeoOverlay from '@/components/GeoOverlay';
 import PermissionsScreen from '@/components/PermissionsScreen';
 import { useLiveGeoData } from '@/utils/useLiveGeoData';
-import {
-  Settings,
-  Zap,
-  ZapOff,
-  RotateCcw,
-  Image as ImageIcon,
-  Circle,
-  Video,
-  Moon,
-  Aperture,
-  MapPin,
-} from 'lucide-react-native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import React, { useRef, useState, useEffect } from 'react';
 import {
   View,
@@ -32,13 +21,11 @@ import {
   Platform,
   GestureResponderEvent,
   ActivityIndicator,
+  ToastAndroid,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import { getGeoData } from '@/utils/geoOverlay';
-import { FFmpegKit, ReturnCode } from 'ffmpeg-kit-react-native';
-import { captureRef } from 'react-native-view-shot';
-import * as FileSystem from 'expo-file-system';
 import Constants from 'expo-constants';
 
 const isExpoGo = (typeof expo !== 'undefined' && globalThis.expo?.modules?.ExponentConstants?.executionEnvironment === 'STORE_CLIENT') ||
@@ -79,6 +66,15 @@ export default function CameraScreen() {
   const [microphonePermission, requestMicrophonePermission] = useMicrophonePermissions();
   const [mediaLibraryPermission, requestMediaLibraryPermission] = useMediaLibraryPermissions();
   const [locationPermission, requestLocationPermission] = Location.useForegroundPermissions();
+
+  // Toast utility function
+  const showToast = (message: string) => {
+    if (Platform.OS === 'android') {
+      ToastAndroid.show(message, ToastAndroid.SHORT);
+    } else {
+      Alert.alert('', message);
+    }
+  };
 
   const { settings, updateSetting } = useCameraSettings();
   const { data: liveGeoData, mapTile: liveMapTile } = useLiveGeoData(settings.geoOverlayEnabled);
@@ -165,17 +161,26 @@ export default function CameraScreen() {
 
   // Check if all permissions are granted
   useEffect(() => {
-    const allGranted = 
+    const allGranted =
       cameraPermission?.granted &&
       microphonePermission?.granted &&
       locationPermission?.granted &&
       mediaLibraryPermission?.granted;
-    
+
     setAllPermissionsGranted(!!allGranted);
   }, [cameraPermission, microphonePermission, locationPermission, mediaLibraryPermission]);
 
   const openSystemGallery = async () => {
     try {
+      // Check media library permission first
+      if (!mediaLibraryPermission?.granted) {
+        const result = await requestMediaLibraryPermission();
+        if (!result.granted) {
+          Alert.alert('Permission Required', 'Media Library permission is needed to access your photos.');
+          return;
+        }
+      }
+
       if (lastPhotoUri) {
         // Get asset info to get the content URI
         const asset = await MediaLibrary.getAssetInfoAsync(lastPhotoUri);
@@ -243,42 +248,23 @@ export default function CameraScreen() {
   const processVideoWithOverlay = async (videoUri: string) => {
     setIsProcessing(true);
     try {
-      // Capture the overlay as an image
-      const overlayUri = await captureRef(overlayRef, {
-        format: 'png',
-        quality: 1,
-        result: 'tmpfile',
-      });
+      // For now, just save the video directly
+      // The overlay is shown live on screen during recording via the GeoOverlay component
+      // Full overlay compositing would require native video processing
 
-      const outputUri = `${(FileSystem as any).cacheDirectory}output_${Date.now()}.mp4`;
+      const asset = await MediaLibrary.createAssetAsync(videoUri);
+      setLastPhotoUri(asset.uri);
 
-      // FFmpeg command to overlay image on video
-      // Scale overlay to video size? For now, simple overlay at 0:0
-      const command = `-i "${videoUri}" -i "${overlayUri}" -filter_complex "overlay=0:0" -c:v libx264 -preset ultrafast "${outputUri}"`;
-
-      console.log('Starting FFmpeg processing...');
-      const session = await FFmpegKit.execute(command);
-      const returnCode = await session.getReturnCode();
-
-      if (ReturnCode.isSuccess(returnCode)) {
-        console.log('FFmpeg processing successful');
-        const asset = await MediaLibrary.createAssetAsync(outputUri);
-        setLastPhotoUri(asset.uri);
-        Alert.alert('Success', 'Video saved with GPS overlay!');
-      } else {
-        console.error('FFmpeg processing failed');
-        const logs = await session.getLogs();
-        console.log('FFmpeg Logs:', logs);
-        Alert.alert('Error', 'Failed to process video overlay. Saving original.');
-        // Fallback to original video
-        const asset = await MediaLibrary.createAssetAsync(videoUri);
-        setLastPhotoUri(asset.uri);
-      }
+      showToast('Video saved successfully!');
     } catch (error) {
       console.error('Processing error:', error);
-      Alert.alert('Error', 'An error occurred while processing video.');
-      // Fallback
-      await MediaLibrary.createAssetAsync(videoUri);
+      showToast('Failed to save video');
+      // Fallback - still try to save
+      try {
+        await MediaLibrary.createAssetAsync(videoUri);
+      } catch (fallbackError) {
+        console.error('Fallback save error:', fallbackError);
+      }
     } finally {
       setIsProcessing(false);
     }
@@ -400,21 +386,22 @@ export default function CameraScreen() {
   const modes: CameraMode[] = ['photo', 'video', 'night', 'portrait'];
 
   const getModeIcon = (mode: CameraMode) => {
+    const iconProps = { size: 20, color: '#fff' };
     switch (mode) {
       case 'photo':
-        return <Aperture size={20} color="#fff" />;
+        return <MaterialCommunityIcons name="camera" {...iconProps} />;
       case 'video':
-        return <Video size={20} color="#fff" />;
+        return <MaterialCommunityIcons name="video" {...iconProps} />;
       case 'night':
-        return <Moon size={20} color="#fff" />;
+        return <MaterialCommunityIcons name="moon-waning-crescent" {...iconProps} />;
       case 'portrait':
-        return <Circle size={20} color="#fff" />;
+        return <MaterialCommunityIcons name="circle-outline" {...iconProps} />;
     }
   };
 
   const getFlashIcon = () => {
-    if (settings.flashMode === 'off') return <ZapOff size={24} color="#fff" />;
-    return <Zap size={24} color={settings.flashMode === 'on' ? '#FFD700' : '#fff'} />;
+    if (settings.flashMode === 'off') return <MaterialCommunityIcons name="flash-off" size={24} color="#fff" />;
+    return <MaterialCommunityIcons name="flash" size={24} color={settings.flashMode === 'on' ? '#FFD700' : '#fff'} />;
   };
 
   const mapFlashMode = (): FlashMode => {
@@ -446,252 +433,252 @@ export default function CameraScreen() {
               videoStabilizationMode={settings.videoStabilization ? 'auto' : 'off'}
             />
 
-        {/* Grid Overlay - Apply gridStyle setting */}
-        {settings.gridStyle !== 'off' && (
-          <View style={[styles.gridOverlay, { zIndex: 1 }]} pointerEvents="none">
-            {settings.gridStyle === '3x3' && (
-              <>
-                <View style={[styles.gridLine, styles.gridLineHorizontal, { top: '33.33%' }]} />
-                <View style={[styles.gridLine, styles.gridLineHorizontal, { top: '66.66%' }]} />
-                <View style={[styles.gridLine, styles.gridLineVertical, { left: '33.33%' }]} />
-                <View style={[styles.gridLine, styles.gridLineVertical, { left: '66.66%' }]} />
-              </>
+            {/* Grid Overlay - Apply gridStyle setting */}
+            {settings.gridStyle !== 'off' && (
+              <View style={[styles.gridOverlay, { zIndex: 1 }]} pointerEvents="none">
+                {settings.gridStyle === '3x3' && (
+                  <>
+                    <View style={[styles.gridLine, styles.gridLineHorizontal, { top: '33.33%' }]} />
+                    <View style={[styles.gridLine, styles.gridLineHorizontal, { top: '66.66%' }]} />
+                    <View style={[styles.gridLine, styles.gridLineVertical, { left: '33.33%' }]} />
+                    <View style={[styles.gridLine, styles.gridLineVertical, { left: '66.66%' }]} />
+                  </>
+                )}
+                {settings.gridStyle === 'golden' && (
+                  <>
+                    <View style={[styles.gridLine, styles.gridLineHorizontal, { top: '38.2%' }]} />
+                    <View style={[styles.gridLine, styles.gridLineHorizontal, { top: '61.8%' }]} />
+                    <View style={[styles.gridLine, styles.gridLineVertical, { left: '38.2%' }]} />
+                    <View style={[styles.gridLine, styles.gridLineVertical, { left: '61.8%' }]} />
+                  </>
+                )}
+              </View>
             )}
-            {settings.gridStyle === 'golden' && (
-              <>
-                <View style={[styles.gridLine, styles.gridLineHorizontal, { top: '38.2%' }]} />
-                <View style={[styles.gridLine, styles.gridLineHorizontal, { top: '61.8%' }]} />
-                <View style={[styles.gridLine, styles.gridLineVertical, { left: '38.2%' }]} />
-                <View style={[styles.gridLine, styles.gridLineVertical, { left: '61.8%' }]} />
-              </>
+
+            {focusPoint && (
+              <Animated.View
+                style={[
+                  styles.focusIndicator,
+                  {
+                    left: focusPoint.x - 40,
+                    top: focusPoint.y - 40,
+                    opacity: focusAnimation,
+                    zIndex: 2,
+                  },
+                ]}
+                pointerEvents="none"
+              />
             )}
-          </View>
-        )}
 
-        {focusPoint && (
-          <Animated.View
-            style={[
-              styles.focusIndicator,
-              {
-                left: focusPoint.x - 40,
-                top: focusPoint.y - 40,
-                opacity: focusAnimation,
-                zIndex: 2,
-              },
-            ]}
-            pointerEvents="none"
-          />
-        )}
-
-        {/* Single Zoom Button - Right Side, More Centered - Only show when slider is hidden */}
-        {!showZoomSlider && (
-          <TouchableOpacity
-            style={styles.singleZoomButton}
-            onPress={handleZoomButtonTap}
-          >
-            <Text style={styles.singleZoomText}>{(zoom * 10).toFixed(1)}×</Text>
-          </TouchableOpacity>
-        )}
-
-        {/* Vertical Zoom Slider - Appears on Tap */}
-        {showZoomSlider && (
-          <View
-            style={styles.verticalZoomSlider}
-            pointerEvents="box-none"
-          >
-            <Pressable
-              style={styles.verticalSliderTrack}
-              onTouchStart={(e: GestureResponderEvent) => {
-                // Prevent immediate hiding when touching the slider
-                if (zoomSliderTimeout.current) {
-                  clearTimeout(zoomSliderTimeout.current);
-                }
-                // Handle tap to set zoom
-                const { locationY } = e.nativeEvent;
-                const sliderHeight = 200;
-                const value = Math.max(0, Math.min(1, 1 - (locationY / sliderHeight)));
-                handleZoomSliderChange(value);
-              }}
-              onTouchMove={(e: GestureResponderEvent) => {
-                const { locationY } = e.nativeEvent;
-                const sliderHeight = 200;
-                const value = Math.max(0, Math.min(1, 1 - (locationY / sliderHeight)));
-                handleZoomSliderChange(value);
-              }}
-              onTouchEnd={() => {
-                // Restart hide timer when touch ends
-                zoomSliderTimeout.current = setTimeout(() => {
-                  setShowZoomSlider(false);
-                }, 3000);
-              }}
-            >
-              <View style={[styles.verticalSliderFill, { height: `${((zoom * 10 - 0.5) / 9.5) * 100}%` }]} />
-            </Pressable>
-          </View>
-        )}
-      </View>
-
-
-
-      <SafeAreaView style={styles.topControls} edges={['top']}>
-        {/* Flash - Left */}
-        <TouchableOpacity style={styles.iconButton} onPress={cycleFlash}>
-          {getFlashIcon()}
-        </TouchableOpacity>
-
-        <View style={{ flex: 1 }} />
-
-        {/* Center Icons: GPS only */}
-        <View style={styles.centerIcons}>
-          <TouchableOpacity
-            style={[
-              styles.iconBadge,
-              { backgroundColor: settings.geoOverlayEnabled ? '#4CAF50' : 'rgba(255, 255, 255, 0.2)' }
-            ]}
-            onPress={() => updateSetting('geoOverlayEnabled', !settings.geoOverlayEnabled)}
-          >
-            <MapPin size={16} color="#fff" />
-          </TouchableOpacity>
-        </View>
-
-        <View style={{ flex: 1 }} />
-
-        {/* Settings - Right */}
-        {!isRecording ? (
-          <TouchableOpacity
-            style={styles.iconButton}
-            onPress={() => router.push('/settings' as any)}
-          >
-            <Settings size={24} color="#fff" />
-          </TouchableOpacity>
-        ) : (
-          <View style={styles.iconButton} />
-        )}
-      </SafeAreaView>
-
-      <SafeAreaView style={styles.bottomControls} edges={['bottom']}>
-        {/* Mode Selector at Top */}
-        {!isRecording && (
-          <View style={styles.modeSelector}>
-            {modes.map((mode) => (
+            {/* Single Zoom Button - Right Side, More Centered - Only show when slider is hidden */}
+            {!showZoomSlider && (
               <TouchableOpacity
-                key={mode}
-                style={styles.modeButton}
-                onPress={() => setCurrentMode(mode)}
+                style={styles.singleZoomButton}
+                onPress={handleZoomButtonTap}
               >
-                <View style={{ marginBottom: 4 }}>
-                  {getModeIcon(mode)}
-                </View>
-                <Text
-                  style={[
-                    styles.modeText,
-                    currentMode === mode && styles.modeTextActive,
-                  ]}
-                >
-                  {mode.toUpperCase()}
-                </Text>
+                <Text style={styles.singleZoomText}>{(zoom * 10).toFixed(1)}×</Text>
               </TouchableOpacity>
-            ))}
-          </View>
-        )}
-
-        {/* Capture Row */}
-        <View style={styles.captureRow}>
-          {!isRecording ? (
-            <TouchableOpacity
-              style={styles.thumbnailButton}
-              onPress={openSystemGallery}
-            >
-              {lastPhotoUri ? (
-                <Image
-                  source={{ uri: lastPhotoUri }}
-                  style={styles.thumbnail}
-                  contentFit="cover"
-                />
-              ) : (
-                <View style={styles.thumbnailEmpty}>
-                  <ImageIcon size={24} color="#888" />
-                </View>
-              )}
-            </TouchableOpacity>
-          ) : (
-            <View style={styles.thumbnailButton} />
-          )}
-
-          <TouchableOpacity
-            style={styles.captureButton}
-            onPress={handleCapture}
-            disabled={isCapturing && currentMode !== 'video'}
-          >
-            {isRecording ? (
-              <View style={styles.recordingButton} />
-            ) : (
-              <View style={currentMode === 'video' ? styles.videoRecordButton : styles.captureButtonInner} />
             )}
-          </TouchableOpacity>
 
-          {!isRecording ? (
-            <TouchableOpacity
-              style={styles.flipButton}
-              onPress={toggleCameraFacing}
-            >
-              <RotateCcw size={32} color="#fff" />
+            {/* Vertical Zoom Slider - Appears on Tap */}
+            {showZoomSlider && (
+              <View
+                style={styles.verticalZoomSlider}
+                pointerEvents="box-none"
+              >
+                <Pressable
+                  style={styles.verticalSliderTrack}
+                  onTouchStart={(e: GestureResponderEvent) => {
+                    // Prevent immediate hiding when touching the slider
+                    if (zoomSliderTimeout.current) {
+                      clearTimeout(zoomSliderTimeout.current);
+                    }
+                    // Handle tap to set zoom
+                    const { locationY } = e.nativeEvent;
+                    const sliderHeight = 200;
+                    const value = Math.max(0, Math.min(1, 1 - (locationY / sliderHeight)));
+                    handleZoomSliderChange(value);
+                  }}
+                  onTouchMove={(e: GestureResponderEvent) => {
+                    const { locationY } = e.nativeEvent;
+                    const sliderHeight = 200;
+                    const value = Math.max(0, Math.min(1, 1 - (locationY / sliderHeight)));
+                    handleZoomSliderChange(value);
+                  }}
+                  onTouchEnd={() => {
+                    // Restart hide timer when touch ends
+                    zoomSliderTimeout.current = setTimeout(() => {
+                      setShowZoomSlider(false);
+                    }, 3000);
+                  }}
+                >
+                  <View style={[styles.verticalSliderFill, { height: `${((zoom * 10 - 0.5) / 9.5) * 100}%` }]} />
+                </Pressable>
+              </View>
+            )}
+          </View>
+
+
+
+          <SafeAreaView style={styles.topControls} edges={['top']}>
+            {/* Flash - Left */}
+            <TouchableOpacity style={styles.iconButton} onPress={cycleFlash}>
+              {getFlashIcon()}
             </TouchableOpacity>
-          ) : (
-            <View style={styles.flipButton} />
-          )}
-        </View>
-      </SafeAreaView>
 
-      {
-        timerCountdown > 0 && (
-          <View style={styles.timerOverlay}>
-            <View style={styles.timerCircle}>
-              <Text style={styles.timerText}>{timerCountdown}</Text>
+            <View style={{ flex: 1 }} />
+
+            {/* Center Icons: GPS only */}
+            <View style={styles.centerIcons}>
+              <TouchableOpacity
+                style={[
+                  styles.iconBadge,
+                  { backgroundColor: settings.geoOverlayEnabled ? '#4CAF50' : 'rgba(255, 255, 255, 0.2)' }
+                ]}
+                onPress={() => updateSetting('geoOverlayEnabled', !settings.geoOverlayEnabled)}
+              >
+                <MaterialCommunityIcons name="map-marker" size={16} color="#fff" />
+              </TouchableOpacity>
             </View>
-          </View>
-        )
-      }
 
-      {/* Recording Indicator */}
-      {
-        isRecording && (
-          <View style={styles.recordingIndicator}>
-            <View style={styles.recordingDot} />
-            <Text style={styles.recordingText}>
-              {Math.floor(recordingDuration / 60)}:{(recordingDuration % 60).toString().padStart(2, '0')}
-            </Text>
-          </View>
-        )
-      }
+            <View style={{ flex: 1 }} />
 
-      {/* Live GPS Overlay - Highest Z-Index to ensure visibility */}
-      {
-        settings.geoOverlayEnabled && (
-          <View
-            ref={overlayRef}
-            style={styles.liveOverlayContainer}
-            collapsable={false} // Important for captureRef
-            pointerEvents="none" // Allow touches to pass through
-          >
-            <GeoOverlay
-              geoData={liveGeoData}
-              mapTile={liveMapTile}
-              imageWidth={SCREEN_WIDTH - 32}
-            />
-          </View>
-        )
-      }
+            {/* Settings - Right */}
+            {!isRecording ? (
+              <TouchableOpacity
+                style={styles.iconButton}
+                onPress={() => router.push('/settings' as any)}
+              >
+                <MaterialCommunityIcons name="cog" size={24} color="#fff" />
+              </TouchableOpacity>
+            ) : (
+              <View style={styles.iconButton} />
+            )}
+          </SafeAreaView>
 
-      {/* Processing Overlay */}
-      {
-        isProcessing && (
-          <View style={styles.capturingOverlay}>
-            <ActivityIndicator size="large" color="#fff" />
-            <Text style={[styles.capturingText, { marginTop: 16 }]}>Processing Video...</Text>
-          </View>
-        )
-      }
+          <SafeAreaView style={styles.bottomControls} edges={['bottom']}>
+            {/* Mode Selector at Top */}
+            {!isRecording && (
+              <View style={styles.modeSelector}>
+                {modes.map((mode) => (
+                  <TouchableOpacity
+                    key={mode}
+                    style={styles.modeButton}
+                    onPress={() => setCurrentMode(mode)}
+                  >
+                    <View style={{ marginBottom: 4 }}>
+                      {getModeIcon(mode)}
+                    </View>
+                    <Text
+                      style={[
+                        styles.modeText,
+                        currentMode === mode && styles.modeTextActive,
+                      ]}
+                    >
+                      {mode.toUpperCase()}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
+
+            {/* Capture Row */}
+            <View style={styles.captureRow}>
+              {!isRecording ? (
+                <TouchableOpacity
+                  style={styles.thumbnailButton}
+                  onPress={openSystemGallery}
+                >
+                  {lastPhotoUri ? (
+                    <Image
+                      source={{ uri: lastPhotoUri }}
+                      style={styles.thumbnail}
+                      contentFit="cover"
+                    />
+                  ) : (
+                    <View style={styles.thumbnailEmpty}>
+                      <MaterialCommunityIcons name="image" size={24} color="#888" />
+                    </View>
+                  )}
+                </TouchableOpacity>
+              ) : (
+                <View style={styles.thumbnailButton} />
+              )}
+
+              <TouchableOpacity
+                style={styles.captureButton}
+                onPress={handleCapture}
+                disabled={isCapturing && currentMode !== 'video'}
+              >
+                {isRecording ? (
+                  <View style={styles.recordingButton} />
+                ) : (
+                  <View style={currentMode === 'video' ? styles.videoRecordButton : styles.captureButtonInner} />
+                )}
+              </TouchableOpacity>
+
+              {!isRecording ? (
+                <TouchableOpacity
+                  style={styles.flipButton}
+                  onPress={toggleCameraFacing}
+                >
+                  <MaterialCommunityIcons name="sync" size={32} color="#fff" />
+                </TouchableOpacity>
+              ) : (
+                <View style={styles.flipButton} />
+              )}
+            </View>
+          </SafeAreaView>
+
+          {
+            timerCountdown > 0 && (
+              <View style={styles.timerOverlay}>
+                <View style={styles.timerCircle}>
+                  <Text style={styles.timerText}>{timerCountdown}</Text>
+                </View>
+              </View>
+            )
+          }
+
+          {/* Recording Indicator */}
+          {
+            isRecording && (
+              <View style={styles.recordingIndicator}>
+                <View style={styles.recordingDot} />
+                <Text style={styles.recordingText}>
+                  {Math.floor(recordingDuration / 60)}:{(recordingDuration % 60).toString().padStart(2, '0')}
+                </Text>
+              </View>
+            )
+          }
+
+          {/* Live GPS Overlay - Highest Z-Index to ensure visibility */}
+          {
+            settings.geoOverlayEnabled && (
+              <View
+                ref={overlayRef}
+                style={styles.liveOverlayContainer}
+                collapsable={false} // Important for captureRef
+                pointerEvents="none" // Allow touches to pass through
+              >
+                <GeoOverlay
+                  geoData={liveGeoData}
+                  mapTile={liveMapTile}
+                  imageWidth={SCREEN_WIDTH - 32}
+                />
+              </View>
+            )
+          }
+
+          {/* Processing Overlay */}
+          {
+            isProcessing && (
+              <View style={styles.capturingOverlay}>
+                <ActivityIndicator size="large" color="#fff" />
+                <Text style={[styles.capturingText, { marginTop: 16 }]}>Processing Video...</Text>
+              </View>
+            )
+          }
         </View>
       )}
     </>
@@ -764,7 +751,7 @@ const styles = StyleSheet.create({
   singleZoomButton: {
     position: 'absolute',
     right: 20,
-    top: '30%', 
+    top: '30%',
     width: 40,
     height: 40,
     borderRadius: 28,
@@ -782,8 +769,8 @@ const styles = StyleSheet.create({
   },
   verticalZoomSlider: {
     position: 'absolute',
-    right: 40, 
-    top: '20%', 
+    right: 40,
+    top: '20%',
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 2,

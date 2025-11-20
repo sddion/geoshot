@@ -15,28 +15,28 @@ function RootLayoutNav() {
   return (
     <Stack screenOptions={{ headerBackTitle: "Back" }}>
       <Stack.Screen name="index" options={{ headerShown: false }} />
-      <Stack.Screen 
-        name="settings" 
-        options={{ 
+      <Stack.Screen
+        name="settings"
+        options={{
           title: "Camera Settings",
           headerStyle: { backgroundColor: "#000" },
           headerTintColor: "#fff",
-        }} 
+        }}
       />
-      <Stack.Screen 
-        name="gallery" 
-        options={{ 
+      <Stack.Screen
+        name="gallery"
+        options={{
           title: "Gallery",
           headerStyle: { backgroundColor: "#000" },
           headerTintColor: "#fff",
-        }} 
+        }}
       />
-      <Stack.Screen 
-        name="geo-preview" 
-        options={{ 
+      <Stack.Screen
+        name="geo-preview"
+        options={{
           headerShown: false,
           presentation: "modal",
-        }} 
+        }}
       />
     </Stack>
   );
@@ -50,7 +50,7 @@ function RootLayout() {
   return (
     <QueryClientProvider client={queryClient}>
       <CameraSettingsProvider>
-        <GestureHandlerRootView>
+        <GestureHandlerRootView style={{ flex: 1 }}>
           <RootLayoutNav />
         </GestureHandlerRootView>
       </CameraSettingsProvider>

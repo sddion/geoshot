@@ -13,7 +13,7 @@ import {
   TextInput,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { X, Check, Edit2 } from 'lucide-react-native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { getGeoData, GeoData, getCachedMapTile } from '@/utils/geoOverlay';
 import GeoOverlay from '@/components/GeoOverlay';
 import { captureRef } from 'react-native-view-shot';
@@ -133,7 +133,7 @@ export default function GeoPreviewScreen() {
     <View style={styles.container}>
       <SafeAreaView style={styles.header} edges={['top']}>
         <TouchableOpacity style={styles.headerButton} onPress={() => router.back()}>
-          <X size={28} color="#fff" />
+          <MaterialCommunityIcons name="close" size={28} color="#fff" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Geo Preview</Text>
         <View style={styles.headerButtons}>
@@ -141,7 +141,7 @@ export default function GeoPreviewScreen() {
             style={styles.headerButton}
             onPress={handleEdit}
           >
-            <Edit2 size={24} color={isEditing ? '#FFD700' : '#fff'} />
+            <MaterialCommunityIcons name="pencil" size={24} color={isEditing ? '#FFD700' : '#fff'} />
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.headerButton}
@@ -151,7 +151,7 @@ export default function GeoPreviewScreen() {
             {saving ? (
               <ActivityIndicator size="small" color="#fff" />
             ) : (
-              <Check size={28} color="#fff" />
+              <MaterialCommunityIcons name="check" size={28} color="#fff" />
             )}
           </TouchableOpacity>
         </View>
@@ -172,13 +172,9 @@ export default function GeoPreviewScreen() {
         </View>
 
         <View style={styles.info}>
-          <View style={styles.infoHeader}>
-            <Text style={styles.infoTitle}>Location Information</Text>
-            {isEditing && (
-              <TouchableOpacity style={styles.applyButton} onPress={applyEdits}>
-                <Text style={styles.applyButtonText}>Apply Changes</Text>
-              </TouchableOpacity>
-            )}
+          <View style={styles.infoTitleContainer}>
+            <MaterialCommunityIcons name="map-marker" size={24} color="#4CAF50" />
+            <Text style={styles.infoTitle}>Location Data</Text>
           </View>
 
           {/* Editable Fields */}
@@ -315,6 +311,15 @@ export default function GeoPreviewScreen() {
               )}
             </View>
           )}
+
+          {isEditing && (
+            <TouchableOpacity 
+              style={[styles.applyButton, { marginTop: 20, alignSelf: 'center', width: '80%' }]} 
+              onPress={applyEdits}
+            >
+              <Text style={[styles.applyButtonText, { textAlign: 'center' }]}>Apply Changes</Text>
+            </TouchableOpacity>
+          )}
         </View>
       </ScrollView>
     </View>
@@ -400,64 +405,83 @@ const styles = StyleSheet.create({
   },
   info: {
     backgroundColor: '#1a1a1a',
-    borderRadius: 12,
-    padding: 16,
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 20,
+  },
+  infoTitleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginBottom: 20,
   },
   infoTitle: {
-    fontSize: 18,
-    fontWeight: '600' as const,
+    fontSize: 20,
+    fontWeight: '700' as const,
     color: '#fff',
-    marginBottom: 16,
+    letterSpacing: 0.5,
   },
   infoRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingVertical: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: '#333',
+    backgroundColor: '#262626',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    marginBottom: 12,
+    borderLeftWidth: 4,
+    borderLeftColor: '#4CAF50',
   },
   infoLabel: {
-    fontSize: 14,
-    color: '#888',
+    fontSize: 12,
+    color: '#aaa',
+    fontWeight: '600' as const,
+    letterSpacing: 0.3,
+    marginBottom: 6,
+    textTransform: 'uppercase',
   },
   infoValue: {
-    fontSize: 14,
+    fontSize: 15,
     color: '#fff',
     fontWeight: '500' as const,
     flex: 1,
-    textAlign: 'right',
+    textAlign: 'left',
   },
   infoHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 20,
   },
   applyButton: {
     backgroundColor: '#4CAF50',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 6,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 8,
+    shadowColor: '#4CAF50',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 5,
   },
   applyButtonText: {
     color: '#fff',
-    fontSize: 13,
-    fontWeight: '600',
+    fontSize: 14,
+    fontWeight: '700',
+    letterSpacing: 0.3,
   },
   input: {
-    flex: 1,
-    backgroundColor: '#2a2a2a',
+    backgroundColor: '#333333',
     color: '#fff',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    borderRadius: 10,
     fontSize: 14,
-    textAlign: 'right',
-    borderWidth: 1,
-    borderColor: '#444',
+    textAlign: 'left',
+    borderWidth: 2,
+    borderColor: '#4CAF50',
+    marginTop: 8,
   },
   multilineInput: {
-    minHeight: 60,
+    minHeight: 80,
     textAlignVertical: 'top',
     textAlign: 'left',
   },

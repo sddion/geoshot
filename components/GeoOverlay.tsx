@@ -2,14 +2,7 @@ import { Image } from 'expo-image';
 import { GeoData } from '@/utils/geoOverlay';
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import {
-  MapPin,
-  Thermometer,
-  Gauge,
-  Mountain,
-  Compass,
-  Navigation,
-} from 'lucide-react-native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 interface GeoOverlayProps {
   geoData: GeoData | null;
@@ -58,7 +51,7 @@ export default function GeoOverlay({ geoData, mapTile, imageWidth }: GeoOverlayP
               />
             )}
             <View style={styles.pinOverlay}>
-              <MapPin size={24} color="#FF5252" fill="#FF5252" />
+              <MaterialCommunityIcons name="map-marker" size={24} color="#FF5252" />
             </View>
             <View style={styles.osmBranding}>
               <Text style={styles.osmText}>© OpenStreetMap</Text>
@@ -84,7 +77,7 @@ export default function GeoOverlay({ geoData, mapTile, imageWidth }: GeoOverlayP
         <View style={styles.metricsRow}>
           {/* Speed */}
           <View style={styles.metricItem}>
-            <Gauge size={16} color="#4CAF50" />
+            <MaterialCommunityIcons name="speedometer" size={16} color="#4CAF50" />
             <Text style={styles.metricText}>
               {geoData.speed ? Math.round(geoData.speed * 3.6) : 0} km/h
             </Text>
@@ -92,7 +85,7 @@ export default function GeoOverlay({ geoData, mapTile, imageWidth }: GeoOverlayP
 
           {/* Altitude */}
           <View style={styles.metricItem}>
-            <Mountain size={16} color="#2196F3" />
+            <MaterialCommunityIcons name="triangle" size={16} color="#2196F3" />
             <Text style={styles.metricText}>
               {geoData.altitude ? Math.round(geoData.altitude) : 0} m
             </Text>
@@ -100,7 +93,7 @@ export default function GeoOverlay({ geoData, mapTile, imageWidth }: GeoOverlayP
 
           {/* Magnetic Field */}
           <View style={styles.metricItem}>
-            <Compass size={16} color="#FFC107" />
+            <MaterialCommunityIcons name="compass" size={16} color="#FFC107" />
             <Text style={styles.metricText}>
               {geoData.magneticField ? geoData.magneticField.toFixed(0) : 0} µT
             </Text>
@@ -108,7 +101,7 @@ export default function GeoOverlay({ geoData, mapTile, imageWidth }: GeoOverlayP
 
           {/* Weather */}
           <View style={styles.metricItem}>
-            <Thermometer size={16} color="#FF9800" />
+            <MaterialCommunityIcons name="thermometer" size={16} color="#FF9800" />
             <Text style={styles.metricText}>
               {geoData.temperature ? Math.round(geoData.temperature) : '--'}°C {geoData.weatherCondition}
             </Text>
@@ -116,7 +109,7 @@ export default function GeoOverlay({ geoData, mapTile, imageWidth }: GeoOverlayP
 
           {/* GPS Lock Indicator */}
           <View style={styles.metricItem}>
-            <Navigation size={16} color="#fff" />
+            <MaterialCommunityIcons name="navigation" size={16} color="#fff" />
             <Text style={styles.metricText}>GPS</Text>
           </View>
         </View>

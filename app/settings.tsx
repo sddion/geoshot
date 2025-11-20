@@ -1,5 +1,5 @@
 import { useCameraSettings } from '@/contexts/CameraSettingsContext';
-import { ChevronRight } from 'lucide-react-native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import React from 'react';
 import {
   View,
@@ -9,7 +9,19 @@ import {
   TouchableOpacity,
   Switch,
   Alert,
+  Linking,
+  ToastAndroid,
+  Platform,
 } from 'react-native';
+
+// Toast utility function
+const showToast = (message: string) => {
+  if (Platform.OS === 'android') {
+    ToastAndroid.show(message, ToastAndroid.SHORT);
+  } else {
+    Alert.alert('', message);
+  }
+};
 
 export default function SettingsScreen() {
   const { settings, updateSetting, resetSettings } = useCameraSettings();
@@ -53,7 +65,7 @@ export default function SettingsScreen() {
       ) : (
         <View style={styles.settingValue}>
           <Text style={styles.settingValueText}>{value}</Text>
-          {onPress && <ChevronRight size={20} color="#888" />}
+          {onPress && <MaterialCommunityIcons name="chevron-right" size={20} color="#888" />}
         </View>
       )}
     </TouchableOpacity>
@@ -70,7 +82,7 @@ export default function SettingsScreen() {
           style: 'destructive',
           onPress: () => {
             resetSettings();
-            Alert.alert('Success', 'Camera settings have been reset to default');
+            showToast('Camera settings have been reset to default');
           },
         },
       ]
@@ -213,9 +225,30 @@ export default function SettingsScreen() {
 
         <View style={styles.aboutContainer}>
           <Text style={styles.aboutTitle}>GeoShot v1.0.0</Text>
-          <Text style={styles.aboutText}>
-            A professional camera app with GPS overlay capabilities
+          <Text style={styles.aboutDescription}>
+            Built by Sddion • Full-stack Developer
           </Text>
+          <Text style={styles.aboutSubtext}>
+            Passionate about web, mobile, and open-source development
+          </Text>
+          
+          <View style={styles.buttonGroup}>
+            <TouchableOpacity 
+              style={styles.githubButton}
+              onPress={() => Linking.openURL('https://github.com/sddion/geoshot.git')}
+            >
+              <MaterialCommunityIcons name="github" size={20} color="#fff" />
+              <Text style={styles.githubButtonText}>GitHub</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={styles.donateButton}
+              onPress={() => {}}
+            >
+              <MaterialCommunityIcons name="heart" size={20} color="#fff" />
+              <Text style={styles.donateButtonText}>Donate</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </Section>
 
@@ -292,10 +325,59 @@ const styles = StyleSheet.create({
     color: '#fff',
     marginBottom: 8,
   },
+  aboutDescription: {
+    fontSize: 14,
+    color: '#4CAF50',
+    fontWeight: '600' as const,
+    marginBottom: 4,
+  },
+  aboutSubtext: {
+    fontSize: 13,
+    color: '#888',
+    textAlign: 'center',
+    marginBottom: 16,
+  },
   aboutText: {
     fontSize: 14,
     color: '#888',
     textAlign: 'center',
     marginTop: 4,
+  },
+  githubButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#1a1a1a',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 8,
+    gap: 10,
+    borderWidth: 1,
+    borderColor: '#4CAF50',
+  },
+  githubButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600' as const,
+  },
+  buttonGroup: {
+    flexDirection: 'row',
+    gap: 12,
+    justifyContent: 'center',
+  },
+  donateButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#1a1a1a',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 8,
+    gap: 10,
+    borderWidth: 1,
+    borderColor: '#FF6B6B',
+  },
+  donateButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600' as const,
   },
 });
