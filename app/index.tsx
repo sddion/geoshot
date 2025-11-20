@@ -50,11 +50,11 @@ console.log('Running in Expo Go (index.tsx):', {
 
 // Custom hook to handle media library permissions differently in Expo Go
 const useMediaLibraryPermissions = (): [MediaLibrary.PermissionResponse | null, () => Promise<MediaLibrary.PermissionResponse>] => {
-  console.log('useMediaLibraryPermissions called (index.tsx), isExpoGo:', isExpoGo);
+
 
   // In Expo Go, return a mock permission object without calling the real hook
   if (isExpoGo) {
-    console.log('Returning mock permissions for Expo Go (index.tsx)');
+
     const mockResponse: MediaLibrary.PermissionResponse = {
       granted: true,
       canAskAgain: true,
@@ -443,10 +443,7 @@ export default function CameraScreen() {
       <View style={styles.cameraContainer}>
         <CameraView
           ref={cameraRef}
-          style={[
-            styles.camera,
-            { aspectRatio: getCameraAspectRatio() }
-          ]}
+          style={styles.camera}
           facing={facing}
           flash={mapFlashMode()}
           zoom={zoom}
@@ -673,6 +670,7 @@ export default function CameraScreen() {
             ref={overlayRef}
             style={styles.liveOverlayContainer}
             collapsable={false} // Important for captureRef
+            pointerEvents="none" // Allow touches to pass through
           >
             <GeoOverlay
               geoData={liveGeoData}

@@ -59,7 +59,7 @@ export const [CameraSettingsProvider, useCameraSettings] = createContextHook(() 
   const [isLoaded, setIsLoaded] = useState<boolean>(false);
   const [lastPhotoUri, setLastPhotoUri] = useState<string | null>(null);
   const [currentMode, setCurrentMode] = useState<CameraMode>('photo');
-  const [zoom, setZoom] = useState<number>(0);
+  const [zoom, setZoom] = useState<number>(0); // 0 = neutral zoom for CameraView
 
   useEffect(() => {
     loadSettings();
