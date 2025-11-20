@@ -4,6 +4,41 @@ import { Camera } from 'lucide-react-native';
 import { useCameraPermissions, useMicrophonePermissions } from 'expo-camera';
 import * as Location from 'expo-location';
 import * as MediaLibrary from 'expo-media-library';
+import Constants from 'expo-constants';
+
+const isExpoGo = (typeof expo !== 'undefined' && globalThis.expo?.modules?.ExponentConstants?.executionEnvironment === 'STORE_CLIENT') ||
+    (Constants?.expoConfig?.extra?.eas?.projectId == null && Constants?.appOwnership === 'expo');
+
+console.log('Running in Expo Go (PermissionsScreen):', {
+    isExpoGo,
+    expoConfig: Constants?.expoConfig,
+    appOwnership: Constants?.appOwnership
+});
+
+// Custom hook to handle media library permissions differently in Expo Go
+const useMediaLibraryPermissions = (): [MediaLibrary.PermissionResponse | null, () => Promise<MediaLibrary.PermissionResponse>] => {
+    console.log('useMediaLibraryPermissions called (PermissionsScreen), isExpoGo:', isExpoGo);
+
+    // In Expo Go, return a mock permission object without calling the real hook
+    if (isExpoGo) {
+        console.log('Returning mock permissions for Expo Go (PermissionsScreen)');
+        const mockResponse: MediaLibrary.PermissionResponse = {
+            granted: true,
+            canAskAgain: true,
+            status: MediaLibrary.PermissionStatus.GRANTED,
+            expires: 'never',
+            accessPrivileges: 'all'
+        };
+        return [mockResponse, async () => mockResponse];
+    }
+
+    console.log('Calling real MediaLibrary.usePermissions (PermissionsScreen)');
+    const [permission, requestPermission] = MediaLibrary.usePermissions({
+        granularPermissions: ['photo', 'video']
+    });
+
+    return [permission, requestPermission];
+};
 
 interface PermissionsScreenProps {
     onAllPermissionsGranted: () => void;
@@ -13,7 +48,7 @@ export default function PermissionsScreen({ onAllPermissionsGranted }: Permissio
     const [cameraPermission, requestCameraPermission] = useCameraPermissions();
     const [microphonePermission, requestMicrophonePermission] = useMicrophonePermissions();
     const [locationPermission, requestLocationPermission] = Location.useForegroundPermissions();
-    const [mediaLibraryPermission, requestMediaLibraryPermission] = MediaLibrary.usePermissions();
+    const [mediaLibraryPermission, requestMediaLibraryPermission] = useMediaLibraryPermissions();
 
     // Track if we are checking permissions to avoid flickering
     const [isChecking, setIsChecking] = useState(true);

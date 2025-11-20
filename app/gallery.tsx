@@ -12,9 +12,6 @@ export default function GalleryScreen() {
       <SafeAreaView style={styles.content}>
         <Text style={styles.title}>Gallery Not Available</Text>
         <Text style={styles.message}>
-          Media library access has been disabled to simplify permissions.
-        </Text>
-        <Text style={styles.message}>
           Photos are saved to your device gallery when taken.
         </Text>
       </SafeAreaView>

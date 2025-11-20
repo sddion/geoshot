@@ -37,6 +37,41 @@ import { getGeoData } from '@/utils/geoOverlay';
 import { FFmpegKit, ReturnCode } from 'ffmpeg-kit-react-native';
 import { captureRef } from 'react-native-view-shot';
 import * as FileSystem from 'expo-file-system';
+import Constants from 'expo-constants';
+
+const isExpoGo = (typeof expo !== 'undefined' && globalThis.expo?.modules?.ExponentConstants?.executionEnvironment === 'STORE_CLIENT') ||
+  (Constants?.expoConfig?.extra?.eas?.projectId == null && Constants?.appOwnership === 'expo');
+
+console.log('Running in Expo Go (index.tsx):', {
+  isExpoGo,
+  expoConfig: Constants?.expoConfig,
+  appOwnership: Constants?.appOwnership
+});
+
+// Custom hook to handle media library permissions differently in Expo Go
+const useMediaLibraryPermissions = (): [MediaLibrary.PermissionResponse | null, () => Promise<MediaLibrary.PermissionResponse>] => {
+  console.log('useMediaLibraryPermissions called (index.tsx), isExpoGo:', isExpoGo);
+
+  // In Expo Go, return a mock permission object without calling the real hook
+  if (isExpoGo) {
+    console.log('Returning mock permissions for Expo Go (index.tsx)');
+    const mockResponse: MediaLibrary.PermissionResponse = {
+      granted: true,
+      canAskAgain: true,
+      status: MediaLibrary.PermissionStatus.GRANTED,
+      expires: 'never',
+      accessPrivileges: 'all'
+    };
+    return [mockResponse, async () => mockResponse];
+  }
+
+  console.log('Calling real MediaLibrary.usePermissions (index.tsx)');
+  const [permission, requestPermission] = MediaLibrary.usePermissions({
+    granularPermissions: ['photo', 'video']
+  });
+
+  return [permission, requestPermission];
+};
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -45,7 +80,7 @@ export default function CameraScreen() {
   const cameraRef = useRef<CameraView>(null);
   const [cameraPermission, requestCameraPermission] = useCameraPermissions();
   const [microphonePermission, requestMicrophonePermission] = useMicrophonePermissions();
-  const [mediaLibraryPermission, requestMediaLibraryPermission] = MediaLibrary.usePermissions();
+  const [mediaLibraryPermission, requestMediaLibraryPermission] = useMediaLibraryPermissions();
   const [locationPermission, requestLocationPermission] = Location.useForegroundPermissions();
 
   const { settings, updateSetting } = useCameraSettings();
