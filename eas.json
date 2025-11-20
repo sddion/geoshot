@@ -13,6 +13,40 @@
     },
     "production": {
       "autoIncrement": true
+    },
+    "production-apk": {
+      "android": {
+        "buildType": "apk",
+        "gradleCommand": ":app:assembleRelease"
+      }
+    },
+    "arm64-v8a": {
+      "extends": "production-apk",
+      "android": {
+        "buildType": "apk",
+        "gradleCommand": ":app:assembleRelease -Pandroid.abiFilters=arm64-v8a"
+      }
+    },
+    "armeabi-v7a": {
+      "extends": "production-apk",
+      "android": {
+        "buildType": "apk",
+        "gradleCommand": ":app:assembleRelease -Pandroid.abiFilters=armeabi-v7a"
+      }
+    },
+    "x86_64": {
+      "extends": "production-apk",
+      "android": {
+        "buildType": "apk",
+        "gradleCommand": ":app:assembleRelease -Pandroid.abiFilters=x86_64"
+      }
+    },
+    "x86": {
+      "extends": "production-apk",
+      "android": {
+        "buildType": "apk",
+        "gradleCommand": ":app:assembleRelease -Pandroid.abiFilters=x86"
+      }
     }
   },
   "submit": {

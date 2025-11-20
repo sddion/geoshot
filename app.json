@@ -10,7 +10,7 @@
     "newArchEnabled": true,
     "splash": {
       "image": "./assets/images/splash-screen.png",
-      "resizeMode": "contain"
+      "resizeMode": "cover"
     },
     "ios": {
       "supportsTablet": true,

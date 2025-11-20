@@ -12,12 +12,14 @@ export default function PermissionsScreen({ onAllPermissionsGranted }: Permissio
     const [cameraPermission, requestCameraPermission] = useCameraPermissions();
     const [microphonePermission, requestMicrophonePermission] = useMicrophonePermissions();
     const [locationPermission, requestLocationPermission] = Location.useForegroundPermissions();
+    const [backgroundLocationPermission, requestBackgroundLocationPermission] = Location.useBackgroundPermissions();
     const [mediaLibraryPermission, requestMediaLibraryPermission] = usePermissions();
 
     const checkAndRequestPermissions = useCallback(async () => {
         const cameraGranted = cameraPermission?.granted;
         const micGranted = microphonePermission?.granted;
         const locationGranted = locationPermission?.granted;
+        const backgroundLocationGranted = backgroundLocationPermission?.granted;
         const mediaGranted = mediaLibraryPermission?.status === PermissionStatus.GRANTED;
 
         if (cameraGranted && micGranted && locationGranted && mediaGranted) {
@@ -33,12 +35,20 @@ export default function PermissionsScreen({ onAllPermissionsGranted }: Permissio
             await requestMicrophonePermission();
         }
         if (!locationGranted && locationPermission?.canAskAgain) {
-            await requestLocationPermission();
+            const result = await requestLocationPermission();
+            // If foreground granted, request background immediately
+            if (result.granted && backgroundLocationPermission?.canAskAgain) {
+                await requestBackgroundLocationPermission();
+            }
+        } else if (locationGranted && !backgroundLocationGranted && backgroundLocationPermission?.canAskAgain) {
+            // If foreground already granted but background not, request background
+            await requestBackgroundLocationPermission();
         }
+
         if (!mediaGranted && mediaLibraryPermission?.canAskAgain !== false) {
             await requestMediaLibraryPermission();
         }
-    }, [cameraPermission, microphonePermission, locationPermission, mediaLibraryPermission, requestCameraPermission, requestMicrophonePermission, requestLocationPermission, requestMediaLibraryPermission, onAllPermissionsGranted]);
+    }, [cameraPermission, microphonePermission, locationPermission, backgroundLocationPermission, mediaLibraryPermission, requestCameraPermission, requestMicrophonePermission, requestLocationPermission, requestBackgroundLocationPermission, requestMediaLibraryPermission, onAllPermissionsGranted]);
 
     // Auto-request permissions on mount
     useEffect(() => {
@@ -50,12 +60,13 @@ export default function PermissionsScreen({ onAllPermissionsGranted }: Permissio
         const cameraGranted = cameraPermission?.granted;
         const micGranted = microphonePermission?.granted;
         const locationGranted = locationPermission?.granted;
+        const backgroundLocationGranted = backgroundLocationPermission?.granted;
         const mediaGranted = mediaLibraryPermission?.status === PermissionStatus.GRANTED;
 
         if (cameraGranted && micGranted && locationGranted && mediaGranted) {
             onAllPermissionsGranted();
         }
-    }, [cameraPermission?.granted, microphonePermission?.granted, locationPermission?.granted, mediaLibraryPermission?.status, onAllPermissionsGranted]);
+    }, [cameraPermission?.granted, microphonePermission?.granted, locationPermission?.granted, backgroundLocationPermission?.granted, mediaLibraryPermission?.status, onAllPermissionsGranted]);
 
     // Re-check when app comes to foreground (in case user changed settings)
     useEffect(() => {
