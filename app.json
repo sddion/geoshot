@@ -7,7 +7,7 @@
     "icon": "./assets/images/icon.png",
     "scheme": "geoshot-camera-app",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
+    "newArchEnabled": false,
     "splash": {
       "image": "./assets/images/splash-screen.png",
       "resizeMode": "cover"
@@ -60,6 +60,18 @@
         "expo-router",
         {
           "origin": "https://geoshot.vercel.app/"
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "architectures": [
+              "arm64-v8a",
+              "armeabi-v7a"
+            ],
+            "newArchEnabled": false
+          }
         }
       ],
       "expo-font",
