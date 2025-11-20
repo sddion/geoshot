@@ -19,6 +19,10 @@ console.log('Running in Expo Go (PermissionsScreen):', {
 const useMediaLibraryPermissions = (): [MediaLibrary.PermissionResponse | null, () => Promise<MediaLibrary.PermissionResponse>] => {
     console.log('useMediaLibraryPermissions called (PermissionsScreen), isExpoGo:', isExpoGo);
 
+    const [permission, requestPermission] = MediaLibrary.usePermissions({
+        granularPermissions: ['photo', 'video']
+    });
+
     // In Expo Go, return a mock permission object without calling the real hook
     if (isExpoGo) {
         console.log('Returning mock permissions for Expo Go (PermissionsScreen)');
@@ -32,11 +36,7 @@ const useMediaLibraryPermissions = (): [MediaLibrary.PermissionResponse | null, 
         return [mockResponse, async () => mockResponse];
     }
 
-    console.log('Calling real MediaLibrary.usePermissions (PermissionsScreen)');
-    const [permission, requestPermission] = MediaLibrary.usePermissions({
-        granularPermissions: ['photo', 'video']
-    });
-
+    console.log('Using real MediaLibrary permissions (PermissionsScreen)');
     return [permission, requestPermission];
 };
 

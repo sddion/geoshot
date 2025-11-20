@@ -1,6 +1,6 @@
 import createContextHook from '@nkzw/create-context-hook';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 
 export type CameraMode = 'photo' | 'video' | 'night' | 'portrait';
 export type FlashMode = 'auto' | 'on' | 'off';
@@ -49,7 +49,7 @@ const defaultSettings: CameraSettings = {
   videoFPS: 30,
   videoStabilization: true,
   flashMode: 'auto',
-  geoOverlayEnabled: true, // Default to ON, toggle from camera view
+  geoOverlayEnabled: true, 
 };
 
 const STORAGE_KEY = '@geoshot_camera_settings';
@@ -61,18 +61,7 @@ export const [CameraSettingsProvider, useCameraSettings] = createContextHook(() 
   const [currentMode, setCurrentMode] = useState<CameraMode>('photo');
   const [zoom, setZoom] = useState<number>(0); // 0 = neutral zoom for CameraView
 
-  useEffect(() => {
-    loadSettings();
-  }, []);
-
-  useEffect(() => {
-    if (isLoaded) {
-      saveSettings();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [settings, isLoaded]);
-
-  const loadSettings = async () => {
+  const loadSettings = useCallback(async () => {
     try {
       const stored = await AsyncStorage.getItem(STORAGE_KEY);
       if (stored) {
@@ -84,15 +73,25 @@ export const [CameraSettingsProvider, useCameraSettings] = createContextHook(() 
     } finally {
       setIsLoaded(true);
     }
-  };
+  }, []);
 
-  const saveSettings = async () => {
+  const saveSettings = useCallback(async () => {
     try {
       await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
     } catch (error) {
       console.error('Failed to save camera settings:', error);
     }
-  };
+  }, [settings]);
+
+  useEffect(() => {
+    loadSettings();
+  }, [loadSettings]);
+
+  useEffect(() => {
+    if (isLoaded) {
+      saveSettings();
+    }
+  }, [settings, isLoaded, saveSettings]);
 
   const updateSetting = <K extends keyof CameraSettings>(
     key: K,

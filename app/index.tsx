@@ -50,11 +50,11 @@ console.log('Running in Expo Go (index.tsx):', {
 
 // Custom hook to handle media library permissions differently in Expo Go
 const useMediaLibraryPermissions = (): [MediaLibrary.PermissionResponse | null, () => Promise<MediaLibrary.PermissionResponse>] => {
+  const [permission, requestPermission] = MediaLibrary.usePermissions({
+    granularPermissions: ['photo', 'video']
+  });
 
-
-  // In Expo Go, return a mock permission object without calling the real hook
   if (isExpoGo) {
-
     const mockResponse: MediaLibrary.PermissionResponse = {
       granted: true,
       canAskAgain: true,
@@ -64,11 +64,6 @@ const useMediaLibraryPermissions = (): [MediaLibrary.PermissionResponse | null, 
     };
     return [mockResponse, async () => mockResponse];
   }
-
-  console.log('Calling real MediaLibrary.usePermissions (index.tsx)');
-  const [permission, requestPermission] = MediaLibrary.usePermissions({
-    granularPermissions: ['photo', 'video']
-  });
 
   return [permission, requestPermission];
 };
@@ -140,20 +135,6 @@ export default function CameraScreen() {
     }, 3000);
   };
 
-  // Get aspect ratio from settings
-  const getCameraAspectRatio = () => {
-    switch (settings.photoAspectRatio) {
-      case '16:9':
-        return 16 / 9;
-      case '4:3':
-        return 4 / 3;
-      case '1:1':
-        return 1;
-      default:
-        return 4 / 3;
-    }
-  };
-
   useEffect(() => {
     if (focusPoint) {
       Animated.sequence([
@@ -177,7 +158,7 @@ export default function CameraScreen() {
     if (!cameraPermission?.granted && cameraPermission?.canAskAgain) {
       requestCameraPermission();
     }
-  }, []);
+  }, [cameraPermission?.granted, cameraPermission?.canAskAgain, requestCameraPermission]);
 
   const openSystemGallery = async () => {
     try {
@@ -407,6 +388,8 @@ export default function CameraScreen() {
     setFacing((current) => (current === 'back' ? 'front' : 'back'));
   };
 
+  const modes: CameraMode[] = ['photo', 'video', 'night', 'portrait'];
+
   const getModeIcon = (mode: CameraMode) => {
     switch (mode) {
       case 'photo':
@@ -435,8 +418,6 @@ export default function CameraScreen() {
         return 'auto';
     }
   };
-
-  const modes: CameraMode[] = ['photo', 'video', 'night', 'portrait'];
 
   return (
     <View style={styles.container}>
@@ -580,6 +561,9 @@ export default function CameraScreen() {
                 style={styles.modeButton}
                 onPress={() => setCurrentMode(mode)}
               >
+                <View style={{ marginBottom: 4 }}>
+                  {getModeIcon(mode)}
+                </View>
                 <Text
                   style={[
                     styles.modeText,
@@ -751,25 +735,25 @@ const styles = StyleSheet.create({
   },
   liveOverlayContainer: {
     position: 'absolute',
-    bottom: 220, // Moved higher - above bottom controls
+    bottom: 240,
     left: 16,
     right: 16,
     alignItems: 'center',
-    zIndex: 100, // Increased zIndex
+    zIndex: 1,
   },
   singleZoomButton: {
     position: 'absolute',
     right: 20,
-    top: '30%', // Moved up further
-    width: 56,
-    height: 56,
+    top: '30%', 
+    width: 40,
+    height: 40,
     borderRadius: 28,
     backgroundColor: 'rgba(0, 0, 0, 0.4)',
     borderWidth: 2,
     borderColor: 'rgba(255, 255, 255, 0.8)',
     justifyContent: 'center',
     alignItems: 'center',
-    zIndex: 20,
+    zIndex: 2,
   },
   singleZoomText: {
     color: '#fff',
@@ -778,28 +762,28 @@ const styles = StyleSheet.create({
   },
   verticalZoomSlider: {
     position: 'absolute',
-    right: 80, // Moved more to the left (was 20)
-    top: '20%', // Moved up to match button shift
+    right: 60, 
+    top: '20%', 
     alignItems: 'center',
-    zIndex: 25,
+    zIndex: 2,
   },
   verticalSliderTrack: {
-    width: 4,
+    width: 10,
     height: 200,
     backgroundColor: 'rgba(255, 255, 255, 0.3)',
-    borderRadius: 2,
+    borderRadius: 6,
     position: 'relative',
   },
   verticalSliderFill: {
     position: 'absolute',
     bottom: 0,
-    width: 4,
+    width: 10,
     backgroundColor: '#fff',
     borderRadius: 2,
   },
   verticalSliderThumb: {
     position: 'absolute',
-    width: 20,
+    width: 25,
     height: 20,
     borderRadius: 10,
     backgroundColor: '#fff',

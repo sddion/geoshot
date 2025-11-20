@@ -128,6 +128,7 @@ export default function GeoOverlay({ geoData, mapTile, imageWidth }: GeoOverlayP
 const styles = StyleSheet.create({
   container: {
     // No fixed height, let it grow
+    pointerEvents: 'none',
   },
   overlay: {
     backgroundColor: 'rgba(0, 0, 0, 0.7)',
