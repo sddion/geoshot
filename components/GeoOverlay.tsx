@@ -15,7 +15,7 @@ interface GeoOverlayProps {
   geoData: GeoData | null;
   mapTile: string | null;
   imageWidth: number;
-  imageHeight?: number; // Optional, if not provided, it just takes necessary height
+  imageHeight?: number;
 }
 
 export default function GeoOverlay({ geoData, mapTile, imageWidth }: GeoOverlayProps) {

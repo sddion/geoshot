@@ -4,6 +4,7 @@ import * as MediaLibrary from 'expo-media-library';
 import * as Location from 'expo-location';
 import { useRouter } from 'expo-router';
 import GeoOverlay from '@/components/GeoOverlay';
+import PermissionsScreen from '@/components/PermissionsScreen';
 import { useLiveGeoData } from '@/utils/useLiveGeoData';
 import {
   Settings,
@@ -30,6 +31,7 @@ import {
   Linking,
   Platform,
   GestureResponderEvent,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
@@ -93,6 +95,7 @@ export default function CameraScreen() {
 
   const recordingInterval = useRef<ReturnType<typeof setInterval> | null>(null);
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
+  const [allPermissionsGranted, setAllPermissionsGranted] = useState<boolean>(false);
   const overlayRef = useRef<View>(null);
 
   const {
@@ -159,6 +162,17 @@ export default function CameraScreen() {
       requestCameraPermission();
     }
   }, [cameraPermission?.granted, cameraPermission?.canAskAgain, requestCameraPermission]);
+
+  // Check if all permissions are granted
+  useEffect(() => {
+    const allGranted = 
+      cameraPermission?.granted &&
+      microphonePermission?.granted &&
+      locationPermission?.granted &&
+      mediaLibraryPermission?.granted;
+    
+    setAllPermissionsGranted(!!allGranted);
+  }, [cameraPermission, microphonePermission, locationPermission, mediaLibraryPermission]);
 
   const openSystemGallery = async () => {
     try {
@@ -379,11 +393,6 @@ export default function CameraScreen() {
     }
   };
 
-  const handleTapToFocus = (event: any) => {
-    const { locationX, locationY } = event.nativeEvent;
-    setFocusPoint({ x: locationX, y: locationY });
-  };
-
   const toggleCameraFacing = () => {
     setFacing((current) => (current === 'back' ? 'front' : 'back'));
   };
@@ -420,23 +429,26 @@ export default function CameraScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.cameraContainer}>
-        <CameraView
-          ref={cameraRef}
-          style={styles.camera}
-          facing={facing}
-          flash={mapFlashMode()}
-          zoom={zoom}
-          onTouchEnd={handleTapToFocus}
-          mode={currentMode === 'video' ? 'video' : 'picture'}
-          videoQuality={currentMode === 'video' ? (settings.videoResolution === '4k' ? '2160p' : settings.videoResolution) : undefined}
-          videoStabilizationMode={settings.videoStabilization ? 'auto' : 'off'}
-        />
+    <>
+      {!allPermissionsGranted ? (
+        <PermissionsScreen onAllPermissionsGranted={() => setAllPermissionsGranted(true)} />
+      ) : (
+        <View style={styles.container}>
+          <View style={styles.cameraContainer}>
+            <CameraView
+              ref={cameraRef}
+              style={styles.camera}
+              facing={facing}
+              flash={mapFlashMode()}
+              zoom={zoom}
+              mode={currentMode === 'video' ? 'video' : 'picture'}
+              videoQuality={currentMode === 'video' ? (settings.videoResolution === '4k' ? '2160p' : settings.videoResolution) : undefined}
+              videoStabilizationMode={settings.videoStabilization ? 'auto' : 'off'}
+            />
 
         {/* Grid Overlay - Apply gridStyle setting */}
         {settings.gridStyle !== 'off' && (
-          <View style={[styles.gridOverlay, { zIndex: 1 }]}>
+          <View style={[styles.gridOverlay, { zIndex: 1 }]} pointerEvents="none">
             {settings.gridStyle === '3x3' && (
               <>
                 <View style={[styles.gridLine, styles.gridLineHorizontal, { top: '33.33%' }]} />
@@ -467,6 +479,7 @@ export default function CameraScreen() {
                 zIndex: 2,
               },
             ]}
+            pointerEvents="none"
           />
         )}
 
@@ -482,34 +495,39 @@ export default function CameraScreen() {
 
         {/* Vertical Zoom Slider - Appears on Tap */}
         {showZoomSlider && (
-          <Pressable
+          <View
             style={styles.verticalZoomSlider}
-            onTouchStart={(e: GestureResponderEvent) => {
-              // Prevent immediate hiding when touching the slider
-              if (zoomSliderTimeout.current) {
-                clearTimeout(zoomSliderTimeout.current);
-              }
-            }}
-            onTouchEnd={() => {
-              // Restart hide timer when touch ends
-              zoomSliderTimeout.current = setTimeout(() => {
-                setShowZoomSlider(false);
-              }, 3000);
-            }}
+            pointerEvents="box-none"
           >
-            <View style={styles.verticalSliderTrack}>
+            <Pressable
+              style={styles.verticalSliderTrack}
+              onTouchStart={(e: GestureResponderEvent) => {
+                // Prevent immediate hiding when touching the slider
+                if (zoomSliderTimeout.current) {
+                  clearTimeout(zoomSliderTimeout.current);
+                }
+                // Handle tap to set zoom
+                const { locationY } = e.nativeEvent;
+                const sliderHeight = 200;
+                const value = Math.max(0, Math.min(1, 1 - (locationY / sliderHeight)));
+                handleZoomSliderChange(value);
+              }}
+              onTouchMove={(e: GestureResponderEvent) => {
+                const { locationY } = e.nativeEvent;
+                const sliderHeight = 200;
+                const value = Math.max(0, Math.min(1, 1 - (locationY / sliderHeight)));
+                handleZoomSliderChange(value);
+              }}
+              onTouchEnd={() => {
+                // Restart hide timer when touch ends
+                zoomSliderTimeout.current = setTimeout(() => {
+                  setShowZoomSlider(false);
+                }, 3000);
+              }}
+            >
               <View style={[styles.verticalSliderFill, { height: `${((zoom * 10 - 0.5) / 9.5) * 100}%` }]} />
-              <Pressable
-                style={[styles.verticalSliderThumb, { bottom: `${((zoom * 10 - 0.5) / 9.5) * 100}%` }]}
-                onTouchMove={(e) => {
-                  const { locationY } = e.nativeEvent;
-                  const sliderHeight = 200;
-                  const value = Math.max(0, Math.min(1, 1 - (locationY / sliderHeight)));
-                  handleZoomSliderChange(value);
-                }}
-              />
-            </View>
-          </Pressable>
+            </Pressable>
+          </View>
         )}
       </View>
 
@@ -669,12 +687,14 @@ export default function CameraScreen() {
       {
         isProcessing && (
           <View style={styles.capturingOverlay}>
-            <Text style={styles.capturingText}>Processing Video...</Text>
-            <Text style={[styles.capturingText, { fontSize: 14, marginTop: 8 }]}>Adding GPS Overlay</Text>
+            <ActivityIndicator size="large" color="#fff" />
+            <Text style={[styles.capturingText, { marginTop: 16 }]}>Processing Video...</Text>
           </View>
         )
       }
-    </View >
+        </View>
+      )}
+    </>
   );
 }
 
@@ -762,37 +782,27 @@ const styles = StyleSheet.create({
   },
   verticalZoomSlider: {
     position: 'absolute',
-    right: 60, 
+    right: 40, 
     top: '20%', 
     alignItems: 'center',
+    justifyContent: 'center',
     zIndex: 2,
   },
   verticalSliderTrack: {
-    width: 10,
+    width: 50,
     height: 200,
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
-    borderRadius: 6,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: 25,
     position: 'relative',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   verticalSliderFill: {
     position: 'absolute',
     bottom: 0,
-    width: 10,
-    backgroundColor: '#fff',
-    borderRadius: 2,
-  },
-  verticalSliderThumb: {
-    position: 'absolute',
-    width: 25,
-    height: 20,
-    borderRadius: 10,
-    backgroundColor: '#fff',
-    marginLeft: -8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 5,
+    width: 50,
+    backgroundColor: 'rgba(255, 255, 255, 0.6)',
+    borderRadius: 25,
   },
   focusIndicator: {
     position: 'absolute' as const,
