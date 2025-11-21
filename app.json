@@ -8,11 +8,6 @@
     "scheme": "geoshot-camera-app",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
-    "splash": {
-      "image": "./assets/images/icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
-    },
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "app.geoshot-camera",
@@ -32,8 +27,7 @@
     "android": {
       "splash": {
         "image": "./assets/images/splash-screen.png",
-        "resizeMode": "contain",
-        "backgroundColor": "#ffffff"
+        "resizeMode": "cover"
       },
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png"
