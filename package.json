@@ -1,5 +1,5 @@
 {
-  "name": "geoshot-camera",
+  "name": "geoshot",
   "main": "expo-router/entry",
   "version": "1.0.2",
   "scripts": {
@@ -9,7 +9,7 @@
     "lint": "expo lint",
     "android": "expo run:android",
     "ios": "expo run:ios",
-    "postinstall": "node node_modules/@shopify/react-native-skia/scripts/install-skia.mjs",
+    "postinstall": "node node_modules/@shopify/react-native-skia/scripts/install-skia.mjs && patch-package",
     "optimize-assets": "npx expo-optimize --quality 85",
     "analyze-bundle": "EXPO_UNSTABLE_ATLAS=true expo start"
   },
@@ -64,6 +64,7 @@
     "eslint": "^9.31.0",
     "eslint-config-expo": "~10.0.0",
     "expo-atlas": "^0.4.0",
+    "patch-package": "^8.0.1",
     "typescript": "~5.9.2"
   },
   "private": true

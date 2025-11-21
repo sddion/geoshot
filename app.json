@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "GeoShot Camera",
-    "slug": "geoshot-camera",
+    "name": "GeoShot",
+    "slug": "geoshot",
     "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/images/android/mipmap-xxxhdpi/geoshot.png",
@@ -10,7 +10,7 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "app.geoshot-camera",
+      "bundleIdentifier": "app.geoshot",
       "infoPlist": {
         "NSPhotoLibraryUsageDescription": "Allow $(PRODUCT_NAME) to access your photos.",
         "NSPhotoLibraryAddUsageDescription": "Allow $(PRODUCT_NAME) to save photos.",
@@ -26,13 +26,13 @@
     },
     "splash": {
       "image": "./assets/images/android/ic_launcher-web.png",
-      "resizeMode": "cover",
+      "resizeMode": "contain",
       "backgroundColor": "#461E64"
     },
     "android": {
       "splash": {
         "image": "./assets/images/android/ic_launcher-web.png",
-        "resizeMode": "cover",
+        "resizeMode": "contain",
         "backgroundColor": "#461E64"
       },
       "adaptiveIcon": {
@@ -124,7 +124,7 @@
         "origin": "https://geoshot.vercel.app/"
       },
       "eas": {
-        "projectId": "dd67c738-69b8-4269-990c-8b16ea2f64b1"
+        "projectId": "d2eae4c7-d983-4e08-9597-b22cbd01ea98"
       }
     }
   }
