@@ -38,6 +38,7 @@
         <category android:name="android.intent.category.DEFAULT"/>
         <category android:name="android.intent.category.BROWSABLE"/>
         <data android:scheme="geoshot-camera-app"/>
+        <data android:scheme="exp+geoshot-camera"/>
       </intent-filter>
     </activity>
   </application>

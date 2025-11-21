@@ -7,7 +7,9 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { CameraSettingsProvider } from "@/contexts/CameraSettingsContext";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
-SplashScreen.preventAutoHideAsync();
+SplashScreen.preventAutoHideAsync().catch(() => {
+  /* reloading the app might trigger some race conditions, ignore them */
+});
 
 const queryClient = new QueryClient();
 
@@ -44,7 +46,19 @@ function RootLayoutNav() {
 
 function RootLayout() {
   useEffect(() => {
-    SplashScreen.hideAsync();
+    const hideSplash = async () => {
+      try {
+        await SplashScreen.hideAsync();
+      } catch (e) {
+        console.warn("Error hiding splash screen:", e);
+      }
+    };
+
+    hideSplash();
+
+    // Fallback: force hide after 3 seconds
+    const timeout = setTimeout(hideSplash, 3000);
+    return () => clearTimeout(timeout);
   }, []);
 
   return (

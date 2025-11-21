@@ -4,7 +4,7 @@
     "slug": "geoshot-camera",
     "version": "1.0.1",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+        "icon": "./assets/images/android/mipmap-xxxhdpi/geoshot.png",
     "scheme": "geoshot-camera-app",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -24,13 +24,19 @@
         ]
       }
     },
+    "splash": {
+      "image": "./assets/images/android/ic_launcher-web.png",
+      "resizeMode": "cover",
+      "backgroundColor": "#461E64"
+    },
     "android": {
       "splash": {
-        "image": "./assets/images/splash-screen.png",
-        "resizeMode": "cover"
+        "image": "./assets/images/android/ic_launcher-web.png",
+        "resizeMode": "cover",
+        "backgroundColor": "#461E64"
       },
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png"
+        "foregroundImage": "./assets/images/android/mipmap-xxxhdpi/geoshot_foreground.png"
       },
       "package": "app.geoshot.camera",
       "permissions": [
@@ -53,7 +59,7 @@
       ]
     },
     "web": {
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/images/android/mipmap-hdpi/geoshot_round.png"
     },
     "plugins": [
       [

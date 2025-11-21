@@ -4,7 +4,7 @@ import * as MediaLibrary from 'expo-media-library';
 import { useRouter } from 'expo-router';
 import PermissionsScreen from '@/components/PermissionsScreen';
 import { useLiveGeoData } from '@/utils/useLiveGeoData';
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { View, Text, Linking, Platform } from 'react-native';
 import { useGPSVideoOverlay } from '@/utils/videoFrameProcessor';
 import { useCameraControls } from '@/hooks/useCameraControls';
@@ -28,6 +28,13 @@ export default function CameraScreen() {
 
   // Permissions
   const { allPermissionsGranted } = useCameraPermissions();
+  const [hasPermissions, setHasPermissions] = useState(false);
+
+  useEffect(() => {
+    if (allPermissionsGranted) {
+      setHasPermissions(true);
+    }
+  }, [allPermissionsGranted]);
 
   // Settings and state
   const { settings, updateSetting } = useCameraSettings();
@@ -114,8 +121,8 @@ export default function CameraScreen() {
     }
   };
 
-  if (!allPermissionsGranted) {
-    return <PermissionsScreen onAllPermissionsGranted={() => { }} />;
+  if (!hasPermissions) {
+    return <PermissionsScreen onAllPermissionsGranted={() => setHasPermissions(true)} />;
   }
 
   if (device == null) {
