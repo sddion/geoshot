@@ -20,6 +20,12 @@ export function useLiveGeoData(enabled: boolean) {
         const startUpdates = async () => {
             if (!enabled) return;
 
+            const { status } = await Location.getForegroundPermissionsAsync();
+            if (status !== 'granted') {
+                setLoading(false);
+                return;
+            }
+
             try {
                 // Initial full fetch
                 const initialData = await getGeoData();

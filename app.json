@@ -4,7 +4,7 @@
     "slug": "geoshot-camera",
     "version": "1.0.1",
     "orientation": "portrait",
-        "icon": "./assets/images/android/mipmap-xxxhdpi/geoshot.png",
+    "icon": "./assets/images/android/mipmap-xxxhdpi/geoshot.png",
     "scheme": "geoshot-camera-app",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -73,7 +73,9 @@
         {
           "android": {
             "enableProguardInReleaseBuilds": true,
-            "enableShrinkResourcesInReleaseBuilds": true
+            "enableShrinkResourcesInReleaseBuilds": true,
+            "enableMinifyInReleaseBuilds": true,
+            "minSdkVersion": 26
           }
         }
       ],
@@ -122,7 +124,7 @@
         "origin": "https://geoshot.vercel.app/"
       },
       "eas": {
-        "projectId": "c8732536-7240-49fb-86d1-019130736091"
+        "projectId": "dd67c738-69b8-4269-990c-8b16ea2f64b1"
       }
     }
   }
