@@ -9,8 +9,9 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/images/splash-screen.png",
-      "resizeMode": "cover"
+      "image": "./assets/images/icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
     },
     "ios": {
       "supportsTablet": true,
@@ -29,6 +30,11 @@
       }
     },
     "android": {
+      "splash": {
+        "image": "./assets/images/splash-screen.png",
+        "resizeMode": "contain",
+        "backgroundColor": "#ffffff"
+      },
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png"
       },
