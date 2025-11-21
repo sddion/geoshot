@@ -224,12 +224,12 @@ export default function SettingsScreen() {
         </TouchableOpacity>
 
         <View style={styles.aboutContainer}>
-          <Text style={styles.aboutTitle}>GeoShot v1.0.0</Text>
+          <Text style={styles.aboutTitle}>GeoShot v1.0.2</Text>
           <Text style={styles.aboutDescription}>
-            Built by Sddion • Full-stack Developer
+            Built by Sddion
           </Text>
           <Text style={styles.aboutSubtext}>
-            Passionate about web, mobile, and open-source development
+            Passionate about open-source development
           </Text>
           
           <View style={styles.buttonGroup}>

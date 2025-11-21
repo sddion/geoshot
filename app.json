@@ -65,12 +65,7 @@
       [
         "expo-build-properties",
         {
-          "android": {
-            "architectures": [
-              "arm64-v8a",
-              "armeabi-v7a"
-            ]
-          }
+          "android": {}
         }
       ],
       "expo-font",
