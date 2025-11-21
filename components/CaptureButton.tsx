@@ -16,11 +16,20 @@ export default function CaptureButton({
     currentMode,
     onCapture,
 }: CaptureButtonProps) {
+    const getAccessibilityLabel = () => {
+        if (currentMode === 'video') {
+            return isRecording ? "Stop Recording" : "Start Recording";
+        }
+        return "Take Photo";
+    };
+
     return (
         <TouchableOpacity
             style={captureStyles.captureButton}
             onPress={onCapture}
             disabled={isCapturing && currentMode !== 'video'}
+            accessibilityRole="button"
+            accessibilityLabel={getAccessibilityLabel()}
         >
             {isRecording ? (
                 <View style={captureStyles.recordingButton} />

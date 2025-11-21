@@ -2,7 +2,7 @@ diff --git a/node_modules/react-native-vision-camera/lib/commonjs/skia/SkiaCamer
 index 157c3ac..6300097 100644
 --- a/node_modules/react-native-vision-camera/lib/commonjs/skia/SkiaCameraCanvas.js
 +++ b/node_modules/react-native-vision-camera/lib/commonjs/skia/SkiaCameraCanvas.js
-@@ -17,40 +17,24 @@ function SkiaCameraCanvasImpl({
+@@ -17,40 +17,26 @@ function SkiaCameraCanvasImpl({
    ...props
  }) {
    const texture = _ReanimatedProxy.ReanimatedProxy.useSharedValue(null);
@@ -39,6 +39,8 @@ index 157c3ac..6300097 100644
    return /*#__PURE__*/_react.default.createElement(_SkiaProxy.SkiaProxy.Canvas, _extends({}, props, {
 -    onLayout: onLayout,
 +    ref: ref,
++    accessible: false,
++    importantForAccessibility: "no-hide-descendants",
      pointerEvents: "none"
    }), children, /*#__PURE__*/_react.default.createElement(_SkiaProxy.SkiaProxy.Image, {
      x: 0,
@@ -61,7 +63,7 @@ index a3b5a4a..7843745 100644
  import { ReanimatedProxy } from '../dependencies/ReanimatedProxy';
  import { SkiaProxy } from '../dependencies/SkiaProxy';
  function SkiaCameraCanvasImpl({
-@@ -9,40 +9,24 @@ function SkiaCameraCanvasImpl({
+@@ -9,40 +9,26 @@ function SkiaCameraCanvasImpl({
    ...props
  }) {
    const texture = ReanimatedProxy.useSharedValue(null);
@@ -98,6 +100,8 @@ index a3b5a4a..7843745 100644
    return /*#__PURE__*/React.createElement(SkiaProxy.Canvas, _extends({}, props, {
 -    onLayout: onLayout,
 +    ref: ref,
++    accessible: false,
++    importantForAccessibility: "no-hide-descendants",
      pointerEvents: "none"
    }), children, /*#__PURE__*/React.createElement(SkiaProxy.Image, {
      x: 0,
@@ -121,7 +125,7 @@ index 56d4e0e..d534c2e 100644
  import type { CameraProps } from '../types/CameraProps'
  import type { ISharedValue } from 'react-native-worklets-core'
  import type { SkImage } from '@shopify/react-native-skia'
-@@ -7,49 +7,26 @@ import { ReanimatedProxy } from '../dependencies/ReanimatedProxy'
+@@ -7,49 +7,28 @@ import { ReanimatedProxy } from '../dependencies/ReanimatedProxy'
  import { SkiaProxy } from '../dependencies/SkiaProxy'
  
  interface SkiaCameraCanvasProps extends ViewProps {
@@ -168,7 +172,7 @@ index 56d4e0e..d534c2e 100644
 -
    return (
 -    <SkiaProxy.Canvas {...props} onLayout={onLayout} pointerEvents="none">
-+    <SkiaProxy.Canvas {...props} ref={ref} pointerEvents="none">
++    <SkiaProxy.Canvas {...props} ref={ref} accessible={false} importantForAccessibility="no-hide-descendants" pointerEvents="none">
        {children}
 -      <SkiaProxy.Image x={0} y={0} width={width} height={height} fit={resizeMode} image={texture} />
 +      <SkiaProxy.Image x={0} y={0} width={size.width} height={size.height} fit={resizeMode} image={texture} />

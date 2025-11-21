@@ -5,6 +5,8 @@ import * as MediaLibrary from 'expo-media-library';
 import type { CameraMode } from '@/contexts/CameraSettingsContext';
 import { getGeoData } from '@/utils/geoOverlay';
 
+import { Router } from 'expo-router';
+
 interface UseCameraCaptureProps {
     cameraRef: React.RefObject<Camera | null>;
     currentMode: CameraMode;
@@ -12,7 +14,7 @@ interface UseCameraCaptureProps {
     imageQuality: 'normal' | 'fine' | 'superfine';
     geoOverlayEnabled: boolean;
     videoGPSOverlayEnabled: boolean;
-    router: any;
+    router: Router;
     setLastPhotoUri: (uri: string) => void;
 }
 

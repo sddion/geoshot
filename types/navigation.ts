@@ -8,10 +8,12 @@ export type RootStackParamList = {
     'geo-preview': { photoUri: string };
 };
 
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+
 // Screen props helper
 export type ScreenProps<T extends keyof RootStackParamList> = {
     route: { params: RootStackParamList[T] };
-    navigation: any;
+    navigation: NativeStackNavigationProp<RootStackParamList, T>;
 };
 
 // GPS overlay data

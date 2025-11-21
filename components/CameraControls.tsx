@@ -60,7 +60,12 @@ export default function CameraControls({
         <>
             {/* Top Controls */}
             <SafeAreaView style={controlStyles.topControls} edges={['top']}>
-                <TouchableOpacity style={controlStyles.iconButton} onPress={cycleFlash}>
+                <TouchableOpacity
+                    style={controlStyles.iconButton}
+                    onPress={cycleFlash}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Flash mode: ${flashMode}`}
+                >
                     {getFlashIcon()}
                 </TouchableOpacity>
 
@@ -73,6 +78,8 @@ export default function CameraControls({
                             { backgroundColor: geoOverlayEnabled ? '#4CAF50' : 'rgba(255, 255, 255, 0.2)' }
                         ]}
                         onPress={toggleGeoOverlay}
+                        accessibilityRole="button"
+                        accessibilityLabel={geoOverlayEnabled ? "Disable GPS Overlay" : "Enable GPS Overlay"}
                     >
                         <MaterialCommunityIcons name="map-marker" size={16} color="#fff" />
                     </TouchableOpacity>
@@ -81,7 +88,12 @@ export default function CameraControls({
                 <View style={{ flex: 1 }} />
 
                 {!isRecording && (
-                    <TouchableOpacity style={controlStyles.iconButton} onPress={onSettingsPress}>
+                    <TouchableOpacity
+                        style={controlStyles.iconButton}
+                        onPress={onSettingsPress}
+                        accessibilityRole="button"
+                        accessibilityLabel="Open Settings"
+                    >
                         <MaterialCommunityIcons name="cog" size={24} color="#fff" />
                     </TouchableOpacity>
                 )}
@@ -96,6 +108,9 @@ export default function CameraControls({
                                 key={mode}
                                 style={modeStyles.modeButton}
                                 onPress={() => setCurrentMode(mode)}
+                                accessibilityRole="button"
+                                accessibilityLabel={`Switch to ${mode} mode`}
+                                accessibilityState={{ selected: currentMode === mode }}
                             >
                                 <View style={{ marginBottom: 4 }}>{getModeIcon(mode)}</View>
                                 <Text style={[modeStyles.modeText, currentMode === mode && modeStyles.modeTextActive]}>
@@ -108,7 +123,12 @@ export default function CameraControls({
 
                 <View style={captureStyles.captureRow}>
                     {!isRecording && (
-                        <TouchableOpacity style={captureStyles.thumbnailButton} onPress={openGallery}>
+                        <TouchableOpacity
+                            style={captureStyles.thumbnailButton}
+                            onPress={openGallery}
+                            accessibilityRole="button"
+                            accessibilityLabel="Open Gallery"
+                        >
                             {lastPhotoUri ? (
                                 <Image source={{ uri: lastPhotoUri }} style={captureStyles.thumbnail} contentFit="cover" />
                             ) : (
@@ -123,7 +143,12 @@ export default function CameraControls({
                     {captureButton}
 
                     {!isRecording && (
-                        <TouchableOpacity style={captureStyles.flipButton} onPress={toggleCameraFacing}>
+                        <TouchableOpacity
+                            style={captureStyles.flipButton}
+                            onPress={toggleCameraFacing}
+                            accessibilityRole="button"
+                            accessibilityLabel="Flip Camera"
+                        >
                             <MaterialCommunityIcons name="sync" size={32} color="#fff" />
                         </TouchableOpacity>
                     )}
