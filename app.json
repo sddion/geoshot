@@ -65,7 +65,10 @@
       [
         "expo-build-properties",
         {
-          "android": {}
+          "android": {
+            "enableProguardInReleaseBuilds": true,
+            "enableShrinkResourcesInReleaseBuilds": true
+          }
         }
       ],
       "expo-font",
@@ -87,11 +90,11 @@
         }
       ],
       [
-        "expo-camera",
+        "react-native-vision-camera",
         {
-          "cameraPermission": "Allow $(PRODUCT_NAME) to access your camera",
-          "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone",
-          "recordAudioAndroid": true
+          "cameraPermissionText": "Allow $(PRODUCT_NAME) to access your camera",
+          "enableMicrophonePermission": true,
+          "microphonePermissionText": "Allow $(PRODUCT_NAME) to access your microphone"
         }
       ],
       [

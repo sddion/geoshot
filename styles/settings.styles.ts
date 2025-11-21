@@ -1,0 +1,126 @@
+import { StyleSheet } from 'react-native';
+
+export const settingsStyles = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: '#000',
+    },
+    section: {
+        marginTop: 24,
+        paddingHorizontal: 16,
+    },
+    sectionTitle: {
+        fontSize: 13,
+        fontWeight: '600' as const,
+        color: '#888',
+        marginBottom: 12,
+        letterSpacing: 0.5,
+    },
+    sectionDescription: {
+        fontSize: 13,
+        color: '#888',
+        marginTop: 8,
+        lineHeight: 18,
+    },
+    settingRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        backgroundColor: '#1a1a1a',
+        paddingVertical: 16,
+        paddingHorizontal: 16,
+        marginBottom: 1,
+    },
+    settingLabel: {
+        fontSize: 16,
+        color: '#fff',
+        flex: 1,
+    },
+    settingValue: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+    },
+    settingValueText: {
+        fontSize: 16,
+        color: '#888',
+    },
+    dangerButton: {
+        backgroundColor: '#d32f2f',
+        paddingVertical: 16,
+        paddingHorizontal: 16,
+        borderRadius: 8,
+        alignItems: 'center',
+        marginBottom: 24,
+    },
+    dangerButtonText: {
+        fontSize: 16,
+        fontWeight: '600' as const,
+        color: '#fff',
+    },
+    aboutContainer: {
+        alignItems: 'center',
+        paddingVertical: 24,
+    },
+    aboutTitle: {
+        fontSize: 20,
+        fontWeight: '600' as const,
+        color: '#fff',
+        marginBottom: 8,
+    },
+    aboutDescription: {
+        fontSize: 14,
+        color: '#4CAF50',
+        fontWeight: '600' as const,
+        marginBottom: 4,
+    },
+    aboutSubtext: {
+        fontSize: 13,
+        color: '#888',
+        textAlign: 'center',
+        marginBottom: 16,
+    },
+    aboutText: {
+        fontSize: 14,
+        color: '#888',
+        textAlign: 'center',
+        marginTop: 4,
+    },
+    githubButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#1a1a1a',
+        paddingHorizontal: 20,
+        paddingVertical: 12,
+        borderRadius: 8,
+        gap: 10,
+        borderWidth: 1,
+        borderColor: '#4CAF50',
+    },
+    githubButtonText: {
+        color: '#fff',
+        fontSize: 14,
+        fontWeight: '600' as const,
+    },
+    buttonGroup: {
+        flexDirection: 'row',
+        gap: 12,
+        justifyContent: 'center',
+    },
+    donateButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#1a1a1a',
+        paddingHorizontal: 20,
+        paddingVertical: 12,
+        borderRadius: 8,
+        gap: 10,
+        borderWidth: 1,
+        borderColor: '#FF6B6B',
+    },
+    donateButtonText: {
+        color: '#fff',
+        fontSize: 14,
+        fontWeight: '600' as const,
+    },
+});

@@ -60,13 +60,12 @@ export default function PermissionsScreen({ onAllPermissionsGranted }: Permissio
         const cameraGranted = cameraPermission?.granted;
         const micGranted = microphonePermission?.granted;
         const locationGranted = locationPermission?.granted;
-        const backgroundLocationGranted = backgroundLocationPermission?.granted;
         const mediaGranted = mediaLibraryPermission?.status === PermissionStatus.GRANTED;
 
         if (cameraGranted && micGranted && locationGranted && mediaGranted) {
             onAllPermissionsGranted();
         }
-    }, [cameraPermission?.granted, microphonePermission?.granted, locationPermission?.granted, backgroundLocationPermission?.granted, mediaLibraryPermission?.status, onAllPermissionsGranted]);
+    }, [cameraPermission?.granted, microphonePermission?.granted, locationPermission?.granted, mediaLibraryPermission?.status, onAllPermissionsGranted]);
 
     // Re-check when app comes to foreground (in case user changed settings)
     useEffect(() => {

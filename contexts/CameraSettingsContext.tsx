@@ -31,6 +31,7 @@ export interface CameraSettings {
   videoStabilization: boolean;
   flashMode: FlashMode;
   geoOverlayEnabled: boolean;
+  videoGPSOverlayEnabled: boolean;
 }
 
 const defaultSettings: CameraSettings = {
@@ -49,7 +50,8 @@ const defaultSettings: CameraSettings = {
   videoFPS: 30,
   videoStabilization: true,
   flashMode: 'auto',
-  geoOverlayEnabled: true, 
+  geoOverlayEnabled: true,
+  videoGPSOverlayEnabled: true,
 };
 
 const STORAGE_KEY = '@geoshot_camera_settings';
