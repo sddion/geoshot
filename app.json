@@ -2,7 +2,7 @@
   "expo": {
     "name": "GeoShot",
     "slug": "geoshot",
-    "version": "1.0.1",
+    "version": "1.0.4",
     "orientation": "portrait",
     "icon": "./assets/images/android/mipmap-xxxhdpi/geoshot.png",
     "scheme": "geoshot-camera-app",
@@ -10,7 +10,7 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "app.geoshot",
+      "bundleIdentifier": "app.geoshot.camera",
       "infoPlist": {
         "NSPhotoLibraryUsageDescription": "Allow $(PRODUCT_NAME) to access your photos.",
         "NSPhotoLibraryAddUsageDescription": "Allow $(PRODUCT_NAME) to save photos.",

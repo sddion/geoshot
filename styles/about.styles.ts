@@ -1,9 +1,9 @@
-import { StyleSheet, Dimensions } from 'react-native';
+import { StyleSheet } from 'react-native';
 
-const { width } = Dimensions.get('window');
 const CARD_BG = '#1C1C1E';
 const TEXT_PRIMARY = '#FFFFFF';
 const TEXT_SECONDARY = '#A1A1AA';
+const ACCENT_COLOR = '#FFD700';
 
 export const aboutStyles = StyleSheet.create({
     container: {
@@ -11,83 +11,113 @@ export const aboutStyles = StyleSheet.create({
         backgroundColor: '#000000',
     },
     contentContainer: {
-        padding: 24,
-        alignItems: 'center',
-        paddingTop: 40,
+        padding: 20,
+        paddingTop: 30,
+        paddingBottom: 40,
     },
     logoContainer: {
-        marginBottom: 40,
         alignItems: 'center',
-        shadowColor: '#FFD700',
-        shadowOffset: { width: 0, height: 0 },
-        shadowOpacity: 0.3,
-        shadowRadius: 20,
-        elevation: 10,
+        marginBottom: 32,
     },
     logo: {
-        width: 120,
-        height: 120,
-        borderRadius: 30,
-        marginBottom: 20,
+        width: 100,
+        height: 100,
+        borderRadius: 24,
+        marginBottom: 16,
         borderWidth: 1,
         borderColor: 'rgba(255, 255, 255, 0.1)',
     },
     appName: {
-        fontSize: 32,
-        fontWeight: '800',
+        fontSize: 28,
+        fontWeight: '700',
         color: TEXT_PRIMARY,
-        marginBottom: 8,
+        marginBottom: 4,
         letterSpacing: 0.5,
     },
-    version: {
-        fontSize: 16,
-        color: '#FFD700', // Gold accent
-        fontWeight: '600',
-        backgroundColor: 'rgba(255, 215, 0, 0.1)',
+    tagline: {
+        fontSize: 14,
+        color: TEXT_SECONDARY,
+        marginBottom: 12,
+    },
+    versionBadge: {
+        backgroundColor: 'rgba(255, 215, 0, 0.15)',
         paddingHorizontal: 12,
-        paddingVertical: 4,
+        paddingVertical: 6,
         borderRadius: 12,
-        overflow: 'hidden',
+        borderWidth: 1,
+        borderColor: 'rgba(255, 215, 0, 0.3)',
+    },
+    version: {
+        fontSize: 13,
+        color: ACCENT_COLOR,
+        fontWeight: '600',
     },
     section: {
-        width: '100%',
         backgroundColor: CARD_BG,
-        borderRadius: 24,
-        padding: 24,
-        marginBottom: 24,
+        borderRadius: 20,
+        padding: 20,
+        marginBottom: 16,
         borderWidth: 1,
         borderColor: 'rgba(255, 255, 255, 0.05)',
     },
     sectionTitle: {
-        fontSize: 20,
+        fontSize: 18,
         fontWeight: '700',
         color: TEXT_PRIMARY,
         marginBottom: 16,
     },
-    text: {
-        fontSize: 16,
+    featureGrid: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 12,
+        marginTop: 4,
+    },
+    featureCard: {
+        flex: 1,
+        minWidth: '45%',
+        backgroundColor: 'rgba(255, 255, 255, 0.03)',
+        borderRadius: 16,
+        padding: 16,
+        alignItems: 'center',
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.05)',
+    },
+    featureTitle: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: TEXT_PRIMARY,
+        marginTop: 8,
+        marginBottom: 4,
+        textAlign: 'center',
+    },
+    featureDescription: {
+        fontSize: 12,
         color: TEXT_SECONDARY,
-        lineHeight: 26,
-        marginBottom: 16,
+        textAlign: 'center',
+        lineHeight: 16,
+    },
+    text: {
+        fontSize: 15,
+        color: TEXT_SECONDARY,
+        lineHeight: 24,
+        marginBottom: 12,
     },
     highlight: {
-        color: '#FFD700',
+        color: ACCENT_COLOR,
         fontWeight: '700',
     },
     buttonGroup: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
-        width: '100%',
-        marginTop: 12,
         gap: 12,
+        marginTop: 16,
     },
     button: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        paddingVertical: 16,
-        paddingHorizontal: 20,
-        borderRadius: 16,
+        paddingVertical: 14,
+        paddingHorizontal: 16,
+        borderRadius: 14,
         flex: 1,
     },
     githubButton: {
@@ -97,26 +127,25 @@ export const aboutStyles = StyleSheet.create({
     },
     donateButton: {
         backgroundColor: '#E91E63',
-        shadowColor: '#E91E63',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 8,
-        elevation: 6,
     },
     buttonText: {
         color: '#fff',
-        fontSize: 16,
+        fontSize: 14,
         fontWeight: '600',
-        marginLeft: 8,
+        marginLeft: 6,
     },
     footer: {
-        marginTop: 20,
+        marginTop: 24,
         alignItems: 'center',
-        marginBottom: 40,
     },
     footerText: {
-        color: '#555',
-        fontSize: 14,
+        color: '#666',
+        fontSize: 13,
         fontWeight: '500',
+        marginBottom: 4,
+    },
+    footerSubtext: {
+        color: '#444',
+        fontSize: 12,
     },
 });

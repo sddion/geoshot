@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import { join } from 'path';
 import { readFileSync, writeFileSync } from 'fs';
 import * as readline from 'readline';
@@ -23,16 +24,16 @@ rl.question('Do you want to bump the version? (y/N) ', (answer) => {
             const parts = currentVersion.split('.').map(Number);
 
             switch (type.trim()) {
-                case '2': // Minor
+                case '2':
                     parts[1] += 1;
                     parts[2] = 0;
                     break;
-                case '3': // Major
+                case '3':
                     parts[0] += 1;
                     parts[1] = 0;
                     parts[2] = 0;
                     break;
-                default: // Patch (1 or empty)
+                default:
                     parts[2] += 1;
                     break;
             }
@@ -45,14 +46,20 @@ rl.question('Do you want to bump the version? (y/N) ', (answer) => {
             writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2) + '\n');
             writeFileSync(appJsonPath, JSON.stringify(appJson, null, 2) + '\n');
 
-            console.log(`Version bumped to ${newVersion}`);
+            console.log(`\nVersion bumped to ${newVersion}`);
+            console.log('\nUpdated files:');
+            console.log('  - package.json');
+            console.log('  - app.json');
+            console.log('\nNote: Version is also displayed in:');
+            console.log('  - app/settings.tsx (via Constants.expoConfig.version)');
+            console.log('  - app/about.tsx (via Constants.expoConfig.version)');
 
-            // Add the updated files to the commit
             const { execSync } = require('child_process');
             try {
                 execSync(`git add package.json app.json`);
+                console.log('\nFiles staged for commit.');
             } catch (e) {
-                console.error("Failed to add updated version files to git");
+                console.error("\nFailed to add updated version files to git");
             }
             rl.close();
             process.exit(0);

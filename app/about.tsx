@@ -8,6 +8,13 @@ import Constants from 'expo-constants';
 export default function AboutScreen() {
     const version = Constants.expoConfig?.version || '1.0.0';
 
+    const features = [
+        { icon: 'map-marker', title: 'GPS Overlay', description: 'Embed location data directly on photos' },
+        { icon: 'shield-check', title: 'Privacy First', description: 'No ads, no tracking, no data collection' },
+        { icon: 'camera', title: 'Pro Features', description: 'Manual controls, grid overlays, and more' },
+        { icon: 'open-source-initiative', title: 'Open Source', description: 'Free forever, community-driven' },
+    ];
+
     return (
         <>
             <Stack.Screen
@@ -26,30 +33,43 @@ export default function AboutScreen() {
                         style={styles.logo}
                     />
                     <Text style={styles.appName}>GeoShot</Text>
-                    <Text style={styles.version}>v{version}</Text>
+                    <Text style={styles.tagline}>Camera with GPS Overlay</Text>
+                    <View style={styles.versionBadge}>
+                        <Text style={styles.version}>v{version}</Text>
+                    </View>
                 </View>
 
                 <View style={styles.section}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
-                        <MaterialCommunityIcons name="lightbulb-on-outline" size={24} color="#FFD700" style={{ marginRight: 10 }} />
-                        <Text style={[styles.sectionTitle, { marginBottom: 0 }]}>Our Philosophy</Text>
+                    <Text style={styles.sectionTitle}>Features</Text>
+                    <View style={styles.featureGrid}>
+                        {features.map((feature, index) => (
+                            <View key={index} style={styles.featureCard}>
+                                <MaterialCommunityIcons
+                                    name={feature.icon as any}
+                                    size={28}
+                                    color="#FFD700"
+                                />
+                                <Text style={styles.featureTitle}>{feature.title}</Text>
+                                <Text style={styles.featureDescription}>{feature.description}</Text>
+                            </View>
+                        ))}
                     </View>
+                </View>
 
+                <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>About</Text>
                     <Text style={styles.text}>
-                        GeoShot was built with a simple mission: <Text style={styles.highlight}>Ditch Ads.</Text>
+                        GeoShot is a privacy-focused camera app that embeds GPS data, location info, and weather conditions directly onto your photos. Perfect for documentation, field work, and travel photography.
                     </Text>
-                    <Text style={[styles.text, { marginBottom: 0 }]}>
-                        We believe your camera app should be a tool, not a billboard. No tracking, and absolutely no advertisements. Just a clean, powerful camera experience that respects your privacy.
+                    <Text style={styles.text}>
+                        Built with React Native and Expo, GeoShot is completely open source and free to use.
                     </Text>
                 </View>
 
                 <View style={styles.section}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
-                        <MaterialCommunityIcons name="heart-outline" size={24} color="#E91E63" style={{ marginRight: 10 }} />
-                        <Text style={[styles.sectionTitle, { marginBottom: 0 }]}>Support Development</Text>
-                    </View>
+                    <Text style={styles.sectionTitle}>Support</Text>
                     <Text style={styles.text}>
-                        This project is open source and maintained by Sddion. If you enjoy using GeoShot, consider starring the repo or making a donation to support future updates.
+                        This project is maintained by Sddion. If you find it useful, consider supporting development.
                     </Text>
 
                     <View style={styles.buttonGroup}>
@@ -57,22 +77,22 @@ export default function AboutScreen() {
                             style={[styles.button, styles.githubButton]}
                             onPress={() => Linking.openURL('https://github.com/sddion/geoshot')}
                         >
-                            <MaterialCommunityIcons name="github" size={22} color="#fff" />
+                            <MaterialCommunityIcons name="github" size={20} color="#fff" />
                             <Text style={styles.buttonText}>GitHub</Text>
                         </TouchableOpacity>
 
                         <TouchableOpacity
                             style={[styles.button, styles.donateButton]}
-                            onPress={() => Linking.openURL('https://github.com/sponsors/sddion')}
+                            onPress={() => Linking.openURL('https://buymeacoffee.com/sddion')}
                         >
-                            <MaterialCommunityIcons name="heart" size={22} color="#fff" />
-                            <Text style={styles.buttonText}>Donate</Text>
+                            <MaterialCommunityIcons name="heart" size={20} color="#fff" />
+                            <Text style={styles.buttonText}>Support</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
 
                 <View style={styles.footer}>
-                    <Text style={styles.footerText}>Made with ❤️ by Sddion</Text>
+                    <Text style={styles.footerText}>Made by Sddion</Text>
                 </View>
             </ScrollView>
         </>

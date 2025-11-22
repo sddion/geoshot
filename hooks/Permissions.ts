@@ -150,29 +150,8 @@ export function useAutoPermissions() {
             }
 
             if (!loc.granted) {
-                console.log("User denied foreground location or it is blocked.");
-                // If we can't ask again, or user denied, we might need settings.
-                // But let's check background requirements.
-            }
-
-            // Request Background Location
-            // Note: You usually need Foreground before Background.
-            if (loc.granted) {
-                let bg = await Location.getBackgroundPermissionsAsync();
-                if (!bg.granted && bg.canAskAgain) {
-                    console.log("Asking for background location...");
-                    bg = await Location.requestBackgroundPermissionsAsync();
-                }
-
-                if (!bg.granted) {
-                    console.log("Background location not granted. Opening settings...");
-                    waitingForSettingsRef.current = true;
-                    Linking.openSettings().catch(() => console.warn("Unable to open settings"));
-                    await checkPermissions();
-                    return;
-                }
-            } else {
-                // Foreground not granted.
+                console.log("Foreground location not granted.");
+                // If we can't ask again, open settings
                 if (!loc.canAskAgain) {
                     console.log("Foreground location blocked. Opening settings...");
                     waitingForSettingsRef.current = true;
@@ -180,10 +159,25 @@ export function useAutoPermissions() {
                     await checkPermissions();
                     return;
                 }
-                // If simply denied but can ask again, we stop here and wait for next retry?
-                // Or if we just asked and it was denied, we return.
-                await checkPermissions();
-                return;
+                // If denied but can ask again, continue to next permission
+                console.log("Foreground location denied, but can ask again. Continuing...");
+            }
+
+            // Request Background Location (only if foreground is granted)
+            if (loc.granted) {
+                let bg = await Location.getBackgroundPermissionsAsync();
+                if (!bg.granted && bg.canAskAgain) {
+                    console.log("Asking for background location...");
+                    bg = await Location.requestBackgroundPermissionsAsync();
+                }
+
+                if (!bg.granted && !bg.canAskAgain) {
+                    console.log("Background location permanently denied. Opening settings...");
+                    waitingForSettingsRef.current = true;
+                    Linking.openSettings().catch(() => console.warn("Unable to open settings"));
+                    await checkPermissions();
+                    return;
+                }
             }
 
             await new Promise(resolve => setTimeout(resolve, 300));

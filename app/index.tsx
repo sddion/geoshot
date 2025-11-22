@@ -142,14 +142,14 @@ export default function CameraScreen() {
   // VisionCamera device
   const device = useCameraDevice(facing);
 
-  // Video Format Selection
+  // Video Format Selection (only for video mode)
   const targetResolution = settings.videoResolution === '4k'
     ? { width: 3840, height: 2160 }
     : settings.videoResolution === '1080p'
       ? { width: 1920, height: 1080 }
       : { width: 1280, height: 720 };
 
-  const format = useCameraFormat(device, [
+  const videoFormat = useCameraFormat(device, [
     { videoResolution: targetResolution },
     { fps: settings.videoFPS }
   ]);
@@ -296,7 +296,7 @@ export default function CameraScreen() {
               ref={cameraRef}
               style={cameraStyles.camera}
               device={device}
-              format={format}
+              {...(currentMode === 'video' && videoFormat ? { format: videoFormat } : {})}
               isActive={isActive && !hasCameraError}
               photo={currentMode !== 'video'}
               video={currentMode === 'video'}
