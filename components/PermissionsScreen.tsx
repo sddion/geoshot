@@ -1,9 +1,11 @@
 import React, { useEffect, useCallback, useState } from 'react';
-import { AppState, Linking, Alert, View, Text, StyleSheet, TouchableOpacity, SafeAreaView } from 'react-native';
+import { AppState, Linking, View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Camera, CameraPermissionStatus } from 'react-native-vision-camera';
 import * as Location from 'expo-location';
 import { usePermissions, PermissionStatus } from 'expo-media-library';
 import { Ionicons } from '@expo/vector-icons';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
 
 interface PermissionsScreenProps {
     onAllPermissionsGranted: () => void;
@@ -12,13 +14,13 @@ interface PermissionsScreenProps {
 export default function PermissionsScreen({ onAllPermissionsGranted }: PermissionsScreenProps) {
     const [cameraStatus, setCameraStatus] = useState<CameraPermissionStatus>('not-determined');
     const [micStatus, setMicStatus] = useState<CameraPermissionStatus>('not-determined');
-
+    const router = useRouter();
     const [locationPermission, requestLocationPermission] = Location.useForegroundPermissions();
     const [mediaLibraryPermission, requestMediaLibraryPermission] = usePermissions();
 
     const checkPermissions = useCallback(async () => {
-        const camera = await Camera.getCameraPermissionStatus();
-        const mic = await Camera.getMicrophonePermissionStatus();
+        const camera = Camera.getCameraPermissionStatus();
+        const mic = Camera.getMicrophonePermissionStatus();
 
         setCameraStatus(camera);
         setMicStatus(mic);
@@ -28,6 +30,7 @@ export default function PermissionsScreen({ onAllPermissionsGranted }: Permissio
 
         if (camera === 'granted' && mic === 'granted' && locationGranted && mediaGranted) {
             onAllPermissionsGranted();
+            router.replace('/');
         }
     }, [locationPermission, mediaLibraryPermission, onAllPermissionsGranted]);
 
@@ -89,14 +92,6 @@ export default function PermissionsScreen({ onAllPermissionsGranted }: Permissio
 
         // Final check
         checkPermissions();
-    };
-
-    const getStatusIcon = (granted: boolean) => {
-        return granted ? 'checkmark-circle' : 'alert-circle';
-    };
-
-    const getStatusColor = (granted: boolean) => {
-        return granted ? '#4ade80' : '#fbbf24';
     };
 
     const isCameraGranted = cameraStatus === 'granted';

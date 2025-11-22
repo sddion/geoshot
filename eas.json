@@ -7,6 +7,7 @@
     "development": {
       "developmentClient": true,
       "distribution": "internal",
+      "channel": "development",
       "android": {
         "buildType": "apk",
         "gradleCommand": ":app:assembleRelease"
@@ -14,7 +15,7 @@
     },
     "preview": {
       "distribution": "internal",
-      "extends": "production",
+      "channel": "preview",
       "android": {
         "buildType": "apk",
         "gradleCommand": ":app:assembleRelease"
@@ -22,6 +23,7 @@
     },
     "production": {
       "autoIncrement": true,
+      "channel": "production",
       "android": {
         "buildType": "apk",
         "gradleCommand": ":app:assembleRelease"

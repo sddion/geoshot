@@ -120,6 +120,12 @@
       "typedRoutes": true
     },
     "jsEngine": "hermes",
+    "updates": {
+      "url": "https://u.expo.dev/d2eae4c7-d983-4e08-9597-b22cbd01ea98"
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
     "extra": {
       "router": {
         "origin": "https://geoshot.vercel.app/"

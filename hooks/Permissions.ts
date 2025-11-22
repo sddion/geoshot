@@ -257,12 +257,15 @@ export function useAutoPermissions() {
 
                 const newState = await checkPermissions();
 
-                // Only resume if we were explicitly waiting for settings.
-                // We do NOT resume just because location is granted, as that causes loops if other permissions are denied.
-                const shouldResume = waitingForSettingsRef.current;
+                // Resume the flow if:
+                // 1. We were explicitly waiting for settings, OR
+                // 2. Not all permissions are granted AND we haven't requested yet (first time), OR
+                // 3. Not all permissions are granted AND we have requested before (continue sequential flow)
+                const shouldResume = waitingForSettingsRef.current ||
+                    (!newState.allGranted && hasRequestedRef.current);
 
                 if (shouldResume) {
-                    console.log("Resuming permission flow from settings...");
+                    console.log("Resuming permission flow...");
                     waitingForSettingsRef.current = false;
                     requestPermissionsSequentially();
                 }
