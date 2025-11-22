@@ -92,7 +92,7 @@ export default function GeoPreviewScreen() {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#fff" />
-        <Text style={styles.loadingText}>Fetching location data...</Text>
+        <Text style={styles.loadingText}>Loading...</Text>
       </View>
     );
   }
@@ -114,7 +114,7 @@ export default function GeoPreviewScreen() {
         <TouchableOpacity style={styles.headerButton} onPress={() => router.back()}>
           <MaterialCommunityIcons name="close" size={28} color="#fff" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Geo Preview</Text>
+        <Text style={styles.headerTitle}>Preview</Text>
         <View style={styles.headerButtons}>
           <TouchableOpacity
             style={styles.headerButton}

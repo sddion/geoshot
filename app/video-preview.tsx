@@ -1,14 +1,19 @@
-import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, TouchableOpacity, Text, Alert, Platform, Dimensions } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, TouchableOpacity, ActivityIndicator, Alert, Dimensions, StyleSheet } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useVideoPlayer, VideoView } from 'expo-video';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import * as MediaLibrary from 'expo-media-library';
-import * as Sharing from 'expo-sharing';
+import { FFmpegKit, ReturnCode } from 'ffmpeg-kit-react-native';
+import { captureRef } from 'react-native-view-shot';
+import * as FileSystem from 'expo-file-system/legacy';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
 import { getVideoGPSData, saveVideoGPSData, VideoGPSData } from '@/utils/videoGPSData';
 import GeoOverlay from '@/components/GeoOverlay';
 import EditDataModal from '@/components/EditDataModal';
 import { GeoData, getCachedMapTile } from '@/utils/geoOverlay';
+import { previewStyles as styles } from '@/styles/preview.styles';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -18,8 +23,11 @@ export default function VideoPreviewScreen() {
     const [gpsData, setGpsData] = useState<GeoData | null>(null);
     const [mapTile, setMapTile] = useState<string | null>(null);
     const [isEditing, setIsEditing] = useState(false);
-
+    const [saving, setSaving] = useState(false);
     const [fullGpsData, setFullGpsData] = useState<VideoGPSData | null>(null);
+
+    // Ref for capturing the overlay
+    const overlayRef = useRef<View>(null);
 
     // Initialize video player
     const player = useVideoPlayer(videoUri, player => {
@@ -42,12 +50,8 @@ export default function VideoPreviewScreen() {
             if (index >= 0 && index < fullGpsData.gpsData.length) {
                 const currentPoint = fullGpsData.gpsData[index];
                 setGpsData(currentPoint);
-
-                // Update map tile if we moved significantly (optional optimization)
-                // For now, let's keep the initial tile or update it occasionally
-                // setMapTile(await getCachedMapTile(currentPoint.latitude, currentPoint.longitude));
             }
-        }, 200); // Update every 200ms
+        }, 200);
 
         return () => clearInterval(interval);
     }, [fullGpsData, player]);
@@ -57,10 +61,8 @@ export default function VideoPreviewScreen() {
             const data = await getVideoGPSData(videoUri);
             if (data && data.gpsData.length > 0) {
                 setFullGpsData(data);
-
                 const initialPoint = data.gpsData[0];
                 setGpsData(initialPoint);
-
                 const tile = await getCachedMapTile(initialPoint.latitude, initialPoint.longitude);
                 setMapTile(tile);
             }
@@ -68,37 +70,54 @@ export default function VideoPreviewScreen() {
     };
 
     const handleSave = async () => {
+        if (saving || !videoUri || !overlayRef.current) return;
+
+        setSaving(true);
         try {
-            if (videoUri) {
-                await MediaLibrary.createAssetAsync(videoUri);
-                Alert.alert('Saved', 'Video saved to gallery!');
-                router.back();
+            // 1. Capture the overlay as an image
+            const overlayUri = await captureRef(overlayRef, {
+                format: 'png',
+                quality: 1,
+                result: 'tmpfile',
+            });
+
+            // 2. Define output path
+            const outputUri = `${FileSystem.cacheDirectory || FileSystem.documentDirectory || ''}geoshot_output_${Date.now()}.mp4`;
+
+            // 3. Construct FFmpeg command
+            // Overlay the image on top of the video. 
+            // Assuming the captured overlay image is the same size as the video view.
+            const command = `-i "${videoUri}" -i "${overlayUri}" -filter_complex "[0:v][1:v]overlay=0:0" -c:v libx264 -preset ultrafast -c:a copy "${outputUri}"`;
+
+            console.log('Running FFmpeg command:', command);
+
+            // 4. Execute FFmpeg
+            const session = await FFmpegKit.execute(command);
+            const returnCode = await session.getReturnCode();
+
+            if (ReturnCode.isSuccess(returnCode)) {
+                console.log('FFmpeg process finished successfully');
+
+                // 5. Save to Gallery
+                const asset = await MediaLibrary.createAssetAsync(outputUri);
+                console.log('Saved video asset:', asset.uri);
+
+                Alert.alert('Success', 'Video saved with GPS overlay!', [
+                    { text: 'OK', onPress: () => router.back() }
+                ]);
+            } else {
+                console.error('FFmpeg process failed with state', await session.getState());
+                const logs = await session.getLogs();
+                console.error('FFmpeg logs:', logs);
+                Alert.alert('Error', 'Failed to process video.');
             }
+
         } catch (error) {
-            console.error('Error saving video:', error);
+            console.error('Save error:', error);
             Alert.alert('Error', 'Failed to save video.');
+        } finally {
+            setSaving(false);
         }
-    };
-
-    const handleShare = async () => {
-        if (videoUri && await Sharing.isAvailableAsync()) {
-            await Sharing.shareAsync(videoUri);
-        }
-    };
-
-    const handleDiscard = () => {
-        Alert.alert(
-            'Discard Video',
-            'Are you sure you want to discard this video?',
-            [
-                { text: 'Cancel', style: 'cancel' },
-                {
-                    text: 'Discard',
-                    style: 'destructive',
-                    onPress: () => router.back()
-                },
-            ]
-        );
     };
 
     const handleEditSave = async (newData: Partial<GeoData>) => {
@@ -106,9 +125,6 @@ export default function VideoPreviewScreen() {
             const updatedData = { ...gpsData, ...newData };
             setGpsData(updatedData);
 
-            // Update the stored data
-            // Note: This simplifies it by applying edits to ALL data points
-            // A more advanced implementation would interpolate or offset all points
             const currentData = await getVideoGPSData(videoUri);
             if (currentData) {
                 const updatedPoints = currentData.gpsData.map(p => ({ ...p, ...newData }));
@@ -127,50 +143,61 @@ export default function VideoPreviewScreen() {
 
     return (
         <View style={styles.container}>
-            <VideoView
-                style={styles.video}
-                player={player}
-                allowsFullscreen
-                allowsPictureInPicture
-                contentFit="contain"
-            />
-
-            {/* Overlay Layer */}
-            <View style={styles.overlayLayer} pointerEvents="box-none">
-                <View style={styles.header}>
-                    <TouchableOpacity style={styles.closeButton} onPress={() => router.back()}>
-                        <MaterialCommunityIcons name="close" size={28} color="#fff" />
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.editButton} onPress={() => setIsEditing(true)}>
+            <SafeAreaView style={styles.header} edges={['top']}>
+                <TouchableOpacity style={styles.headerButton} onPress={() => router.back()}>
+                    <MaterialCommunityIcons name="close" size={28} color="#fff" />
+                </TouchableOpacity>
+                <Text style={styles.headerTitle}>Preview</Text>
+                <View style={styles.headerButtons}>
+                    <TouchableOpacity
+                        style={styles.headerButton}
+                        onPress={() => setIsEditing(true)}
+                    >
                         <MaterialCommunityIcons name="pencil" size={24} color="#fff" />
-                        <Text style={styles.editButtonText}>Edit GPS</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        style={styles.headerButton}
+                        onPress={handleSave}
+                        disabled={saving}
+                    >
+                        {saving ? (
+                            <ActivityIndicator size="small" color="#fff" />
+                        ) : (
+                            <MaterialCommunityIcons name="check" size={28} color="#fff" />
+                        )}
                     </TouchableOpacity>
                 </View>
+            </SafeAreaView>
 
-                {gpsData && (
-                    <GeoOverlay
-                        geoData={gpsData}
-                        mapTile={mapTile}
-                        imageWidth={SCREEN_WIDTH - 32}
-                        style={styles.geoOverlay}
+            <View style={styles.content}>
+                <View style={styles.previewContainer}>
+                    {/* Video Player */}
+                    <VideoView
+                        style={customStyles.video}
+                        player={player}
+                        allowsPictureInPicture
+                        contentFit="cover"
                     />
-                )}
 
-                <View style={styles.controls}>
-                    <TouchableOpacity style={styles.iconButton} onPress={handleDiscard}>
-                        <MaterialCommunityIcons name="trash-can-outline" size={32} color="#FF3B30" />
-                        <Text style={styles.iconLabel}>Discard</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity style={styles.iconButton} onPress={handleShare}>
-                        <MaterialCommunityIcons name="share-variant" size={32} color="#fff" />
-                        <Text style={styles.iconLabel}>Share</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-                        <MaterialCommunityIcons name="check" size={32} color="#000" />
-                        <Text style={styles.saveLabel}>Save</Text>
-                    </TouchableOpacity>
+                    {/* Overlay Container - Captured for FFmpeg */}
+                    {/* We position this absolutely over the video to match what the user sees, 
+                        and we capture THIS container which includes the transparent area and the bottom overlay */}
+                    <View
+                        ref={overlayRef}
+                        style={StyleSheet.absoluteFill}
+                        pointerEvents="none"
+                        collapsable={false}
+                    >
+                        <View style={customStyles.overlayWrapper}>
+                            {gpsData && (
+                                <GeoOverlay
+                                    geoData={gpsData}
+                                    mapTile={mapTile}
+                                    imageWidth={SCREEN_WIDTH - 32} // Adjust for padding
+                                />
+                            )}
+                        </View>
+                    </View>
                 </View>
             </View>
 
@@ -184,79 +211,14 @@ export default function VideoPreviewScreen() {
     );
 }
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#000',
-    },
+const customStyles = StyleSheet.create({
     video: {
-        flex: 1,
         width: '100%',
+        height: '100%',
     },
-    overlayLayer: {
-        ...StyleSheet.absoluteFillObject,
-        justifyContent: 'space-between',
-        paddingTop: 50,
-        paddingBottom: 40,
-    },
-    header: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        paddingHorizontal: 20,
-        alignItems: 'center',
-    },
-    closeButton: {
-        padding: 8,
-        backgroundColor: 'rgba(0,0,0,0.5)',
-        borderRadius: 20,
-    },
-    editButton: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: 'rgba(0,0,0,0.5)',
-        paddingHorizontal: 16,
-        paddingVertical: 8,
-        borderRadius: 20,
-        gap: 8,
-    },
-    editButtonText: {
-        color: '#fff',
-        fontWeight: '600',
-    },
-    geoOverlay: {
-        alignSelf: 'center',
-        marginBottom: 20,
-    },
-    controls: {
-        flexDirection: 'row',
-        justifyContent: 'space-around',
-        alignItems: 'center',
-        paddingHorizontal: 20,
-        backgroundColor: 'rgba(0,0,0,0.6)',
-        paddingVertical: 20,
-        borderRadius: 30,
-        marginHorizontal: 20,
-    },
-    iconButton: {
-        alignItems: 'center',
-        gap: 4,
-    },
-    iconLabel: {
-        color: '#fff',
-        fontSize: 12,
-    },
-    saveButton: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: '#4CAF50',
-        paddingHorizontal: 24,
-        paddingVertical: 12,
-        borderRadius: 30,
-        gap: 8,
-    },
-    saveLabel: {
-        color: '#000',
-        fontWeight: 'bold',
-        fontSize: 16,
+    overlayWrapper: {
+        flex: 1,
+        justifyContent: 'flex-end', // Push to bottom
+        marginBottom: 90, // Move overlay up a bit
     },
 });
