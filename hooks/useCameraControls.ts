@@ -30,16 +30,7 @@ export function useCameraControls(
                 onCapture?.();
             } else if (volumeAction === 'zoom') {
                 // Adjust zoom based on volume direction (this is tricky as we only get new volume)
-                // For simplicity, we'll just increment/decrement zoom slightly
-                // A better approach requires tracking previous volume or using a different library for key events
-                // But VolumeManager gives us the new volume.
-
-                // Since we can't easily detect up/down without state, we might just cycle or step
-                // However, a common hack is to reset volume to 50% and detect change from there.
-                // For now, let's just step zoom up for any press as a simple implementation
-                // or try to infer direction if possible.
-
-                // Let's just increment zoom for now as a proof of concept or use a fixed step
+                // Simple zoom step for volume press
                 setZoom(prev => Math.min(prev + 0.5, 10));
             }
         });

@@ -1,13 +1,12 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { Alert, Platform, ToastAndroid } from 'react-native';
 import { Camera, PhotoFile, VideoFile, CameraRuntimeError, CameraCaptureError } from 'react-native-vision-camera';
-import * as FileSystem from 'expo-file-system/legacy';
-import * as MediaLibrary from 'expo-media-library';
 import type { CameraMode } from '@/contexts/CameraSettingsContext';
 import { getGeoData, GeoData } from '@/utils/geoOverlay';
 import { Router } from 'expo-router';
 import { saveFileToAppFolder } from '@/utils/mediaUtils';
 import * as ImageManipulator from 'expo-image-manipulator';
+
 
 interface UseCameraCaptureProps {
     cameraRef: React.RefObject<Camera | null>;

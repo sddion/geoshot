@@ -6,11 +6,12 @@ import { useRouter } from 'expo-router';
 import PermissionsScreen from '@/components/PermissionsScreen';
 import { useLiveGeoData } from '@/utils/useLiveGeoData';
 import React, { useRef, useState, useEffect } from 'react';
-import { View, Text, Linking, Platform, StyleSheet, Alert } from 'react-native';
+import { View, Text, Linking, Platform, StyleSheet, Alert, AppState, AppStateStatus } from 'react-native';
 import { useGPSVideoOverlay } from '@/utils/videoFrameProcessor';
 import { useCameraControls } from '@/hooks/useCameraControls';
 import { useCameraCapture } from '@/hooks/useCameraCapture';
 import { useCameraPermissions } from '@/hooks/useCameraPermissions';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 
 // Modular Components
 import CameraControls from '@/components/CameraControls';
@@ -26,6 +27,22 @@ export default function CameraScreen() {
 
   // Camera facing state
   const [facing, setFacing] = useState<'back' | 'front'>('back');
+
+  // App State & Camera Active State
+  const appState = useRef(AppState.currentState);
+  const [isActive, setIsActive] = useState(appState.current === 'active');
+  const [hasCameraError, setHasCameraError] = useState(false);
+
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (nextAppState) => {
+      appState.current = nextAppState;
+      setIsActive(nextAppState === 'active');
+    });
+
+    return () => {
+      subscription.remove();
+    };
+  }, []);
 
   // Permissions
   const { allPermissionsGranted } = useCameraPermissions();
@@ -52,6 +69,7 @@ export default function CameraScreen() {
   // Camera controls (zoom, focus)
   const {
     zoom,
+    setZoom,
     showZoomSlider,
     handleZoomButtonTap,
     handleZoomSliderChange,
@@ -62,6 +80,22 @@ export default function CameraScreen() {
     settings.volumeAction,
     () => handleCapture(getTimerSeconds())
   );
+
+  // Zoom Gesture
+  const startZoom = useRef(zoom);
+  const zoomGesture = Gesture.Pan()
+    .onStart(() => {
+      startZoom.current = zoom;
+    })
+    .onUpdate((e) => {
+      // Swipe up (negative Y) to zoom in, down to zoom out
+      const sensitivity = 0.015;
+      const delta = -e.translationY * sensitivity;
+      const newZoom = Math.max(1, Math.min(10, startZoom.current + delta));
+      // Using runOnJS to update React state from gesture callback
+      setZoom(newZoom);
+    })
+    .runOnJS(true);
 
   // Camera capture (photo/video)
   const {
@@ -131,6 +165,21 @@ export default function CameraScreen() {
     return <PermissionsScreen onAllPermissionsGranted={() => setHasPermissions(true)} />;
   }
 
+  if (hasCameraError) {
+    return (
+      <View style={cameraStyles.container}>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+          <Text style={{ color: '#fff', fontSize: 18, textAlign: 'center', marginBottom: 10 }}>
+            Camera Unavailable
+          </Text>
+          <Text style={{ color: '#aaa', textAlign: 'center' }}>
+            The camera has been restricted by the system. Please check your device settings or parental controls.
+          </Text>
+        </View>
+      </View>
+    );
+  }
+
   if (device == null) {
     return (
       <View style={cameraStyles.container}>
@@ -144,56 +193,59 @@ export default function CameraScreen() {
   return (
     <View style={cameraStyles.container}>
       <View style={cameraStyles.cameraContainer}>
-        <Camera
-          ref={cameraRef}
-          style={cameraStyles.camera}
-          device={device}
-          isActive={true}
-          photo={currentMode !== 'video'}
-          video={currentMode === 'video'}
-          frameProcessor={currentMode === 'video' && settings.videoGPSOverlayEnabled ? (skiaFrameProcessor as any) : undefined}
-          zoom={zoom}
-          torch={settings.flashMode === 'torch' ? 'on' : 'off'}
-          lowLightBoost={currentMode === 'night'}
-          onError={(error) => {
-            console.error('Camera Runtime Error:', error);
-            if (error.code === 'system/camera-is-restricted') {
-              Alert.alert('Camera Restricted', 'Camera is restricted by the OS. Please check device policies or parental controls.');
-            }
-          }}
-          onTouchEnd={(event) => {
-            const { locationX, locationY } = event.nativeEvent;
-            handleFocusTap({ x: locationX, y: locationY });
-            // Optional: Trigger focus on camera device if supported
-            // cameraRef.current?.focus({ x: locationX, y: locationY });
-          }}
-        />
+        <GestureDetector gesture={zoomGesture}>
+          <View style={StyleSheet.absoluteFill}>
+            <Camera
+              ref={cameraRef}
+              style={cameraStyles.camera}
+              device={device}
+              isActive={isActive && !hasCameraError}
+              photo={currentMode !== 'video'}
+              video={currentMode === 'video'}
+              frameProcessor={currentMode === 'video' && settings.videoGPSOverlayEnabled ? (skiaFrameProcessor as any) : undefined}
+              zoom={zoom}
+              torch={settings.flashMode === 'torch' ? 'on' : 'off'}
+              lowLightBoost={currentMode === 'night'}
+              onError={(error) => {
+                console.error('Camera Runtime Error:', error);
+                if (error.code === 'system/camera-is-restricted') {
+                  setHasCameraError(true);
+                  Alert.alert('Camera Restricted', 'Camera is restricted by the OS. Please check device policies or parental controls.');
+                }
+              }}
+              onTouchEnd={(event) => {
+                const { locationX, locationY } = event.nativeEvent;
+                handleFocusTap({ x: locationX, y: locationY });
+              }}
+            />
 
-        {currentMode === 'video' && settings.videoGPSOverlayEnabled && (
-          <SkiaCameraCanvas
-            style={StyleSheet.absoluteFill}
-            offscreenTextures={skiaFrameProcessor.offscreenTextures}
-            resizeMode="cover"
-          />
-        )}
+            {currentMode === 'video' && settings.videoGPSOverlayEnabled && (
+              <SkiaCameraCanvas
+                style={StyleSheet.absoluteFill}
+                offscreenTextures={skiaFrameProcessor.offscreenTextures}
+                resizeMode="cover"
+              />
+            )}
 
-        <CameraOverlay
-          gridStyle={settings.gridStyle}
-          focusPoint={focusPoint}
-          focusAnimation={focusAnimation}
-          timerCountdown={timerCountdown}
-          isRecording={isRecording}
-          recordingDuration={recordingDuration}
-          zoom={zoom}
-          showZoomSlider={showZoomSlider}
-          handleZoomButtonTap={handleZoomButtonTap}
-          handleZoomSliderChange={handleZoomSliderChange}
-          geoOverlayEnabled={settings.geoOverlayEnabled}
-          liveGeoData={liveGeoData}
-          liveMapTile={liveMapTile}
-          currentMode={currentMode}
-          photoAspectRatio={settings.photoAspectRatio}
-        />
+            <CameraOverlay
+              gridStyle={settings.gridStyle}
+              focusPoint={focusPoint}
+              focusAnimation={focusAnimation}
+              timerCountdown={timerCountdown}
+              isRecording={isRecording}
+              recordingDuration={recordingDuration}
+              zoom={zoom}
+              showZoomSlider={showZoomSlider}
+              handleZoomButtonTap={handleZoomButtonTap}
+              handleZoomSliderChange={handleZoomSliderChange}
+              geoOverlayEnabled={settings.geoOverlayEnabled}
+              liveGeoData={liveGeoData}
+              liveMapTile={liveMapTile}
+              currentMode={currentMode}
+              photoAspectRatio={settings.photoAspectRatio}
+            />
+          </View>
+        </GestureDetector>
       </View>
 
       <CameraControls

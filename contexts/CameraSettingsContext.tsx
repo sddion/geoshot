@@ -90,13 +90,17 @@ export const [CameraSettingsProvider, useCameraSettings] = createContextHook(() 
       if (album) {
         const assets = await MediaLibrary.getAssetsAsync({
           album: album,
-          first: 1,
+          first: 20, // Fetch more to ensure we get recent ones if order is weird
           sortBy: [MediaLibrary.SortBy.creationTime],
-          mediaType: [MediaLibrary.MediaType.photo, MediaLibrary.MediaType.video],
         });
 
         if (assets.assets.length > 0) {
-          setLastPhotoUri(assets.assets[0].uri);
+          // Assuming default sort is ascending (oldest first), the last item is the newest.
+          // If it's descending, the first item is the newest.
+          // On Android, it's often descending by default, but let's check timestamps if possible or just take the last one if ascending.
+          // Actually, let's sort them manually to be sure.
+          const sortedAssets = assets.assets.sort((a, b) => b.creationTime - a.creationTime);
+          setLastPhotoUri(sortedAssets[0].uri);
         }
       }
     } catch (error) {
