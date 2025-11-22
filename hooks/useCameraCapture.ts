@@ -14,7 +14,6 @@ interface UseCameraCaptureProps {
     flashMode: 'off' | 'on' | 'auto';
     imageQuality: 'normal' | 'fine' | 'superfine';
     geoOverlayEnabled: boolean;
-    videoGPSOverlayEnabled: boolean;
     liveGeoData: GeoData | null;
     router: Router;
     setLastPhotoUri: (uri: string) => void;
@@ -29,7 +28,6 @@ export function useCameraCapture({
     flashMode,
     imageQuality,
     geoOverlayEnabled,
-    videoGPSOverlayEnabled,
     liveGeoData,
     router,
     setLastPhotoUri,
@@ -39,18 +37,10 @@ export function useCameraCapture({
     const [recordingDuration, setRecordingDuration] = useState<number>(0);
     const [timerCountdown, setTimerCountdown] = useState<number>(0);
     const recordingInterval = useRef<ReturnType<typeof setInterval> | null>(null);
+    const lastCaptureTimeRef = useRef<number>(0); // For debouncing captures
+    const CAPTURE_DEBOUNCE_MS = 500; // Minimum time between captures
 
-    // Refs for GPS recording
-    const currentGeoDataRef = useRef<GeoData | null>(null);
-    const gpsTrackRef = useRef<GeoData[]>([]);
-    const recordingStartTimeRef = useRef<string>('');
 
-    // Update ref when new data comes in
-    useEffect(() => {
-        if (liveGeoData) {
-            currentGeoDataRef.current = liveGeoData;
-        }
-    }, [liveGeoData]);
 
     const showToast = (message: string) => {
         if (Platform.OS === 'android') {
@@ -125,35 +115,21 @@ export function useCameraCapture({
             setIsRecording(true);
             setRecordingDuration(0);
 
-            // Reset GPS track
-            gpsTrackRef.current = [];
-            if (currentGeoDataRef.current) {
-                gpsTrackRef.current.push(currentGeoDataRef.current);
-            }
-            recordingStartTimeRef.current = new Date().toISOString();
-
-            // Start recording duration timer and GPS logger
+            // Start recording duration timer
             recordingInterval.current = setInterval(() => {
                 setRecordingDuration(prev => prev + 1);
-
-                // Log GPS point
-                if (currentGeoDataRef.current) {
-                    gpsTrackRef.current.push(currentGeoDataRef.current);
-                }
             }, 1000);
 
-            // Start recording (frame processor will add GPS overlay if enabled)
             cameraRef.current.startRecording({
                 flash: flashMode === 'on' ? 'on' : 'off',
                 onRecordingFinished: async (video: VideoFile) => {
                     if (video?.path) {
                         const videoUri = `file://${video.path}`;
-                        const endTime = new Date().toISOString();
-                        const duration = (new Date(endTime).getTime() - new Date(recordingStartTimeRef.current).getTime()) / 1000;
 
                         // Save video to GeoShot album
                         const savedUri = await saveFileToAppFolder(videoUri, 'video');
                         if (savedUri) {
+                            setLastPhotoUri(savedUri); // Update thumbnail with video
                             console.log('Video saved:', savedUri);
                             showToast('Video saved to GeoShot album!');
                         } else {
@@ -174,7 +150,7 @@ export function useCameraCapture({
                 recordingInterval.current = null;
             }
         }
-    }, [cameraRef, isRecording, flashMode, setLastPhotoUri, videoGPSOverlayEnabled]);
+    }, [cameraRef, isRecording, flashMode, setLastPhotoUri]);
 
     const stopVideoRecording = useCallback(async () => {
         if (!cameraRef.current || !isRecording) return;
@@ -214,6 +190,14 @@ export function useCameraCapture({
 
     const handleCapture = useCallback(async (timerSeconds?: number) => {
         if (isCapturing) return;
+
+        // Debounce to prevent multiple rapid captures
+        const now = Date.now();
+        if (now - lastCaptureTimeRef.current < CAPTURE_DEBOUNCE_MS) {
+            console.log('Capture debounced - too soon since last capture');
+            return;
+        }
+        lastCaptureTimeRef.current = now;
 
         // Handle timer countdown
         if (timerSeconds && timerSeconds > 0) {

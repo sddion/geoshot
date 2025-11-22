@@ -1,16 +1,13 @@
 import { useCameraSettings } from '@/contexts/CameraSettingsContext';
 import { Camera, useCameraDevice } from 'react-native-vision-camera';
-import { SkiaCameraCanvas } from 'react-native-vision-camera/src/skia/SkiaCameraCanvas';
 import * as MediaLibrary from 'expo-media-library';
 import { useRouter } from 'expo-router';
-import PermissionsScreen from '@/components/PermissionsScreen';
 import { useLiveGeoData } from '@/utils/useLiveGeoData';
 import React, { useRef, useState, useEffect } from 'react';
-import { View, Text, Linking, Platform, StyleSheet, Alert, AppState, AppStateStatus } from 'react-native';
-import { useGPSVideoOverlay } from '@/utils/videoFrameProcessor';
+import { View, Text, Linking, Platform, StyleSheet, Alert, AppState, ActivityIndicator } from 'react-native';
 import { useCameraControls } from '@/hooks/useCameraControls';
 import { useCameraCapture } from '@/hooks/useCameraCapture';
-import { useCameraPermissions } from '@/hooks/useCameraPermissions';
+import { useAutoPermissions } from '@/hooks/useAutoPermissions';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 
 // Modular Components
@@ -24,6 +21,9 @@ import { cameraStyles } from '@/styles/camera.styles';
 export default function CameraScreen() {
   const router = useRouter();
   const cameraRef = useRef<Camera>(null);
+
+  // Auto-request permissions
+  const { allGranted, isRequesting } = useAutoPermissions();
 
   // Camera facing state
   const [facing, setFacing] = useState<'back' | 'front'>('back');
@@ -44,19 +44,9 @@ export default function CameraScreen() {
     };
   }, []);
 
-  // Permissions
-  const { allPermissionsGranted } = useCameraPermissions();
-  const [hasPermissions, setHasPermissions] = useState(false);
-
-  useEffect(() => {
-    if (allPermissionsGranted) {
-      setHasPermissions(true);
-    }
-  }, [allPermissionsGranted]);
-
   // Settings and state
   const { settings, updateSetting } = useCameraSettings();
-  const { data: liveGeoData, mapTile: liveMapTile } = useLiveGeoData(settings.geoOverlayEnabled || settings.videoGPSOverlayEnabled);
+  const { data: liveGeoData, mapTile: liveMapTile } = useLiveGeoData(settings.geoOverlayEnabled);
 
   const {
     currentMode,
@@ -78,7 +68,8 @@ export default function CameraScreen() {
     handleFocusTap,
   } = useCameraControls(
     settings.volumeAction,
-    () => handleCapture(getTimerSeconds())
+    // Only pass capture callback when volume action is 'shutter'
+    settings.volumeAction === 'shutter' ? () => handleCapture(getTimerSeconds()) : undefined
   );
 
   // Zoom Gesture
@@ -110,7 +101,6 @@ export default function CameraScreen() {
     flashMode: settings.flashMode === 'torch' ? 'off' : settings.flashMode,
     imageQuality: settings.imageQuality,
     geoOverlayEnabled: settings.geoOverlayEnabled,
-    videoGPSOverlayEnabled: settings.videoGPSOverlayEnabled,
     liveGeoData: liveGeoData,
     router,
     setLastPhotoUri,
@@ -118,12 +108,6 @@ export default function CameraScreen() {
 
   // VisionCamera device
   const device = useCameraDevice(facing);
-
-  // GPS overlay frame processor for video
-  const skiaFrameProcessor = useGPSVideoOverlay(
-    currentMode === 'video' && settings.videoGPSOverlayEnabled ? liveGeoData : null,
-    currentMode === 'video' && settings.videoGPSOverlayEnabled
-  );
 
   const toggleCameraFacing = () => {
     setFacing(prev => prev === 'back' ? 'front' : 'back');
@@ -161,8 +145,30 @@ export default function CameraScreen() {
     }
   };
 
-  if (!hasPermissions) {
-    return <PermissionsScreen onAllPermissionsGranted={() => setHasPermissions(true)} />;
+  if (!allGranted) {
+    return (
+      <View style={cameraStyles.container}>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+          {isRequesting ? (
+            <>
+              <ActivityIndicator size="large" color="#fff" />
+              <Text style={{ color: '#fff', fontSize: 16, marginTop: 20, textAlign: 'center' }}>
+                Setting up permissions...
+              </Text>
+            </>
+          ) : (
+            <>
+              <Text style={{ color: '#fff', fontSize: 18, textAlign: 'center', marginBottom: 10 }}>
+                Permissions Required
+              </Text>
+              <Text style={{ color: '#aaa', textAlign: 'center' }}>
+                Please grant camera, microphone, location, and photo library permissions in Settings to use GeoShot.
+              </Text>
+            </>
+          )}
+        </View>
+      </View>
+    );
   }
 
   if (hasCameraError) {
@@ -202,7 +208,6 @@ export default function CameraScreen() {
               isActive={isActive && !hasCameraError}
               photo={currentMode !== 'video'}
               video={currentMode === 'video'}
-              frameProcessor={currentMode === 'video' && settings.videoGPSOverlayEnabled ? (skiaFrameProcessor as any) : undefined}
               zoom={zoom}
               torch={settings.flashMode === 'torch' ? 'on' : 'off'}
               lowLightBoost={currentMode === 'night'}
@@ -219,13 +224,6 @@ export default function CameraScreen() {
               }}
             />
 
-            {currentMode === 'video' && settings.videoGPSOverlayEnabled && (
-              <SkiaCameraCanvas
-                style={StyleSheet.absoluteFill}
-                offscreenTextures={skiaFrameProcessor.offscreenTextures}
-                resizeMode="cover"
-              />
-            )}
 
             <CameraOverlay
               gridStyle={settings.gridStyle}

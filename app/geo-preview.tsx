@@ -9,7 +9,6 @@ import {
   ActivityIndicator,
   Alert,
   Dimensions,
-  StyleSheet,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -18,9 +17,7 @@ import GeoOverlay from '@/components/GeoOverlay';
 import EditDataModal from '@/components/EditDataModal';
 import { saveFileToAppFolder } from '@/utils/mediaUtils';
 import { captureRef } from 'react-native-view-shot';
-import * as FileSystem from 'expo-file-system/legacy';
 
-import * as MediaLibrary from 'expo-media-library';
 import { useCameraSettings } from '@/contexts/CameraSettingsContext';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');

@@ -5,6 +5,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { controlStyles, modeStyles, captureStyles } from '@/styles/camera.styles';
 import type { CameraMode, FlashMode } from '@/contexts/CameraSettingsContext';
+import { isVideoUri } from '@/utils/videoThumbnail';
 
 interface CameraControlsProps {
     flashMode: FlashMode;
@@ -129,7 +130,20 @@ export default function CameraControls({
                         accessibilityLabel="Open Gallery"
                     >
                         {lastPhotoUri ? (
-                            <Image source={{ uri: lastPhotoUri }} style={captureStyles.thumbnail} contentFit="cover" />
+                            <View style={captureStyles.thumbnailContainer}>
+                                <Image
+                                    source={{ uri: lastPhotoUri }}
+                                    style={captureStyles.thumbnail}
+                                    contentFit="cover"
+                                    cachePolicy="memory-disk"
+                                />
+                                {/* Video indicator overlay */}
+                                {isVideoUri(lastPhotoUri) ? (
+                                    <View style={captureStyles.thumbnailVideoIndicator}>
+                                        <MaterialCommunityIcons name="play-circle" size={20} color="#fff" />
+                                    </View>
+                                ) : null}
+                            </View>
                         ) : (
                             <View style={captureStyles.thumbnailEmpty}>
                                 <MaterialCommunityIcons name="image" size={24} color="#888" />

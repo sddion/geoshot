@@ -4,7 +4,6 @@ import { GeoData } from '@/utils/geoOverlay';
 export type RootStackParamList = {
     index: undefined;
     settings: undefined;
-    gallery: undefined;
     'geo-preview': { photoUri: string };
     'video-preview': { videoUri: string };
 };

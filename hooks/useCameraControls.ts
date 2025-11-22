@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { Animated, Platform } from 'react-native';
+import { Animated } from 'react-native';
 import type { FocusPoint } from '@/types/camera';
 import { VolumeManager } from 'react-native-volume-manager';
 import type { VolumeAction } from '@/contexts/CameraSettingsContext';
@@ -16,28 +16,101 @@ export function useCameraControls(
     const [focusPoint, setFocusPoint] = useState<FocusPoint | null>(null);
     const focusAnimation = useRef(new Animated.Value(0)).current;
     const zoomSliderTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const previousVolumeRef = useRef<number | null>(null);
+    const volumeListenerRef = useRef<any>(null);
+    const lastCaptureTimeRef = useRef<number>(0); // For debouncing captures
+    const CAPTURE_DEBOUNCE_MS = 500; // Minimum time between captures
 
     // Volume button listener
     useEffect(() => {
-        if (volumeAction === 'off') return;
-
-        // Enable volume listener
-        VolumeManager.showNativeVolumeUI({ enabled: false }); // Hide system UI
-
-        const listener = VolumeManager.addVolumeListener((result) => {
-            if (volumeAction === 'shutter') {
-                // Trigger capture on any volume change
-                onCapture?.();
-            } else if (volumeAction === 'zoom') {
-                // Adjust zoom based on volume direction (this is tricky as we only get new volume)
-                // Simple zoom step for volume press
-                setZoom(prev => Math.min(prev + 0.5, 10));
+        if (volumeAction === 'off') {
+            // Clean up
+            if (volumeListenerRef.current) {
+                volumeListenerRef.current.remove();
+                volumeListenerRef.current = null;
             }
-        });
+            VolumeManager.showNativeVolumeUI({ enabled: true });
+            previousVolumeRef.current = null;
+            return;
+        }
+
+        const initializeVolumeListener = async () => {
+            try {
+                // Hide native volume UI
+                await VolumeManager.showNativeVolumeUI({ enabled: false });
+
+                // Get initial volume
+                const initialVolume = await VolumeManager.getVolume();
+                previousVolumeRef.current = initialVolume.volume;
+
+                // Add volume listener
+                volumeListenerRef.current = VolumeManager.addVolumeListener((result) => {
+                    const currentVolume = result.volume;
+
+                    if (volumeAction === 'shutter') {
+                        // Debounce to prevent multiple rapid captures
+                        const now = Date.now();
+                        if (now - lastCaptureTimeRef.current < CAPTURE_DEBOUNCE_MS) {
+                            // Too soon, ignore this capture
+                            return;
+                        }
+                        lastCaptureTimeRef.current = now;
+
+                        // Trigger capture on any volume change
+                        onCapture?.();
+
+                        // Restore volume
+                        setTimeout(() => {
+                            if (previousVolumeRef.current !== null) {
+                                VolumeManager.setVolume(previousVolumeRef.current, {
+                                    showUI: false,
+                                    playSound: false,
+                                });
+                            }
+                        }, 50);
+                    } else if (volumeAction === 'zoom') {
+                        // Detect zoom direction
+                        if (previousVolumeRef.current !== null) {
+                            const volumeDelta = currentVolume - previousVolumeRef.current;
+
+                            if (Math.abs(volumeDelta) > 0.001) {
+                                if (volumeDelta > 0) {
+                                    // Volume Up -> Zoom In
+                                    setZoom((prev) => Math.min(10, prev + 0.5));
+                                } else {
+                                    // Volume Down -> Zoom Out
+                                    setZoom((prev) => Math.max(1, prev - 0.5));
+                                }
+
+                                // Restore volume to keep it constant
+                                setTimeout(() => {
+                                    if (previousVolumeRef.current !== null) {
+                                        VolumeManager.setVolume(previousVolumeRef.current, {
+                                            showUI: false,
+                                            playSound: false,
+                                        });
+                                    }
+                                }, 50);
+                            }
+                        }
+                    }
+
+                    previousVolumeRef.current = currentVolume;
+                });
+            } catch (error) {
+                console.error('Failed to initialize volume listener:', error);
+            }
+        };
+
+        initializeVolumeListener();
 
         return () => {
-            listener.remove();
-            VolumeManager.showNativeVolumeUI({ enabled: true }); // Restore system UI
+            if (volumeListenerRef.current) {
+                volumeListenerRef.current.remove();
+                volumeListenerRef.current = null;
+            }
+            VolumeManager.showNativeVolumeUI({ enabled: true });
+            previousVolumeRef.current = null;
         };
     }, [volumeAction, onCapture]);
 

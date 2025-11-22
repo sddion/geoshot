@@ -26,14 +26,6 @@ function RootLayoutNav() {
         }}
       />
       <Stack.Screen
-        name="gallery"
-        options={{
-          title: "Gallery",
-          headerStyle: { backgroundColor: "#000" },
-          headerTintColor: "#fff",
-        }}
-      />
-      <Stack.Screen
         name="geo-preview"
         options={{
           headerShown: false,
