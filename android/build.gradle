@@ -22,6 +22,3 @@ allprojects {
 
 apply plugin: "expo-root-project"
 apply plugin: "com.facebook.react.rootproject"
-// @generated begin ffmpeg-kit-react-native-package - expo prebuild (DO NOT MODIFY) sync-3d2afee3bf3e62c8e7e2f5faaff1396dc491d7de
-ext { ffmpegKitPackage = "min" }
-// @generated end ffmpeg-kit-react-native-package

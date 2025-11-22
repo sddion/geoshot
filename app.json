@@ -113,12 +113,6 @@
           "isIosBackgroundLocationEnabled": true,
           "locationAlwaysAndWhenInUsePermission": "Allow $(PRODUCT_NAME) to use your location."
         }
-      ],
-      [
-        "@config-plugins/ffmpeg-kit-react-native",
-        {
-          "package": "min"
-        }
       ]
     ],
     "experiments": {

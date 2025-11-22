@@ -4,9 +4,6 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useVideoPlayer, VideoView } from 'expo-video';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import * as MediaLibrary from 'expo-media-library';
-import { FFmpegKit, ReturnCode } from 'ffmpeg-kit-react-native';
-import { captureRef } from 'react-native-view-shot';
-import * as FileSystem from 'expo-file-system/legacy';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { getVideoGPSData, saveVideoGPSData, VideoGPSData } from '@/utils/videoGPSData';
@@ -25,9 +22,6 @@ export default function VideoPreviewScreen() {
     const [isEditing, setIsEditing] = useState(false);
     const [saving, setSaving] = useState(false);
     const [fullGpsData, setFullGpsData] = useState<VideoGPSData | null>(null);
-
-    // Ref for capturing the overlay
-    const overlayRef = useRef<View>(null);
 
     // Initialize video player
     const player = useVideoPlayer(videoUri, player => {
@@ -70,48 +64,17 @@ export default function VideoPreviewScreen() {
     };
 
     const handleSave = async () => {
-        if (saving || !videoUri || !overlayRef.current) return;
+        if (saving || !videoUri) return;
 
         setSaving(true);
         try {
-            // 1. Capture the overlay as an image
-            const overlayUri = await captureRef(overlayRef, {
-                format: 'png',
-                quality: 1,
-                result: 'tmpfile',
-            });
+            // Save the video to the gallery
+            const asset = await MediaLibrary.createAssetAsync(videoUri);
+            console.log('Saved video asset:', asset.uri);
 
-            // 2. Define output path
-            const outputUri = `${FileSystem.cacheDirectory || FileSystem.documentDirectory || ''}geoshot_output_${Date.now()}.mp4`;
-
-            // 3. Construct FFmpeg command
-            // Overlay the image on top of the video. 
-            // Assuming the captured overlay image is the same size as the video view.
-            const command = `-i "${videoUri}" -i "${overlayUri}" -filter_complex "[0:v][1:v]overlay=0:0" -c:v libx264 -preset ultrafast -c:a copy "${outputUri}"`;
-
-            console.log('Running FFmpeg command:', command);
-
-            // 4. Execute FFmpeg
-            const session = await FFmpegKit.execute(command);
-            const returnCode = await session.getReturnCode();
-
-            if (ReturnCode.isSuccess(returnCode)) {
-                console.log('FFmpeg process finished successfully');
-
-                // 5. Save to Gallery
-                const asset = await MediaLibrary.createAssetAsync(outputUri);
-                console.log('Saved video asset:', asset.uri);
-
-                Alert.alert('Success', 'Video saved with GPS overlay!', [
-                    { text: 'OK', onPress: () => router.back() }
-                ]);
-            } else {
-                console.error('FFmpeg process failed with state', await session.getState());
-                const logs = await session.getLogs();
-                console.error('FFmpeg logs:', logs);
-                Alert.alert('Error', 'Failed to process video.');
-            }
-
+            Alert.alert('Success', 'Video saved to gallery!', [
+                { text: 'OK', onPress: () => router.back() }
+            ]);
         } catch (error) {
             console.error('Save error:', error);
             Alert.alert('Error', 'Failed to save video.');
@@ -179,14 +142,11 @@ export default function VideoPreviewScreen() {
                         contentFit="cover"
                     />
 
-                    {/* Overlay Container - Captured for FFmpeg */}
-                    {/* We position this absolutely over the video to match what the user sees, 
-                        and we capture THIS container which includes the transparent area and the bottom overlay */}
+
+                    {/* GPS Overlay */}
                     <View
-                        ref={overlayRef}
                         style={StyleSheet.absoluteFill}
                         pointerEvents="none"
-                        collapsable={false}
                     >
                         <View style={customStyles.overlayWrapper}>
                             {gpsData && (
@@ -218,7 +178,7 @@ const customStyles = StyleSheet.create({
     },
     overlayWrapper: {
         flex: 1,
-        justifyContent: 'flex-end', // Push to bottom
-        marginBottom: 90, // Move overlay up a bit
+        justifyContent: 'flex-end', 
+        marginBottom: 90, 
     },
 });
