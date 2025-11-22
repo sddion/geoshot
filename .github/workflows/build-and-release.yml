@@ -36,9 +36,6 @@ jobs:
           java-version: '17'
           cache: gradle
 
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
-
       - name: Install dependencies
         run: bun install
 
@@ -55,6 +52,7 @@ jobs:
       - name: Build APK
         run: |
           cd android
+          chmod +x gradlew
           ./gradlew assembleRelease -PreactNativeArchitectures=${{ matrix.arch }}
 
       - name: Upload Artifact
