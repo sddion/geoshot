@@ -20,7 +20,7 @@ import { Camera } from 'react-native-vision-camera';
  * - requestPermission(): explicitly requests camera permission
  * - openSettings(): opens OS settings (Linking.openSettings)
  */
-export type VisionPermissionStatus = 'authorized' | 'denied' | 'restricted' | 'not-determined' | 'limited' | 'unknown';
+export type VisionPermissionStatus = 'authorized' | 'denied' | 'restricted' | 'not-determined' | 'limited' | 'unknown' | 'granted';
 
 export function CameraPermission({ autoRequest = true } = {}) {
     const [status, setStatus] = useState<VisionPermissionStatus>('not-determined');
@@ -30,7 +30,7 @@ export function CameraPermission({ autoRequest = true } = {}) {
     const normalize = (s: string | null | undefined): VisionPermissionStatus => {
         if (!s) return 'unknown';
         // vision-camera returns these typical values — keep a safe fallback
-        if (s === 'authorized' || s === 'denied' || s === 'restricted' || s === 'not-determined' || s === 'limited') {
+        if (s === 'authorized' || s === 'denied' || s === 'restricted' || s === 'not-determined' || s === 'limited' || s === 'granted') {
             return s as VisionPermissionStatus;
         }
         return 'unknown';
@@ -74,7 +74,7 @@ export function CameraPermission({ autoRequest = true } = {}) {
 
         (async () => {
             const s = await checkPermission();
-            if (autoRequest && s !== 'authorized') {
+            if (autoRequest && s !== 'authorized' && s !== 'granted') {
                 // If not authorized, attempt request once.
                 // Some devices may return 'restricted' immediately; request will be a no-op or return restricted.
                 await requestPermission();
@@ -97,7 +97,7 @@ export function CameraPermission({ autoRequest = true } = {}) {
 
     return {
         status,
-        isAuthorized: status === 'authorized',
+        isAuthorized: status === 'authorized' || status === 'granted',
         isDenied: status === 'denied',
         isRestricted: status === 'restricted',
         isNotDetermined: status === 'not-determined',

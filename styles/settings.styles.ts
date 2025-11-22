@@ -1,126 +1,104 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Platform } from 'react-native';
+
+const ACCENT_COLOR = '#FFD700'; // Gold to match camera
+const BG_COLOR = '#000000';
+const CARD_COLOR = '#1C1C1E'; // iOS-like dark gray
+const TEXT_PRIMARY = '#FFFFFF';
+const TEXT_SECONDARY = '#8E8E93';
 
 export const settingsStyles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#000',
+        backgroundColor: BG_COLOR,
+    },
+    scrollContent: {
+        paddingBottom: 60,
+        paddingTop: 80,
     },
     section: {
-        marginTop: 24,
+        marginBottom: 32,
         paddingHorizontal: 16,
     },
     sectionTitle: {
         fontSize: 13,
-        fontWeight: '600' as const,
-        color: '#888',
+        fontWeight: '700',
+        color: ACCENT_COLOR,
         marginBottom: 12,
-        letterSpacing: 0.5,
+        marginLeft: 4,
+        textTransform: 'uppercase',
+        letterSpacing: 1,
     },
-    sectionDescription: {
-        fontSize: 13,
-        color: '#888',
-        marginTop: 8,
-        lineHeight: 18,
+    sectionCard: {
+        backgroundColor: CARD_COLOR,
+        borderRadius: 16,
+        overflow: 'hidden',
     },
     settingRow: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        backgroundColor: '#1a1a1a',
-        paddingVertical: 16,
+        paddingVertical: 18,
         paddingHorizontal: 16,
-        marginBottom: 1,
+        backgroundColor: CARD_COLOR,
+    },
+    // Separator line between rows
+    separator: {
+        height: StyleSheet.hairlineWidth,
+        backgroundColor: '#38383A',
+        marginLeft: 16,
     },
     settingLabel: {
-        fontSize: 16,
-        color: '#fff',
+        fontSize: 17,
+        color: TEXT_PRIMARY,
+        fontWeight: '500',
         flex: 1,
     },
     settingValue: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 8,
+        gap: 6,
     },
     settingValueText: {
-        fontSize: 16,
-        color: '#888',
+        fontSize: 17,
+        color: TEXT_SECONDARY,
     },
     dangerButton: {
-        backgroundColor: '#d32f2f',
-        paddingVertical: 16,
-        paddingHorizontal: 16,
-        borderRadius: 8,
+        flexDirection: 'row',
         alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'rgba(255, 59, 48, 0.15)', // Soft red
+        paddingVertical: 16,
+        borderRadius: 16,
+        marginHorizontal: 16,
         marginBottom: 24,
+        borderWidth: 1,
+        borderColor: 'rgba(255, 59, 48, 0.3)',
     },
     dangerButtonText: {
-        fontSize: 16,
-        fontWeight: '600' as const,
-        color: '#fff',
+        fontSize: 17,
+        fontWeight: '600',
+        color: '#FF453A', // iOS Red
     },
     aboutContainer: {
+        marginHorizontal: 16,
+        backgroundColor: CARD_COLOR,
+        borderRadius: 16,
+        padding: 20,
+        flexDirection: 'row',
         alignItems: 'center',
-        paddingVertical: 24,
+        justifyContent: 'space-between',
+    },
+    aboutInfo: {
+        flex: 1,
     },
     aboutTitle: {
         fontSize: 20,
-        fontWeight: '600' as const,
-        color: '#fff',
-        marginBottom: 8,
-    },
-    aboutDescription: {
-        fontSize: 14,
-        color: '#4CAF50',
-        fontWeight: '600' as const,
+        fontWeight: '700',
+        color: TEXT_PRIMARY,
         marginBottom: 4,
     },
     aboutSubtext: {
-        fontSize: 13,
-        color: '#888',
-        textAlign: 'center',
-        marginBottom: 16,
-    },
-    aboutText: {
         fontSize: 14,
-        color: '#888',
-        textAlign: 'center',
-        marginTop: 4,
-    },
-    githubButton: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: '#1a1a1a',
-        paddingHorizontal: 20,
-        paddingVertical: 12,
-        borderRadius: 8,
-        gap: 10,
-        borderWidth: 1,
-        borderColor: '#4CAF50',
-    },
-    githubButtonText: {
-        color: '#fff',
-        fontSize: 14,
-        fontWeight: '600' as const,
-    },
-    buttonGroup: {
-        flexDirection: 'row',
-        gap: 12,
-        justifyContent: 'center',
-    },
-    donateButton: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: '#1a1a1a',
-        paddingHorizontal: 20,
-        paddingVertical: 12,
-        borderRadius: 8,
-        gap: 10,
-        borderWidth: 1,
-        borderColor: '#FF6B6B',
-    },
-    donateButtonText: {
-        color: '#fff',
-        fontSize: 14,
-        fontWeight: '600' as const,
+        color: TEXT_SECONDARY,
     },
 });

@@ -132,6 +132,7 @@ export default function CameraControls({
                         {lastPhotoUri ? (
                             <View style={captureStyles.thumbnailContainer}>
                                 <Image
+                                    key={lastPhotoUri}
                                     source={{ uri: lastPhotoUri }}
                                     style={captureStyles.thumbnail}
                                     contentFit="cover"

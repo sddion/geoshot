@@ -9,6 +9,8 @@ import {
   ActivityIndicator,
   Alert,
   Dimensions,
+  ToastAndroid,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -33,6 +35,14 @@ export default function GeoPreviewScreen() {
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const viewRef = useRef<View>(null);
   const { setLastPhotoUri } = useCameraSettings();
+
+  const showToast = (message: string) => {
+    if (Platform.OS === 'android') {
+      ToastAndroid.show(message, ToastAndroid.SHORT);
+    } else {
+      Alert.alert('', message);
+    }
+  };
 
   useEffect(() => {
     loadGeoData();
@@ -79,9 +89,8 @@ export default function GeoPreviewScreen() {
         console.log('Photo with GPS overlay saved:', savedUri);
         setLastPhotoUri(savedUri);
 
-        Alert.alert('Success', 'Photo saved to GeoShot album', [
-          { text: 'OK', onPress: () => router.back() },
-        ]);
+        showToast('Photo saved to GeoShot album');
+        router.back();
       } else {
         Alert.alert('Error', 'Failed to save photo.');
       }

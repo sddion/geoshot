@@ -16,6 +16,7 @@ export default function AboutScreen() {
                     headerStyle: { backgroundColor: '#000' },
                     headerTintColor: '#fff',
                     headerBackTitle: "Settings",
+                    headerShadowVisible: false,
                 }}
             />
             <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
@@ -29,17 +30,24 @@ export default function AboutScreen() {
                 </View>
 
                 <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Our Philosophy</Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
+                        <MaterialCommunityIcons name="lightbulb-on-outline" size={24} color="#FFD700" style={{ marginRight: 10 }} />
+                        <Text style={[styles.sectionTitle, { marginBottom: 0 }]}>Our Philosophy</Text>
+                    </View>
+
                     <Text style={styles.text}>
                         GeoShot was built with a simple mission: <Text style={styles.highlight}>Ditch Ads.</Text>
                     </Text>
-                    <Text style={styles.text}>
+                    <Text style={[styles.text, { marginBottom: 0 }]}>
                         We believe your camera app should be a tool, not a billboard. No tracking, and absolutely no advertisements. Just a clean, powerful camera experience that respects your privacy.
                     </Text>
                 </View>
 
                 <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Support Development</Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
+                        <MaterialCommunityIcons name="heart-outline" size={24} color="#E91E63" style={{ marginRight: 10 }} />
+                        <Text style={[styles.sectionTitle, { marginBottom: 0 }]}>Support Development</Text>
+                    </View>
                     <Text style={styles.text}>
                         This project is open source and maintained by Sddion. If you enjoy using GeoShot, consider starring the repo or making a donation to support future updates.
                     </Text>
@@ -49,7 +57,7 @@ export default function AboutScreen() {
                             style={[styles.button, styles.githubButton]}
                             onPress={() => Linking.openURL('https://github.com/sddion/geoshot')}
                         >
-                            <MaterialCommunityIcons name="github" size={20} color="#fff" />
+                            <MaterialCommunityIcons name="github" size={22} color="#fff" />
                             <Text style={styles.buttonText}>GitHub</Text>
                         </TouchableOpacity>
 
@@ -57,7 +65,7 @@ export default function AboutScreen() {
                             style={[styles.button, styles.donateButton]}
                             onPress={() => Linking.openURL('https://github.com/sponsors/sddion')}
                         >
-                            <MaterialCommunityIcons name="heart" size={20} color="#fff" />
+                            <MaterialCommunityIcons name="heart" size={22} color="#fff" />
                             <Text style={styles.buttonText}>Donate</Text>
                         </TouchableOpacity>
                     </View>

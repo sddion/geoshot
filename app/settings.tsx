@@ -9,10 +9,11 @@ import {
   TouchableOpacity,
   Switch,
   Alert,
-  Linking,
   ToastAndroid,
   Platform,
 } from 'react-native';
+import { useRouter, Href } from 'expo-router';
+import Constants from 'expo-constants';
 
 // Toast utility function
 const showToast = (message: string) => {
@@ -23,19 +24,30 @@ const showToast = (message: string) => {
   }
 };
 
-import { useRouter, Href } from 'expo-router';
-import Constants from 'expo-constants';
-
 export default function SettingsScreen() {
   const { settings, updateSetting, resetSettings } = useCameraSettings();
   const router = useRouter();
 
-  const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
-    <View style={styles.section}>
-      <Text style={styles.sectionTitle}>{title}</Text>
-      {children}
-    </View>
-  );
+  const Separator = () => <View style={styles.separator} />;
+
+  const Section = ({ title, children }: { title: string; children: React.ReactNode }) => {
+    // Filter out null/false children to avoid rendering separators for them
+    const validChildren = React.Children.toArray(children).filter(Boolean);
+
+    return (
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>{title}</Text>
+        <View style={styles.sectionCard}>
+          {validChildren.map((child, index) => (
+            <React.Fragment key={index}>
+              {child}
+              {index < validChildren.length - 1 && <Separator />}
+            </React.Fragment>
+          ))}
+        </View>
+      </View>
+    );
+  };
 
   const SettingRow = ({
     label,
@@ -56,20 +68,20 @@ export default function SettingsScreen() {
       style={styles.settingRow}
       onPress={onPress}
       disabled={showToggle || !onPress}
-      activeOpacity={onPress ? 0.7 : 1}
+      activeOpacity={onPress ? 0.6 : 1}
     >
       <Text style={styles.settingLabel}>{label}</Text>
       {showToggle ? (
         <Switch
           value={toggleValue}
           onValueChange={onToggle}
-          trackColor={{ false: '#444', true: '#4CAF50' }}
+          trackColor={{ false: '#3A3A3C', true: '#FFD700' }} // Gold accent
           thumbColor="#fff"
         />
       ) : (
         <View style={styles.settingValue}>
           <Text style={styles.settingValueText}>{value}</Text>
-          {onPress && <MaterialCommunityIcons name="chevron-right" size={20} color="#888" />}
+          {onPress && <MaterialCommunityIcons name="chevron-right" size={20} color="#555" />}
         </View>
       )}
     </TouchableOpacity>
@@ -94,11 +106,11 @@ export default function SettingsScreen() {
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: 'rgba(0,0,0,0.85)' }]}>
-      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 40 }}>
-        <Section title="GENERAL">
+    <View style={styles.container}>
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.scrollContent}>
+        <Section title="General">
           <SettingRow
-            label="Storage location"
+            label="Storage Location"
             value={settings.storageLocation === 'phone' ? 'Phone' : 'SD Card'}
             onPress={() => {
               const newValue = settings.storageLocation === 'phone' ? 'sd' : 'phone';
@@ -106,7 +118,7 @@ export default function SettingsScreen() {
             }}
           />
           <SettingRow
-            label="Volume button action"
+            label="Volume Button Action"
             value={settings.volumeAction === 'shutter' ? 'Shutter' : settings.volumeAction === 'zoom' ? 'Zoom' : 'Off'}
             onPress={() => {
               const actions = ['shutter', 'zoom', 'off'] as const;
@@ -116,19 +128,19 @@ export default function SettingsScreen() {
             }}
           />
           <SettingRow
-            label="Shutter sound"
+            label="Shutter Sound"
             showToggle
             toggleValue={settings.shutterSound}
             onToggle={(value) => updateSetting('shutterSound', value)}
           />
           <SettingRow
-            label="Save location information"
+            label="Save Location Info"
             showToggle
             toggleValue={settings.saveLocation}
             onToggle={(value) => updateSetting('saveLocation', value)}
           />
           <SettingRow
-            label="Grid style"
+            label="Grid Overlay"
             value={settings.gridStyle === 'off' ? 'Off' : settings.gridStyle === '3x3' ? '3×3' : 'Golden Ratio'}
             onPress={() => {
               const styles = ['off', '3x3', 'golden'] as const;
@@ -139,7 +151,7 @@ export default function SettingsScreen() {
           />
           <SettingRow
             label="Timer"
-            value={settings.timer === 'off' ? 'Off' : settings.timer === '2s' ? '2 seconds' : settings.timer === '5s' ? '5 seconds' : '10 seconds'}
+            value={settings.timer === 'off' ? 'Off' : settings.timer}
             onPress={() => {
               const timers = ['off', '2s', '5s', '10s'] as const;
               const currentIndex = timers.indexOf(settings.timer);
@@ -148,16 +160,16 @@ export default function SettingsScreen() {
             }}
           />
           <SettingRow
-            label="Touch to capture"
+            label="Touch to Capture"
             showToggle
             toggleValue={settings.touchToCapture}
             onToggle={(value) => updateSetting('touchToCapture', value)}
           />
         </Section>
 
-        <Section title="PHOTO">
+        <Section title="Photo">
           <SettingRow
-            label="Aspect ratio"
+            label="Aspect Ratio"
             value={settings.photoAspectRatio}
             onPress={() => {
               const ratios = ['4:3', '16:9', '1:1'] as const;
@@ -167,17 +179,7 @@ export default function SettingsScreen() {
             }}
           />
           <SettingRow
-            label="Photo resolution"
-            value={settings.photoResolution.toUpperCase()}
-            onPress={() => {
-              const resolutions = ['1080p', '4k', '8k', 'max'] as const;
-              const currentIndex = resolutions.indexOf(settings.photoResolution);
-              const newValue = resolutions[(currentIndex + 1) % resolutions.length];
-              updateSetting('photoResolution', newValue);
-            }}
-          />
-          <SettingRow
-            label="Image quality"
+            label="Quality"
             value={settings.imageQuality === 'normal' ? 'Normal' : settings.imageQuality === 'fine' ? 'Fine' : 'Superfine'}
             onPress={() => {
               const qualities = ['normal', 'fine', 'superfine'] as const;
@@ -187,16 +189,16 @@ export default function SettingsScreen() {
             }}
           />
           <SettingRow
-            label="Gesture zoom"
+            label="Gesture Zoom"
             showToggle
             toggleValue={settings.gestureZoom}
             onToggle={(value) => updateSetting('gestureZoom', value)}
           />
         </Section>
 
-        <Section title="VIDEO">
+        <Section title="Video">
           <SettingRow
-            label="Video resolution"
+            label="Resolution"
             value={settings.videoResolution.toUpperCase()}
             onPress={() => {
               const resolutions = ['720p', '1080p', '4k'] as const;
@@ -206,7 +208,7 @@ export default function SettingsScreen() {
             }}
           />
           <SettingRow
-            label="FPS"
+            label="Frame Rate"
             value={`${settings.videoFPS} FPS`}
             onPress={() => {
               const fps = [30, 60, 120] as const;
@@ -216,31 +218,31 @@ export default function SettingsScreen() {
             }}
           />
           <SettingRow
-            label="Video stabilization"
+            label="Stabilization"
             showToggle
             toggleValue={settings.videoStabilization}
             onToggle={(value) => updateSetting('videoStabilization', value)}
           />
         </Section>
 
-        <Section title="ADVANCED">
+        <View style={{ marginTop: 20 }}>
           <TouchableOpacity style={styles.dangerButton} onPress={handleReset}>
+            <MaterialCommunityIcons name="restore" size={22} color="#FF453A" style={{ marginRight: 8 }} />
             <Text style={styles.dangerButtonText}>Reset Camera Settings</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={styles.aboutContainer}
             onPress={() => router.push('/about' as Href)}
+            activeOpacity={0.7}
           >
-            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-              <View>
-                <Text style={styles.aboutTitle}>About GeoShot</Text>
-                <Text style={styles.aboutSubtext}>Version {Constants.expoConfig?.version || '1.0.0'}</Text>
-              </View>
-              <MaterialCommunityIcons name="chevron-right" size={24} color="#888" />
+            <View style={styles.aboutInfo}>
+              <Text style={styles.aboutTitle}>About GeoShot</Text>
+              <Text style={styles.aboutSubtext}>Version {Constants.expoConfig?.version || '1.0.0'}</Text>
             </View>
+            <MaterialCommunityIcons name="chevron-right" size={24} color="#555" />
           </TouchableOpacity>
-        </Section>
+        </View>
 
         <View style={{ height: 40 }} />
       </ScrollView>

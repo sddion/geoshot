@@ -1,5 +1,5 @@
 import { useCameraSettings } from '@/contexts/CameraSettingsContext';
-import { Camera, useCameraDevice } from 'react-native-vision-camera';
+import { Camera, useCameraDevice, useCameraFormat } from 'react-native-vision-camera';
 import * as MediaLibrary from 'expo-media-library';
 import { useRouter } from 'expo-router';
 import { useLiveGeoData } from '@/utils/useLiveGeoData';
@@ -141,6 +141,18 @@ export default function CameraScreen() {
 
   // VisionCamera device
   const device = useCameraDevice(facing);
+
+  // Video Format Selection
+  const targetResolution = settings.videoResolution === '4k'
+    ? { width: 3840, height: 2160 }
+    : settings.videoResolution === '1080p'
+      ? { width: 1920, height: 1080 }
+      : { width: 1280, height: 720 };
+
+  const format = useCameraFormat(device, [
+    { videoResolution: targetResolution },
+    { fps: settings.videoFPS }
+  ]);
 
   const toggleCameraFacing = () => {
     setFacing((prev) => (prev === 'back' ? 'front' : 'back'));
@@ -284,12 +296,14 @@ export default function CameraScreen() {
               ref={cameraRef}
               style={cameraStyles.camera}
               device={device}
+              format={format}
               isActive={isActive && !hasCameraError}
               photo={currentMode !== 'video'}
               video={currentMode === 'video'}
+              audio={currentMode === 'video'}
               zoom={zoom}
               torch={settings.flashMode === 'torch' ? 'on' : 'off'}
-              lowLightBoost={currentMode === 'night'}
+              enableZoomGesture={false}
               onError={(error) => {
                 console.error('Camera Runtime Error:', error);
                 if (error.code === 'system/camera-is-restricted') {
@@ -303,6 +317,9 @@ export default function CameraScreen() {
               onTouchEnd={(event) => {
                 const { locationX, locationY } = event.nativeEvent;
                 handleFocusTap({ x: locationX, y: locationY });
+                if (settings.touchToCapture && currentMode === 'photo') {
+                  handleCapture(getTimerSeconds());
+                }
               }}
             />
 
