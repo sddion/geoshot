@@ -139,7 +139,28 @@ export function useAutoPermissions() {
 
             await new Promise(resolve => setTimeout(resolve, 300));
 
-            // 3. LOCATION PERMISSION
+            // 3. Media Library
+            const currentMedia = await MediaLibrary.getPermissionsAsync();
+            if (currentMedia.status !== MediaLibrary.PermissionStatus.GRANTED) {
+                // Prevent loop: Only ask if we can ask again, or if it's undetermined.
+                if (currentMedia.status === MediaLibrary.PermissionStatus.DENIED && !currentMedia.canAskAgain) {
+                    console.log('Media library permission permanently denied.');
+                    await checkPermissions();
+                    return;
+                }
+
+                console.log('Requesting media library permission...');
+                const mediaResult = await requestMediaLibrary();
+                if (mediaResult.status !== MediaLibrary.PermissionStatus.GRANTED) {
+                    console.log('Media library permission denied');
+                    await checkPermissions();
+                    return;
+                }
+            }
+
+            await new Promise(resolve => setTimeout(resolve, 300));
+
+            // 4. LOCATION PERMISSION
             console.log("Checking location permission...");
             let loc = await Location.getForegroundPermissionsAsync();
 
@@ -175,27 +196,6 @@ export function useAutoPermissions() {
                     console.log("Background location permanently denied. Opening settings...");
                     waitingForSettingsRef.current = true;
                     Linking.openSettings().catch(() => console.warn("Unable to open settings"));
-                    await checkPermissions();
-                    return;
-                }
-            }
-
-            await new Promise(resolve => setTimeout(resolve, 300));
-
-            // 4. Media Library
-            const currentMedia = await MediaLibrary.getPermissionsAsync();
-            if (currentMedia.status !== MediaLibrary.PermissionStatus.GRANTED) {
-                // Prevent loop: Only ask if we can ask again, or if it's undetermined.
-                if (currentMedia.status === MediaLibrary.PermissionStatus.DENIED && !currentMedia.canAskAgain) {
-                    console.log('Media library permission permanently denied.');
-                    await checkPermissions();
-                    return;
-                }
-
-                console.log('Requesting media library permission...');
-                const mediaResult = await requestMediaLibrary();
-                if (mediaResult.status !== MediaLibrary.PermissionStatus.GRANTED) {
-                    console.log('Media library permission denied');
                     await checkPermissions();
                     return;
                 }
