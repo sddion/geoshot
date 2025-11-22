@@ -23,8 +23,8 @@ const showToast = (message: string) => {
   }
 };
 
-import { BlurView } from 'expo-blur';
-import { useRouter } from 'expo-router';
+import { useRouter, Href } from 'expo-router';
+import Constants from 'expo-constants';
 
 export default function SettingsScreen() {
   const { settings, updateSetting, resetSettings } = useCameraSettings();
@@ -94,7 +94,7 @@ export default function SettingsScreen() {
   };
 
   return (
-    <BlurView intensity={80} tint="dark" style={[styles.container, { backgroundColor: 'transparent' }]}>
+    <View style={[styles.container, { backgroundColor: 'rgba(0,0,0,0.85)' }]}>
       <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 40 }}>
         <Section title="GENERAL">
           <SettingRow
@@ -221,12 +221,6 @@ export default function SettingsScreen() {
             toggleValue={settings.videoStabilization}
             onToggle={(value) => updateSetting('videoStabilization', value)}
           />
-          <SettingRow
-            label="GPS overlay on video"
-            showToggle
-            toggleValue={settings.videoGPSOverlayEnabled}
-            onToggle={(value) => updateSetting('videoGPSOverlayEnabled', value)}
-          />
         </Section>
 
         <Section title="ADVANCED">
@@ -234,39 +228,22 @@ export default function SettingsScreen() {
             <Text style={styles.dangerButtonText}>Reset Camera Settings</Text>
           </TouchableOpacity>
 
-          <View style={styles.aboutContainer}>
-            <Text style={styles.aboutTitle}>GeoShot v1.0.2</Text>
-            <Text style={styles.aboutDescription}>
-              Built by Sddion
-            </Text>
-            <Text style={styles.aboutSubtext}>
-              Passionate about open-source development
-            </Text>
-
-            <View style={styles.buttonGroup}>
-              <TouchableOpacity
-                style={styles.githubButton}
-                onPress={() => Linking.openURL('https://github.com/sddion/geoshot.git')}
-              >
-                <MaterialCommunityIcons name="github" size={20} color="#fff" />
-                <Text style={styles.githubButtonText}>GitHub</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.donateButton}
-                onPress={() => { }}
-              >
-                <MaterialCommunityIcons name="heart" size={20} color="#fff" />
-                <Text style={styles.donateButtonText}>Donate</Text>
-              </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.aboutContainer}
+            onPress={() => router.push('/about' as Href)}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+              <View>
+                <Text style={styles.aboutTitle}>About GeoShot</Text>
+                <Text style={styles.aboutSubtext}>Version {Constants.expoConfig?.version || '1.0.0'}</Text>
+              </View>
+              <MaterialCommunityIcons name="chevron-right" size={24} color="#888" />
             </View>
-          </View>
+          </TouchableOpacity>
         </Section>
 
         <View style={{ height: 40 }} />
       </ScrollView>
-    </BlurView>
+    </View>
   );
 }
-
-

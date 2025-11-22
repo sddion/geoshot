@@ -4,11 +4,21 @@ import * as MediaLibrary from 'expo-media-library';
 import { useRouter } from 'expo-router';
 import { useLiveGeoData } from '@/utils/useLiveGeoData';
 import React, { useRef, useState, useEffect } from 'react';
-import { View, Text, Linking, Platform, StyleSheet, Alert, AppState, ActivityIndicator } from 'react-native';
-import { useCameraControls } from '@/hooks/useCameraControls';
-import { useCameraCapture } from '@/hooks/useCameraCapture';
-import { useAutoPermissions } from '@/hooks/useAutoPermissions';
+import {
+  View,
+  Text,
+  Linking,
+  Platform,
+  StyleSheet,
+  Alert,
+  AppState,
+  ActivityIndicator
+} from 'react-native';
+import { useCameraControls } from '@/hooks/CameraControls';
+import { useCameraCapture } from '@/hooks/CameraCapture';
+import { useAutoPermissions } from '@/hooks/Permissions';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import { CameraPermission } from '@/hooks/CameraPermission';
 
 // Modular Components
 import CameraControls from '@/components/CameraControls';
@@ -22,8 +32,15 @@ export default function CameraScreen() {
   const router = useRouter();
   const cameraRef = useRef<Camera>(null);
 
-  // Auto-request permissions
+  // Expo permission system
   const { allGranted, isRequesting } = useAutoPermissions();
+
+  // VisionCamera native permission system
+  const {
+    isAuthorized: vcAuthorized,
+    isRestricted: vcRestricted,
+    isRequesting: vcLoading,
+  } = CameraPermission();
 
   // Camera facing state
   const [facing, setFacing] = useState<'back' | 'front'>('back');
@@ -33,20 +50,33 @@ export default function CameraScreen() {
   const [isActive, setIsActive] = useState(appState.current === 'active');
   const [hasCameraError, setHasCameraError] = useState(false);
 
+  // ⭐ NEW: Delay before mounting camera to avoid keep-awake crash
+  const [canMountCamera, setCanMountCamera] = useState(false);
+
+  useEffect(() => {
+    if (isActive) {
+      const timeout = setTimeout(() => {
+        setCanMountCamera(true);
+      }, 500); // Android needs time after permission dialogs
+      return () => clearTimeout(timeout);
+    } else {
+      setCanMountCamera(false);
+    }
+  }, [isActive]);
+
   useEffect(() => {
     const subscription = AppState.addEventListener('change', (nextAppState) => {
       appState.current = nextAppState;
       setIsActive(nextAppState === 'active');
     });
 
-    return () => {
-      subscription.remove();
-    };
+    return () => subscription.remove();
   }, []);
 
   // Settings and state
   const { settings, updateSetting } = useCameraSettings();
-  const { data: liveGeoData, mapTile: liveMapTile } = useLiveGeoData(settings.geoOverlayEnabled);
+  const { data: liveGeoData, mapTile: liveMapTile } =
+    useLiveGeoData(settings.geoOverlayEnabled);
 
   const {
     currentMode,
@@ -68,8 +98,9 @@ export default function CameraScreen() {
     handleFocusTap,
   } = useCameraControls(
     settings.volumeAction,
-    // Only pass capture callback when volume action is 'shutter'
-    settings.volumeAction === 'shutter' ? () => handleCapture(getTimerSeconds()) : undefined
+    settings.volumeAction === 'shutter'
+      ? () => handleCapture(getTimerSeconds())
+      : undefined
   );
 
   // Zoom Gesture
@@ -79,16 +110,17 @@ export default function CameraScreen() {
       startZoom.current = zoom;
     })
     .onUpdate((e) => {
-      // Swipe up (negative Y) to zoom in, down to zoom out
       const sensitivity = 0.015;
       const delta = -e.translationY * sensitivity;
-      const newZoom = Math.max(1, Math.min(10, startZoom.current + delta));
-      // Using runOnJS to update React state from gesture callback
+      const newZoom = Math.max(
+        1,
+        Math.min(10, startZoom.current + delta)
+      );
       setZoom(newZoom);
     })
     .runOnJS(true);
 
-  // Camera capture (photo/video)
+  // Camera capture
   const {
     isCapturing,
     isRecording,
@@ -98,7 +130,8 @@ export default function CameraScreen() {
   } = useCameraCapture({
     cameraRef,
     currentMode,
-    flashMode: settings.flashMode === 'torch' ? 'off' : settings.flashMode,
+    flashMode:
+      settings.flashMode === 'torch' ? 'off' : settings.flashMode,
     imageQuality: settings.imageQuality,
     geoOverlayEnabled: settings.geoOverlayEnabled,
     liveGeoData: liveGeoData,
@@ -110,7 +143,7 @@ export default function CameraScreen() {
   const device = useCameraDevice(facing);
 
   const toggleCameraFacing = () => {
-    setFacing(prev => prev === 'back' ? 'front' : 'back');
+    setFacing((prev) => (prev === 'back' ? 'front' : 'back'));
   };
 
   const openSystemGallery = async () => {
@@ -125,9 +158,10 @@ export default function CameraScreen() {
         }
       }
 
-      // Fallback: open gallery app
       if (Platform.OS === 'android') {
-        await Linking.openURL('content://media/internal/images/media');
+        await Linking.openURL(
+          'content://media/internal/images/media'
+        );
       } else {
         await Linking.openURL('photos-redirect://');
       }
@@ -145,20 +179,42 @@ export default function CameraScreen() {
     }
   };
 
+  // EXPO PERMISSIONS NOT GRANTED
   if (!allGranted) {
     return (
       <View style={cameraStyles.container}>
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+        <View
+          style={{
+            flex: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+            padding: 20,
+          }}
+        >
           {isRequesting ? (
             <>
               <ActivityIndicator size="large" color="#fff" />
-              <Text style={{ color: '#fff', fontSize: 16, marginTop: 20, textAlign: 'center' }}>
+              <Text
+                style={{
+                  color: '#fff',
+                  fontSize: 16,
+                  marginTop: 20,
+                  textAlign: 'center',
+                }}
+              >
                 Setting up permissions...
               </Text>
             </>
           ) : (
             <>
-              <Text style={{ color: '#fff', fontSize: 18, textAlign: 'center', marginBottom: 10 }}>
+              <Text
+                style={{
+                  color: '#fff',
+                  fontSize: 18,
+                  textAlign: 'center',
+                  marginBottom: 10,
+                }}
+              >
                 Permissions Required
               </Text>
               <Text style={{ color: '#aaa', textAlign: 'center' }}>
@@ -171,6 +227,27 @@ export default function CameraScreen() {
     );
   }
 
+  // VISION CAMERA RESTRICTED
+  if (vcRestricted) {
+    return (
+      <View style={cameraStyles.container}>
+        <Text style={{ color: '#fff', textAlign: 'center', marginTop: 100 }}>
+          Camera is restricted by device policy.
+        </Text>
+      </View>
+    );
+  }
+
+  // DO NOT RENDER CAMERA UNTIL ALL STATES ARE STABLE
+  if (!vcAuthorized || vcLoading || !canMountCamera) {
+    return (
+      <View style={[cameraStyles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color="#fff" />
+      </View>
+    );
+  }
+
+  // HARD CAMERA ERROR
   if (hasCameraError) {
     return (
       <View style={cameraStyles.container}>
@@ -186,6 +263,7 @@ export default function CameraScreen() {
     );
   }
 
+  // NO CAMERA DEVICE
   if (device == null) {
     return (
       <View style={cameraStyles.container}>
@@ -196,6 +274,7 @@ export default function CameraScreen() {
     );
   }
 
+  // RENDER CAMERA UI
   return (
     <View style={cameraStyles.container}>
       <View style={cameraStyles.cameraContainer}>
@@ -215,7 +294,10 @@ export default function CameraScreen() {
                 console.error('Camera Runtime Error:', error);
                 if (error.code === 'system/camera-is-restricted') {
                   setHasCameraError(true);
-                  Alert.alert('Camera Restricted', 'Camera is restricted by the OS. Please check device policies or parental controls.');
+                  Alert.alert(
+                    'Camera Restricted',
+                    'Camera is restricted by the OS. Please check device policies or parental controls.'
+                  );
                 }
               }}
               onTouchEnd={(event) => {
@@ -223,7 +305,6 @@ export default function CameraScreen() {
                 handleFocusTap({ x: locationX, y: locationY });
               }}
             />
-
 
             <CameraOverlay
               gridStyle={settings.gridStyle}
@@ -250,7 +331,9 @@ export default function CameraScreen() {
         flashMode={settings.flashMode}
         cycleFlash={cycleFlash}
         geoOverlayEnabled={settings.geoOverlayEnabled}
-        toggleGeoOverlay={() => updateSetting('geoOverlayEnabled', !settings.geoOverlayEnabled)}
+        toggleGeoOverlay={() =>
+          updateSetting('geoOverlayEnabled', !settings.geoOverlayEnabled)
+        }
         isRecording={isRecording}
         currentMode={currentMode}
         setCurrentMode={setCurrentMode}
