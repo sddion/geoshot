@@ -100,9 +100,11 @@ export function useCameraCapture({
                 onRecordingFinished: async (video: VideoFile) => {
                     if (video?.path) {
                         const videoUri = `file://${video.path}`;
-                        const asset = await MediaLibrary.createAssetAsync(videoUri);
-                        setLastPhotoUri(asset.uri);
-                        showToast('Video saved!');
+                        // Navigate to preview instead of auto-saving
+                        router.push({
+                            pathname: '/video-preview',
+                            params: { videoUri }
+                        });
                     }
                 },
                 onRecordingError: (error: CameraCaptureError) => {
@@ -138,6 +140,24 @@ export function useCameraCapture({
         }
     }, [cameraRef, isRecording]);
 
+    const executeCapture = useCallback(async () => {
+        setIsCapturing(true);
+
+        try {
+            if (currentMode === 'video') {
+                if (isRecording) {
+                    await stopVideoRecording();
+                } else {
+                    await startVideoRecording();
+                }
+            } else {
+                await capturePhoto();
+            }
+        } finally {
+            setIsCapturing(false);
+        }
+    }, [currentMode, isRecording, capturePhoto, startVideoRecording, stopVideoRecording]);
+
     const handleCapture = useCallback(async (timerSeconds?: number) => {
         if (isCapturing) return;
 
@@ -159,25 +179,7 @@ export function useCameraCapture({
         }
 
         executeCapture();
-    }, [isCapturing]);
-
-    const executeCapture = useCallback(async () => {
-        setIsCapturing(true);
-
-        try {
-            if (currentMode === 'video') {
-                if (isRecording) {
-                    await stopVideoRecording();
-                } else {
-                    await startVideoRecording();
-                }
-            } else {
-                await capturePhoto();
-            }
-        } finally {
-            setIsCapturing(false);
-        }
-    }, [currentMode, isRecording, capturePhoto, startVideoRecording, stopVideoRecording]);
+    }, [isCapturing, executeCapture]);
 
     return {
         isCapturing,

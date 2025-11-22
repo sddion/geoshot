@@ -101,57 +101,53 @@ export default function CameraControls({
 
             {/* Bottom Controls */}
             <SafeAreaView style={controlStyles.bottomControls} edges={['bottom']}>
-                {!isRecording && (
-                    <View style={modeStyles.modeSelector}>
-                        {modes.map((mode) => (
-                            <TouchableOpacity
-                                key={mode}
-                                style={modeStyles.modeButton}
-                                onPress={() => setCurrentMode(mode)}
-                                accessibilityRole="button"
-                                accessibilityLabel={`Switch to ${mode} mode`}
-                                accessibilityState={{ selected: currentMode === mode }}
-                            >
-                                <View style={{ marginBottom: 4 }}>{getModeIcon(mode)}</View>
-                                <Text style={[modeStyles.modeText, currentMode === mode && modeStyles.modeTextActive]}>
-                                    {mode.toUpperCase()}
-                                </Text>
-                            </TouchableOpacity>
-                        ))}
-                    </View>
-                )}
+                <View style={[modeStyles.modeSelector, isRecording && { opacity: 0 }]} pointerEvents={isRecording ? 'none' : 'auto'}>
+                    {modes.map((mode) => (
+                        <TouchableOpacity
+                            key={mode}
+                            style={modeStyles.modeButton}
+                            onPress={() => setCurrentMode(mode)}
+                            accessibilityRole="button"
+                            accessibilityLabel={`Switch to ${mode} mode`}
+                            accessibilityState={{ selected: currentMode === mode }}
+                        >
+                            <View style={{ marginBottom: 4 }}>{getModeIcon(mode)}</View>
+                            <Text style={[modeStyles.modeText, currentMode === mode && modeStyles.modeTextActive]}>
+                                {mode.toUpperCase()}
+                            </Text>
+                        </TouchableOpacity>
+                    ))}
+                </View>
 
                 <View style={captureStyles.captureRow}>
-                    {!isRecording && (
-                        <TouchableOpacity
-                            style={captureStyles.thumbnailButton}
-                            onPress={openGallery}
-                            accessibilityRole="button"
-                            accessibilityLabel="Open Gallery"
-                        >
-                            {lastPhotoUri ? (
-                                <Image source={{ uri: lastPhotoUri }} style={captureStyles.thumbnail} contentFit="cover" />
-                            ) : (
-                                <View style={captureStyles.thumbnailEmpty}>
-                                    <MaterialCommunityIcons name="image" size={24} color="#888" />
-                                </View>
-                            )}
-                        </TouchableOpacity>
-                    )}
+                    <TouchableOpacity
+                        style={[captureStyles.thumbnailButton, isRecording && { opacity: 0 }]}
+                        onPress={openGallery}
+                        disabled={isRecording}
+                        accessibilityRole="button"
+                        accessibilityLabel="Open Gallery"
+                    >
+                        {lastPhotoUri ? (
+                            <Image source={{ uri: lastPhotoUri }} style={captureStyles.thumbnail} contentFit="cover" />
+                        ) : (
+                            <View style={captureStyles.thumbnailEmpty}>
+                                <MaterialCommunityIcons name="image" size={24} color="#888" />
+                            </View>
+                        )}
+                    </TouchableOpacity>
 
                     {/* Capture Button injected here */}
                     {captureButton}
 
-                    {!isRecording && (
-                        <TouchableOpacity
-                            style={captureStyles.flipButton}
-                            onPress={toggleCameraFacing}
-                            accessibilityRole="button"
-                            accessibilityLabel="Flip Camera"
-                        >
-                            <MaterialCommunityIcons name="sync" size={32} color="#fff" />
-                        </TouchableOpacity>
-                    )}
+                    <TouchableOpacity
+                        style={[captureStyles.flipButton, isRecording && { opacity: 0 }]}
+                        onPress={toggleCameraFacing}
+                        disabled={isRecording}
+                        accessibilityRole="button"
+                        accessibilityLabel="Flip Camera"
+                    >
+                        <MaterialCommunityIcons name="sync" size={32} color="#fff" />
+                    </TouchableOpacity>
                 </View>
             </SafeAreaView>
         </>

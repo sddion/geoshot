@@ -1,5 +1,5 @@
 diff --git a/node_modules/react-native-vision-camera/lib/commonjs/skia/SkiaCameraCanvas.js b/node_modules/react-native-vision-camera/lib/commonjs/skia/SkiaCameraCanvas.js
-index 157c3ac..6300097 100644
+index 157c3ac..54b2ddc 100644
 --- a/node_modules/react-native-vision-camera/lib/commonjs/skia/SkiaCameraCanvas.js
 +++ b/node_modules/react-native-vision-camera/lib/commonjs/skia/SkiaCameraCanvas.js
 @@ -17,40 +17,26 @@ function SkiaCameraCanvasImpl({
@@ -53,7 +53,7 @@ index 157c3ac..6300097 100644
      image: texture
    }));
 diff --git a/node_modules/react-native-vision-camera/lib/module/skia/SkiaCameraCanvas.js b/node_modules/react-native-vision-camera/lib/module/skia/SkiaCameraCanvas.js
-index a3b5a4a..7843745 100644
+index a3b5a4a..9d05aa7 100644
 --- a/node_modules/react-native-vision-camera/lib/module/skia/SkiaCameraCanvas.js
 +++ b/node_modules/react-native-vision-camera/lib/module/skia/SkiaCameraCanvas.js
 @@ -1,5 +1,5 @@
@@ -114,7 +114,7 @@ index a3b5a4a..7843745 100644
      image: texture
    }));
 diff --git a/node_modules/react-native-vision-camera/src/skia/SkiaCameraCanvas.tsx b/node_modules/react-native-vision-camera/src/skia/SkiaCameraCanvas.tsx
-index 56d4e0e..d534c2e 100644
+index 56d4e0e..b57e520 100644
 --- a/node_modules/react-native-vision-camera/src/skia/SkiaCameraCanvas.tsx
 +++ b/node_modules/react-native-vision-camera/src/skia/SkiaCameraCanvas.tsx
 @@ -1,5 +1,5 @@
@@ -125,7 +125,7 @@ index 56d4e0e..d534c2e 100644
  import type { CameraProps } from '../types/CameraProps'
  import type { ISharedValue } from 'react-native-worklets-core'
  import type { SkImage } from '@shopify/react-native-skia'
-@@ -7,49 +7,28 @@ import { ReanimatedProxy } from '../dependencies/ReanimatedProxy'
+@@ -7,49 +7,26 @@ import { ReanimatedProxy } from '../dependencies/ReanimatedProxy'
  import { SkiaProxy } from '../dependencies/SkiaProxy'
  
  interface SkiaCameraCanvasProps extends ViewProps {

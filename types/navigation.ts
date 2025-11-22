@@ -6,6 +6,7 @@ export type RootStackParamList = {
     settings: undefined;
     gallery: undefined;
     'geo-preview': { photoUri: string };
+    'video-preview': { videoUri: string };
 };
 
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';

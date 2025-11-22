@@ -1,11 +1,12 @@
 import { useCameraSettings } from '@/contexts/CameraSettingsContext';
 import { Camera, useCameraDevice } from 'react-native-vision-camera';
+import { SkiaCameraCanvas } from 'react-native-vision-camera/src/skia/SkiaCameraCanvas';
 import * as MediaLibrary from 'expo-media-library';
 import { useRouter } from 'expo-router';
 import PermissionsScreen from '@/components/PermissionsScreen';
 import { useLiveGeoData } from '@/utils/useLiveGeoData';
 import React, { useRef, useState, useEffect } from 'react';
-import { View, Text, Linking, Platform } from 'react-native';
+import { View, Text, Linking, Platform, StyleSheet } from 'react-native';
 import { useGPSVideoOverlay } from '@/utils/videoFrameProcessor';
 import { useCameraControls } from '@/hooks/useCameraControls';
 import { useCameraCapture } from '@/hooks/useCameraCapture';
@@ -38,7 +39,7 @@ export default function CameraScreen() {
 
   // Settings and state
   const { settings, updateSetting } = useCameraSettings();
-  const { data: liveGeoData, mapTile: liveMapTile } = useLiveGeoData(settings.geoOverlayEnabled);
+  const { data: liveGeoData, mapTile: liveMapTile } = useLiveGeoData(settings.geoOverlayEnabled || settings.videoGPSOverlayEnabled);
 
   const {
     currentMode,
@@ -80,7 +81,7 @@ export default function CameraScreen() {
   const device = useCameraDevice(facing);
 
   // GPS overlay frame processor for video
-  const frameProcessor = useGPSVideoOverlay(
+  const skiaFrameProcessor = useGPSVideoOverlay(
     currentMode === 'video' && settings.videoGPSOverlayEnabled ? liveGeoData : null,
     currentMode === 'video' && settings.videoGPSOverlayEnabled
   );
@@ -145,9 +146,17 @@ export default function CameraScreen() {
           isActive={true}
           photo={currentMode !== 'video'}
           video={currentMode === 'video'}
-          frameProcessor={currentMode === 'video' && settings.videoGPSOverlayEnabled ? frameProcessor : undefined}
+          frameProcessor={currentMode === 'video' && settings.videoGPSOverlayEnabled ? (skiaFrameProcessor as any) : undefined}
           zoom={zoom}
         />
+
+        {currentMode === 'video' && settings.videoGPSOverlayEnabled && (
+          <SkiaCameraCanvas
+            style={StyleSheet.absoluteFill}
+            offscreenTextures={skiaFrameProcessor.offscreenTextures}
+            resizeMode="cover"
+          />
+        )}
 
         <CameraOverlay
           gridStyle={settings.gridStyle}
