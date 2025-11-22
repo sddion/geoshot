@@ -40,13 +40,6 @@ function RootLayoutNav() {
           presentation: "modal",
         }}
       />
-      <Stack.Screen
-        name="video-preview"
-        options={{
-          headerShown: false,
-          presentation: "modal",
-        }}
-      />
     </Stack>
   );
 }

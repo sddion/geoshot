@@ -140,11 +140,10 @@ export function useCameraCapture({
                             );
                         }
 
-                        // Navigate to preview instead of auto-saving
-                        router.push({
-                            pathname: '/video-preview',
-                            params: { videoUri }
-                        });
+                        // Save video directly to gallery
+                        const asset = await MediaLibrary.createAssetAsync(videoUri);
+                        console.log('Video saved:', asset.uri);
+                        showToast('Video saved!');
                     }
                 },
                 onRecordingError: (error: CameraCaptureError) => {
