@@ -1,9 +1,5 @@
 name: Build and Release
 
-on:
-  build:
-    - completed
-
 jobs:
   build_and_release:
     type: build

@@ -1,9 +1,5 @@
 name: Create Production Builds and Release
 
-on:
-  build:
-    - completed
-
 jobs:
   build_android:
     type: build
