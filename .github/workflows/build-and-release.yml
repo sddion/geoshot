@@ -53,10 +53,10 @@ jobs:
           ./gradlew assembleRelease -PreactNativeArchitectures=${{ matrix.arch }}
 
       - name: Upload Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: app-${{ matrix.arch }}-release
-          path: android/app/build/outputs/apk/release/app-release.apk
+          path: android/app/build/outputs/apk/release/*.apk
 
   release:
     name: Create Release
