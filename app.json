@@ -39,6 +39,7 @@
         "foregroundImage": "./assets/images/android/mipmap-xxxhdpi/geoshot_foreground.png"
       },
       "package": "app.geoshot.camera",
+      "allowBackup": false,
       "permissions": [
         "android.permission.READ_EXTERNAL_STORAGE",
         "android.permission.WRITE_EXTERNAL_STORAGE",
