@@ -10,13 +10,14 @@ interface GeoOverlayProps {
   mapTile: string | null;
   imageWidth: number;
   imageHeight?: number;
+  style?: any;
 }
 
-export default function GeoOverlay({ geoData, mapTile, imageWidth }: GeoOverlayProps) {
+export default function GeoOverlay({ geoData, mapTile, imageWidth, style }: GeoOverlayProps) {
   if (!geoData) {
     // Skeleton / Loading state
     return (
-      <View style={[styles.container, { width: imageWidth }]}>
+      <View style={[styles.container, { width: imageWidth }, style]}>
         <View style={styles.overlay}>
           <Text style={{ color: 'white' }}>Acquiring GPS...</Text>
         </View>
@@ -39,7 +40,7 @@ export default function GeoOverlay({ geoData, mapTile, imageWidth }: GeoOverlayP
   };
 
   return (
-    <View style={[styles.container, { width: imageWidth }]}>
+    <View style={[styles.container, { width: imageWidth }, style]}>
       <View style={styles.overlay}>
         <View style={styles.contentRow}>
           {/* Left: Map Thumbnail */}

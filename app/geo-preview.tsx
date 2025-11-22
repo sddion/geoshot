@@ -7,15 +7,15 @@ import {
   Text,
   TouchableOpacity,
   ActivityIndicator,
-  ScrollView,
   Alert,
   Dimensions,
-  TextInput,
+  StyleSheet,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { getGeoData, GeoData, getCachedMapTile } from '@/utils/geoOverlay';
 import GeoOverlay from '@/components/GeoOverlay';
+import EditDataModal from '@/components/EditDataModal';
 import { captureRef } from 'react-native-view-shot';
 import * as MediaLibrary from 'expo-media-library';
 import { useCameraSettings } from '@/contexts/CameraSettingsContext';
@@ -31,7 +31,6 @@ export default function GeoPreviewScreen() {
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState<boolean>(false);
   const [isEditing, setIsEditing] = useState<boolean>(false);
-  const [editedData, setEditedData] = useState<Partial<GeoData>>({});
   const viewRef = useRef<View>(null);
   const { setLastPhotoUri } = useCameraSettings();
 
@@ -44,7 +43,6 @@ export default function GeoPreviewScreen() {
       const data = await getGeoData();
       if (data) {
         setGeoData(data);
-        setEditedData(data); // Initialize edited data with fetched data
         const tile = await getCachedMapTile(data.latitude, data.longitude);
         setMapTile(tile);
       } else {
@@ -58,28 +56,9 @@ export default function GeoPreviewScreen() {
     }
   };
 
-  const handleEdit = () => {
-    setIsEditing(!isEditing);
-    if (!isEditing) {
-      // Entering edit mode, reset edited data to current geo data
-      setEditedData(geoData || {});
-    }
-  };
-
-  const handleFieldChange = (field: keyof GeoData, value: string) => {
-    setEditedData(prev => ({
-      ...prev,
-      [field]: field === 'latitude' || field === 'longitude' || field === 'altitude' || field === 'speed' || field === 'temperature'
-        ? parseFloat(value) || 0
-        : value
-    }));
-  };
-
-  const applyEdits = () => {
-    if (geoData && editedData) {
-      const updatedGeoData = { ...geoData, ...editedData };
-      setGeoData(updatedGeoData);
-      setIsEditing(false);
+  const handleEditSave = (newData: Partial<GeoData>) => {
+    if (geoData) {
+      setGeoData({ ...geoData, ...newData });
     }
   };
 
@@ -139,9 +118,9 @@ export default function GeoPreviewScreen() {
         <View style={styles.headerButtons}>
           <TouchableOpacity
             style={styles.headerButton}
-            onPress={handleEdit}
+            onPress={() => setIsEditing(true)}
           >
-            <MaterialCommunityIcons name="pencil" size={24} color={isEditing ? '#FFD700' : '#fff'} />
+            <MaterialCommunityIcons name="pencil" size={24} color="#fff" />
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.headerButton}
@@ -157,7 +136,7 @@ export default function GeoPreviewScreen() {
         </View>
       </SafeAreaView>
 
-      <ScrollView contentContainerStyle={styles.content}>
+      <View style={styles.content}>
         <View
           ref={viewRef}
           style={styles.previewContainer}
@@ -168,162 +147,16 @@ export default function GeoPreviewScreen() {
             style={styles.image}
             contentFit="cover"
           />
-          <GeoOverlay geoData={geoData} mapTile={mapTile} imageWidth={SCREEN_WIDTH - 32} />
+          <GeoOverlay geoData={geoData} mapTile={mapTile} imageWidth={SCREEN_WIDTH} />
         </View>
+      </View>
 
-        <View style={styles.info}>
-          <View style={styles.infoTitleContainer}>
-            <MaterialCommunityIcons name="map-marker" size={24} color="#4CAF50" />
-            <Text style={styles.infoTitle}>Location Data</Text>
-          </View>
-
-          {/* Editable Fields */}
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Latitude:</Text>
-            {isEditing ? (
-              <TextInput
-                style={styles.input}
-                value={editedData.latitude?.toString() || ''}
-                onChangeText={(val) => handleFieldChange('latitude', val)}
-                keyboardType="numeric"
-                placeholder="Latitude"
-                placeholderTextColor="#888"
-              />
-            ) : (
-              <Text style={styles.infoValue}>{geoData.latitude.toFixed(6)}</Text>
-            )}
-          </View>
-
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Longitude:</Text>
-            {isEditing ? (
-              <TextInput
-                style={styles.input}
-                value={editedData.longitude?.toString() || ''}
-                onChangeText={(val) => handleFieldChange('longitude', val)}
-                keyboardType="numeric"
-                placeholder="Longitude"
-                placeholderTextColor="#888"
-              />
-            ) : (
-              <Text style={styles.infoValue}>{geoData.longitude.toFixed(6)}</Text>
-            )}
-          </View>
-
-          {(geoData.altitude !== null || isEditing) && (
-            <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>Altitude:</Text>
-              {isEditing ? (
-                <TextInput
-                  style={styles.input}
-                  value={editedData.altitude?.toString() || ''}
-                  onChangeText={(val) => handleFieldChange('altitude', val)}
-                  keyboardType="numeric"
-                  placeholder="Altitude (m)"
-                  placeholderTextColor="#888"
-                />
-              ) : (
-                <Text style={styles.infoValue}>{geoData.altitude?.toFixed(1)} m</Text>
-              )}
-            </View>
-          )}
-
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Address:</Text>
-            {isEditing ? (
-              <TextInput
-                style={[styles.input, styles.multilineInput]}
-                value={editedData.address || ''}
-                onChangeText={(val) => handleFieldChange('address', val)}
-                placeholder="Address"
-                placeholderTextColor="#888"
-                multiline
-              />
-            ) : (
-              <Text style={styles.infoValue}>{geoData.address}</Text>
-            )}
-          </View>
-
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Place:</Text>
-            {isEditing ? (
-              <TextInput
-                style={styles.input}
-                value={editedData.placeName || ''}
-                onChangeText={(val) => handleFieldChange('placeName', val)}
-                placeholder="Place name"
-                placeholderTextColor="#888"
-              />
-            ) : (
-              <Text style={styles.infoValue}>{geoData.placeName}</Text>
-            )}
-          </View>
-
-          {(geoData.speed !== null || isEditing) && (
-            <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>Speed:</Text>
-              {isEditing ? (
-                <TextInput
-                  style={styles.input}
-                  value={editedData.speed?.toString() || ''}
-                  onChangeText={(val) => handleFieldChange('speed', val)}
-                  keyboardType="numeric"
-                  placeholder="Speed (km/h)"
-                  placeholderTextColor="#888"
-                />
-              ) : (
-                <Text style={styles.infoValue}>{geoData.speed?.toFixed(1)} km/h</Text>
-              )}
-            </View>
-          )}
-
-          {(geoData.temperature !== null || isEditing) && (
-            <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>Temperature:</Text>
-              {isEditing ? (
-                <TextInput
-                  style={styles.input}
-                  value={editedData.temperature?.toString() || ''}
-                  onChangeText={(val) => handleFieldChange('temperature', val)}
-                  keyboardType="numeric"
-                  placeholder="Temperature (°C)"
-                  placeholderTextColor="#888"
-                />
-              ) : (
-                <Text style={styles.infoValue}>{geoData.temperature}°C</Text>
-              )}
-            </View>
-          )}
-
-          {(geoData.weatherCondition !== null || isEditing) && (
-            <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>Weather:</Text>
-              {isEditing ? (
-                <TextInput
-                  style={styles.input}
-                  value={editedData.weatherCondition || ''}
-                  onChangeText={(val) => handleFieldChange('weatherCondition', val)}
-                  placeholder="Weather condition"
-                  placeholderTextColor="#888"
-                />
-              ) : (
-                <Text style={styles.infoValue}>{geoData.weatherCondition}</Text>
-              )}
-            </View>
-          )}
-
-          {isEditing && (
-            <TouchableOpacity
-              style={[styles.applyButton, { marginTop: 20, alignSelf: 'center', width: '80%' }]}
-              onPress={applyEdits}
-            >
-              <Text style={[styles.applyButtonText, { textAlign: 'center' }]}>Apply Changes</Text>
-            </TouchableOpacity>
-          )}
-        </View>
-      </ScrollView>
+      <EditDataModal
+        visible={isEditing}
+        onClose={() => setIsEditing(false)}
+        onSave={handleEditSave}
+        initialData={geoData}
+      />
     </View>
   );
 }
-
-
