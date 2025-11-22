@@ -114,6 +114,14 @@
           "isIosBackgroundLocationEnabled": true,
           "locationAlwaysAndWhenInUsePermission": "Allow $(PRODUCT_NAME) to use your location."
         }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "enableSeparateBuildPerCPUArchitecture": true
+          }
+        }
       ]
     ],
     "experiments": {
@@ -123,9 +131,7 @@
     "updates": {
       "url": "https://u.expo.dev/d2eae4c7-d983-4e08-9597-b22cbd01ea98"
     },
-    "runtimeVersion": {
-      "policy": "appVersion"
-    },
+    "runtimeVersion": "1.0.4",
     "extra": {
       "router": {
         "origin": "https://geoshot.vercel.app/"
