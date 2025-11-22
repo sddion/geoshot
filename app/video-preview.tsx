@@ -19,6 +19,8 @@ export default function VideoPreviewScreen() {
     const [mapTile, setMapTile] = useState<string | null>(null);
     const [isEditing, setIsEditing] = useState(false);
 
+    const [fullGpsData, setFullGpsData] = useState<VideoGPSData | null>(null);
+
     // Initialize video player
     const player = useVideoPlayer(videoUri, player => {
         player.loop = true;
@@ -29,12 +31,33 @@ export default function VideoPreviewScreen() {
         loadGPSData();
     }, [videoUri]);
 
+    // Sync GPS data with video playback
+    useEffect(() => {
+        if (!fullGpsData || fullGpsData.gpsData.length === 0) return;
+
+        const interval = setInterval(() => {
+            const currentTime = player.currentTime;
+            const index = Math.floor(currentTime);
+
+            if (index >= 0 && index < fullGpsData.gpsData.length) {
+                const currentPoint = fullGpsData.gpsData[index];
+                setGpsData(currentPoint);
+
+                // Update map tile if we moved significantly (optional optimization)
+                // For now, let's keep the initial tile or update it occasionally
+                // setMapTile(await getCachedMapTile(currentPoint.latitude, currentPoint.longitude));
+            }
+        }, 200); // Update every 200ms
+
+        return () => clearInterval(interval);
+    }, [fullGpsData, player]);
+
     const loadGPSData = async () => {
         if (videoUri) {
             const data = await getVideoGPSData(videoUri);
             if (data && data.gpsData.length > 0) {
-                // For preview, we just show the first data point or average
-                // In a real app, you might want to sync this with video timestamp
+                setFullGpsData(data);
+
                 const initialPoint = data.gpsData[0];
                 setGpsData(initialPoint);
 

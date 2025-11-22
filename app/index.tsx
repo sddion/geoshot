@@ -73,6 +73,7 @@ export default function CameraScreen() {
     imageQuality: settings.imageQuality,
     geoOverlayEnabled: settings.geoOverlayEnabled,
     videoGPSOverlayEnabled: settings.videoGPSOverlayEnabled,
+    liveGeoData: liveGeoData,
     router,
     setLastPhotoUri,
   });

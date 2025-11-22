@@ -44,20 +44,39 @@ function RootLayoutNav() {
   );
 }
 
+import * as NavigationBar from 'expo-navigation-bar';
+import { Platform } from 'react-native';
+
+
 function RootLayout() {
   useEffect(() => {
-    const hideSplash = async () => {
-      try {
-        await SplashScreen.hideAsync();
-      } catch (e) {
-        console.warn("Error hiding splash screen:", e);
+    const configureImmersiveMode = async () => {
+      if (Platform.OS === 'android') {
+        try {
+          // Hide the navigation bar (back, home, overview)
+          await NavigationBar.setVisibilityAsync('hidden');
+          // Allow swiping up to reveal it temporarily
+          await NavigationBar.setBehaviorAsync('overlay-swipe');
+        } catch (e) {
+          console.warn("Error configuring navigation bar:", e);
+        }
       }
+
+      const hideSplash = async () => {
+        try {
+          await SplashScreen.hideAsync();
+        } catch (e) {
+          console.warn("Error hiding splash screen:", e);
+        }
+      };
+
+      hideSplash();
     };
 
-    hideSplash();
+    configureImmersiveMode();
 
-    // Fallback: force hide after 3 seconds
-    const timeout = setTimeout(hideSplash, 3000);
+    // Fallback: force hide splash after 3 seconds
+    const timeout = setTimeout(SplashScreen.hideAsync, 3000);
     return () => clearTimeout(timeout);
   }, []);
 

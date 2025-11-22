@@ -1,10 +1,10 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { Alert, Platform, ToastAndroid } from 'react-native';
 import { Camera, PhotoFile, VideoFile, CameraRuntimeError, CameraCaptureError } from 'react-native-vision-camera';
 import * as MediaLibrary from 'expo-media-library';
 import type { CameraMode } from '@/contexts/CameraSettingsContext';
-import { getGeoData } from '@/utils/geoOverlay';
-
+import { getGeoData, GeoData } from '@/utils/geoOverlay';
+import { saveVideoGPSData } from '@/utils/videoGPSData';
 import { Router } from 'expo-router';
 
 interface UseCameraCaptureProps {
@@ -14,6 +14,7 @@ interface UseCameraCaptureProps {
     imageQuality: 'normal' | 'fine' | 'superfine';
     geoOverlayEnabled: boolean;
     videoGPSOverlayEnabled: boolean;
+    liveGeoData: GeoData | null;
     router: Router;
     setLastPhotoUri: (uri: string) => void;
 }
@@ -28,6 +29,7 @@ export function useCameraCapture({
     imageQuality,
     geoOverlayEnabled,
     videoGPSOverlayEnabled,
+    liveGeoData,
     router,
     setLastPhotoUri,
 }: UseCameraCaptureProps) {
@@ -36,6 +38,18 @@ export function useCameraCapture({
     const [recordingDuration, setRecordingDuration] = useState<number>(0);
     const [timerCountdown, setTimerCountdown] = useState<number>(0);
     const recordingInterval = useRef<ReturnType<typeof setInterval> | null>(null);
+
+    // Refs for GPS recording
+    const currentGeoDataRef = useRef<GeoData | null>(null);
+    const gpsTrackRef = useRef<GeoData[]>([]);
+    const recordingStartTimeRef = useRef<string>('');
+
+    // Update ref when new data comes in
+    useEffect(() => {
+        if (liveGeoData) {
+            currentGeoDataRef.current = liveGeoData;
+        }
+    }, [liveGeoData]);
 
     const showToast = (message: string) => {
         if (Platform.OS === 'android') {
@@ -89,9 +103,21 @@ export function useCameraCapture({
             setIsRecording(true);
             setRecordingDuration(0);
 
-            // Start recording duration timer
+            // Reset GPS track
+            gpsTrackRef.current = [];
+            if (currentGeoDataRef.current) {
+                gpsTrackRef.current.push(currentGeoDataRef.current);
+            }
+            recordingStartTimeRef.current = new Date().toISOString();
+
+            // Start recording duration timer and GPS logger
             recordingInterval.current = setInterval(() => {
                 setRecordingDuration(prev => prev + 1);
+
+                // Log GPS point
+                if (currentGeoDataRef.current) {
+                    gpsTrackRef.current.push(currentGeoDataRef.current);
+                }
             }, 1000);
 
             // Start recording (frame processor will add GPS overlay if enabled)
@@ -100,6 +126,20 @@ export function useCameraCapture({
                 onRecordingFinished: async (video: VideoFile) => {
                     if (video?.path) {
                         const videoUri = `file://${video.path}`;
+                        const endTime = new Date().toISOString();
+                        const duration = (new Date(endTime).getTime() - new Date(recordingStartTimeRef.current).getTime()) / 1000;
+
+                        // Save GPS data
+                        if (videoGPSOverlayEnabled && gpsTrackRef.current.length > 0) {
+                            await saveVideoGPSData(
+                                videoUri,
+                                gpsTrackRef.current,
+                                recordingStartTimeRef.current,
+                                endTime,
+                                duration
+                            );
+                        }
+
                         // Navigate to preview instead of auto-saving
                         router.push({
                             pathname: '/video-preview',
@@ -120,7 +160,7 @@ export function useCameraCapture({
                 recordingInterval.current = null;
             }
         }
-    }, [cameraRef, isRecording, flashMode, setLastPhotoUri]);
+    }, [cameraRef, isRecording, flashMode, setLastPhotoUri, videoGPSOverlayEnabled]);
 
     const stopVideoRecording = useCallback(async () => {
         if (!cameraRef.current || !isRecording) return;
