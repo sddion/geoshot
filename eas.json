@@ -9,10 +9,6 @@
       "distribution": "internal",
       "android": {
         "buildType": "apk",
-        "buildArchs": [
-          "arm64-v8a",
-          "armeabi-v7a"
-        ],
         "gradleCommand": ":app:assembleRelease"
       }
     },
@@ -21,40 +17,18 @@
       "extends": "production",
       "android": {
         "buildType": "apk",
-        "buildArchs": [
-          "arm64-v8a",
-          "armeabi-v7a"
-        ],
         "gradleCommand": ":app:assembleRelease"
       }
     },
     "production": {
       "autoIncrement": true,
-      "extends": "production-apk",
       "android": {
         "buildType": "apk",
-        "buildArchs": [
-          "arm64-v8a",
-          "armeabi-v7a"
-        ],
         "gradleCommand": ":app:assembleRelease"
       }
     }
   },
-  "updates": {
-    "url": "https://github.com/sddion/geoshot/releases/latest/download/updates.json",
-    "fallbackToCacheTimeout": 0,
-    "enabled": true,
-    "checkAutomatically": "ON_LOAD"
-  },
   "submit": {
-    "production": {
-      "channel": "production",
-      "github": {
-        "owner": "sddion",
-        "repo": "geoshot",
-        "branch": "main"
-      }
-    }
+    "production": {}
   }
 }
