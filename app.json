@@ -131,7 +131,7 @@
     "updates": {
       "url": "https://u.expo.dev/d2eae4c7-d983-4e08-9597-b22cbd01ea98"
     },
-    "runtimeVersion": "1.0.4",
+    "runtimeVersion": "2.0.0",
     "extra": {
       "router": {
         "origin": "https://geoshot.vercel.app/"
