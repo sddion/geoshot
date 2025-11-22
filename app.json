@@ -122,7 +122,10 @@
             "enableSeparateBuildPerCPUArchitecture": true
           }
         }
-      ]
+      ],
+      "expo-router",
+      "./plugins/withAndroidSplits",
+      "./plugins/withAndroidSigning"
     ],
     "experiments": {
       "typedRoutes": true
