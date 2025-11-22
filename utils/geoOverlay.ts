@@ -171,12 +171,48 @@ async function getMagneticField(): Promise<number | null> {
 }
 
 // Tile Caching Logic
-const TILE_CACHE_DIR = (FileSystem.cacheDirectory || FileSystem.documentDirectory || '') + 'osm_tiles/';
+// Use ONLY cacheDirectory to ensure tiles are deleted on app uninstall
+// Never fall back to documentDirectory as it persists after uninstall
+const TILE_CACHE_DIR = (() => {
+  if (!FileSystem.cacheDirectory) {
+    console.error('Cache directory not available');
+    return '';
+  }
+  return FileSystem.cacheDirectory + 'osm_tiles/';
+})();
+const MAX_CACHE_SIZE = 100; // Max number of tiles to keep
 
 async function ensureCacheDir() {
   const dirInfo = await FileSystem.getInfoAsync(TILE_CACHE_DIR);
   if (!dirInfo.exists) {
     await FileSystem.makeDirectoryAsync(TILE_CACHE_DIR, { intermediates: true });
+  }
+}
+
+async function cleanTileCache() {
+  try {
+    const files = await FileSystem.readDirectoryAsync(TILE_CACHE_DIR);
+    if (files.length <= MAX_CACHE_SIZE) return;
+
+    const fileInfos = await Promise.all(
+      files.map(async (file) => {
+        const uri = TILE_CACHE_DIR + file;
+        const info = await FileSystem.getInfoAsync(uri);
+        return { file, uri, modificationTime: info.exists ? info.modificationTime : 0 };
+      })
+    );
+
+    // Sort by modification time (descending)
+    fileInfos.sort((a, b) => (b.modificationTime || 0) - (a.modificationTime || 0));
+
+    // Delete files beyond the limit
+    const filesToDelete = fileInfos.slice(MAX_CACHE_SIZE);
+    for (const fileInfo of filesToDelete) {
+      await FileSystem.deleteAsync(fileInfo.uri, { idempotent: true });
+    }
+    console.log(`Cleaned up ${filesToDelete.length} old map tiles.`);
+  } catch (error) {
+    console.warn('Tile cache cleanup failed:', error);
   }
 }
 
@@ -187,6 +223,11 @@ export async function getCachedMapTile(
 ): Promise<string> {
   try {
     await ensureCacheDir();
+
+    // 5% chance to trigger cleanup to avoid overhead on every call
+    if (Math.random() < 0.05) {
+      cleanTileCache(); // Fire and forget
+    }
 
     const tileSize = 256;
     const centerX = ((lon + 180) / 360) * Math.pow(2, zoom) * tileSize;

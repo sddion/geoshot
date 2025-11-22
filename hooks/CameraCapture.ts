@@ -6,6 +6,7 @@ import { getGeoData, GeoData } from '@/utils/geoOverlay';
 import { Router } from 'expo-router';
 import { saveFileToAppFolder } from '@/utils/mediaUtils';
 import * as ImageManipulator from 'expo-image-manipulator';
+import * as FileSystem from 'expo-file-system/legacy';
 
 
 interface UseCameraCaptureProps {
@@ -38,7 +39,7 @@ export function useCameraCapture({
     const [timerCountdown, setTimerCountdown] = useState<number>(0);
     const recordingInterval = useRef<ReturnType<typeof setInterval> | null>(null);
     const lastCaptureTimeRef = useRef<number>(0); // For debouncing captures
-    const CAPTURE_DEBOUNCE_MS = 500; // Minimum time between captures
+    const CAPTURE_DEBOUNCE_MS = 300; // Minimum time between captures
 
 
 
@@ -77,6 +78,13 @@ export function useCameraCapture({
                         { compress: compression, format: ImageManipulator.SaveFormat.JPEG }
                     );
                     finalUri = manipulated.uri;
+
+                    // Clean up the original uncompressed file
+                    try {
+                        await FileSystem.deleteAsync(photoUri, { idempotent: true });
+                    } catch (e) {
+                        console.warn('Failed to delete original photo:', e);
+                    }
                 }
 
                 if (geoOverlayEnabled) {

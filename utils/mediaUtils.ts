@@ -47,6 +47,15 @@ export const saveFileToAppFolder = async (uri: string, type: 'photo' | 'video'):
             await MediaLibrary.addAssetsToAlbumAsync([asset], album, false);
         }
 
+        // 6. Clean up the local copy in documentDirectory
+        // Since MediaLibrary.createAssetAsync copies the file to the system gallery location,
+        // we can now safely delete our local copy to avoid duplication.
+        try {
+            await FileSystem.deleteAsync(newUri, { idempotent: true });
+        } catch (cleanupError) {
+            console.warn('Failed to clean up local file:', cleanupError);
+        }
+
         // Return the asset URI
         return asset.uri;
     } catch (error) {
