@@ -1,11 +1,13 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { Alert, Platform, ToastAndroid } from 'react-native';
 import { Camera, PhotoFile, VideoFile, CameraRuntimeError, CameraCaptureError } from 'react-native-vision-camera';
+import * as FileSystem from 'expo-file-system/legacy';
 import * as MediaLibrary from 'expo-media-library';
 import type { CameraMode } from '@/contexts/CameraSettingsContext';
 import { getGeoData, GeoData } from '@/utils/geoOverlay';
-import { saveVideoGPSData } from '@/utils/videoGPSData';
 import { Router } from 'expo-router';
+import { saveFileToAppFolder } from '@/utils/mediaUtils';
+import * as ImageManipulator from 'expo-image-manipulator';
 
 interface UseCameraCaptureProps {
     cameraRef: React.RefObject<Camera | null>;
@@ -59,17 +61,34 @@ export function useCameraCapture({
         }
     };
 
+    // Removed local saveFileToAppFolder definition as it is now imported
+
     const capturePhoto = useCallback(async () => {
         if (!cameraRef.current) return;
 
         try {
             const photo: PhotoFile = await cameraRef.current.takePhoto({
-                flash: flashMode,
+                flash: currentMode === 'night' ? 'off' : flashMode, // Disable flash for night mode to rely on exposure
                 enableShutterSound: false,
+
             });
 
             if (photo?.path) {
                 const photoUri = `file://${photo.path}`;
+
+                // ...
+
+                // Compress image based on quality setting
+                let finalUri = photoUri;
+                if (imageQuality !== 'superfine') {
+                    const compression = imageQuality === 'fine' ? 0.8 : 0.5;
+                    const manipulated = await ImageManipulator.manipulateAsync(
+                        photoUri,
+                        [],
+                        { compress: compression, format: ImageManipulator.SaveFormat.JPEG }
+                    );
+                    finalUri = manipulated.uri;
+                }
 
                 if (geoOverlayEnabled) {
                     // Navigate to geo-preview for GPS overlay
@@ -77,7 +96,7 @@ export function useCameraCapture({
                     if (geoData) {
                         router.push({
                             pathname: '/geo-preview',
-                            params: { photoUri },
+                            params: { photoUri: finalUri },
                         });
                         return;
                     } else {
@@ -86,9 +105,13 @@ export function useCameraCapture({
                 }
 
                 // Save without GPS overlay
-                const asset = await MediaLibrary.createAssetAsync(photoUri);
-                setLastPhotoUri(asset.uri);
-                showToast('Photo saved!');
+                const savedUri = await saveFileToAppFolder(finalUri, 'photo');
+                if (savedUri) {
+                    setLastPhotoUri(savedUri);
+                    showToast('Photo saved to GeoShot album!');
+                } else {
+                    showToast('Failed to save photo');
+                }
             }
         } catch (error) {
             console.error('Photo capture error:', error);
@@ -129,21 +152,14 @@ export function useCameraCapture({
                         const endTime = new Date().toISOString();
                         const duration = (new Date(endTime).getTime() - new Date(recordingStartTimeRef.current).getTime()) / 1000;
 
-                        // Save GPS data
-                        if (videoGPSOverlayEnabled && gpsTrackRef.current.length > 0) {
-                            await saveVideoGPSData(
-                                videoUri,
-                                gpsTrackRef.current,
-                                recordingStartTimeRef.current,
-                                endTime,
-                                duration
-                            );
+                        // Save video to GeoShot album
+                        const savedUri = await saveFileToAppFolder(videoUri, 'video');
+                        if (savedUri) {
+                            console.log('Video saved:', savedUri);
+                            showToast('Video saved to GeoShot album!');
+                        } else {
+                            showToast('Failed to save video');
                         }
-
-                        // Save video directly to gallery
-                        const asset = await MediaLibrary.createAssetAsync(videoUri);
-                        console.log('Video saved:', asset.uri);
-                        showToast('Video saved!');
                     }
                 },
                 onRecordingError: (error: CameraCaptureError) => {

@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState, useCallback } from 'react';
 
 export type CameraMode = 'photo' | 'video' | 'night' | 'portrait';
-export type FlashMode = 'auto' | 'on' | 'off';
+export type FlashMode = 'on' | 'off' | 'torch';
 export type GridStyle = 'off' | '3x3' | 'golden';
 export type Timer = 'off' | '2s' | '5s' | '10s';
 export type AspectRatio = '1:1' | '4:3' | '16:9';
@@ -49,12 +49,16 @@ const defaultSettings: CameraSettings = {
   videoResolution: '1080p',
   videoFPS: 30,
   videoStabilization: true,
-  flashMode: 'auto',
+  flashMode: 'off',
   geoOverlayEnabled: true,
   videoGPSOverlayEnabled: true,
 };
 
 const STORAGE_KEY = '@geoshot_camera_settings';
+
+import * as MediaLibrary from 'expo-media-library';
+
+// ... imports
 
 export const [CameraSettingsProvider, useCameraSettings] = createContextHook(() => {
   const [settings, setSettings] = useState<CameraSettings>(defaultSettings);
@@ -77,6 +81,29 @@ export const [CameraSettingsProvider, useCameraSettings] = createContextHook(() 
     }
   }, []);
 
+  const fetchLastGeoShotAsset = useCallback(async () => {
+    try {
+      const { status } = await MediaLibrary.requestPermissionsAsync();
+      if (status !== 'granted') return;
+
+      const album = await MediaLibrary.getAlbumAsync('GeoShot');
+      if (album) {
+        const assets = await MediaLibrary.getAssetsAsync({
+          album: album,
+          first: 1,
+          sortBy: [MediaLibrary.SortBy.creationTime],
+          mediaType: [MediaLibrary.MediaType.photo, MediaLibrary.MediaType.video],
+        });
+
+        if (assets.assets.length > 0) {
+          setLastPhotoUri(assets.assets[0].uri);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch last GeoShot asset:', error);
+    }
+  }, []);
+
   const saveSettings = useCallback(async () => {
     try {
       await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
@@ -87,7 +114,8 @@ export const [CameraSettingsProvider, useCameraSettings] = createContextHook(() 
 
   useEffect(() => {
     loadSettings();
-  }, [loadSettings]);
+    fetchLastGeoShotAsset();
+  }, [loadSettings, fetchLastGeoShotAsset]);
 
   useEffect(() => {
     if (isLoaded) {
@@ -113,7 +141,7 @@ export const [CameraSettingsProvider, useCameraSettings] = createContextHook(() 
 
   const cycleFlash = () => {
     setSettings((prev) => {
-      const modes: FlashMode[] = ['auto', 'on', 'off'];
+      const modes: FlashMode[] = ['off', 'on', 'torch'];
       const currentIndex = modes.indexOf(prev.flashMode);
       const nextIndex = (currentIndex + 1) % modes.length;
       return { ...prev, flashMode: modes[nextIndex] };
@@ -127,6 +155,7 @@ export const [CameraSettingsProvider, useCameraSettings] = createContextHook(() 
     isLoaded,
     lastPhotoUri,
     setLastPhotoUri,
+    fetchLastGeoShotAsset,
     currentMode,
     setCurrentMode,
     zoom,

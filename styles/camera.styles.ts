@@ -17,7 +17,11 @@ export const cameraStyles = StyleSheet.create({
         height: '100%',
     },
     gridOverlay: {
-        ...StyleSheet.absoluteFillObject,
+        position: 'absolute',
+        top: 100,
+        bottom: 200,
+        left: 0,
+        right: 0,
     },
     gridLine: {
         position: 'absolute' as const,

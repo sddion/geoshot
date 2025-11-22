@@ -57,7 +57,11 @@ export default function CameraScreen() {
     handleZoomSliderChange,
     focusPoint,
     focusAnimation,
-  } = useCameraControls();
+    handleFocusTap,
+  } = useCameraControls(
+    settings.volumeAction,
+    () => handleCapture(getTimerSeconds())
+  );
 
   // Camera capture (photo/video)
   const {
@@ -69,7 +73,7 @@ export default function CameraScreen() {
   } = useCameraCapture({
     cameraRef,
     currentMode,
-    flashMode: settings.flashMode,
+    flashMode: settings.flashMode === 'torch' ? 'off' : settings.flashMode,
     imageQuality: settings.imageQuality,
     geoOverlayEnabled: settings.geoOverlayEnabled,
     videoGPSOverlayEnabled: settings.videoGPSOverlayEnabled,
@@ -149,11 +153,19 @@ export default function CameraScreen() {
           video={currentMode === 'video'}
           frameProcessor={currentMode === 'video' && settings.videoGPSOverlayEnabled ? (skiaFrameProcessor as any) : undefined}
           zoom={zoom}
+          torch={settings.flashMode === 'torch' ? 'on' : 'off'}
+          lowLightBoost={currentMode === 'night'}
           onError={(error) => {
             console.error('Camera Runtime Error:', error);
             if (error.code === 'system/camera-is-restricted') {
               Alert.alert('Camera Restricted', 'Camera is restricted by the OS. Please check device policies or parental controls.');
             }
+          }}
+          onTouchEnd={(event) => {
+            const { locationX, locationY } = event.nativeEvent;
+            handleFocusTap({ x: locationX, y: locationY });
+            // Optional: Trigger focus on camera device if supported
+            // cameraRef.current?.focus({ x: locationX, y: locationY });
           }}
         />
 
@@ -180,6 +192,7 @@ export default function CameraScreen() {
           liveGeoData={liveGeoData}
           liveMapTile={liveMapTile}
           currentMode={currentMode}
+          photoAspectRatio={settings.photoAspectRatio}
         />
       </View>
 

@@ -2,7 +2,9 @@ import React from 'react';
 import { View, Text, TouchableOpacity, Pressable, Animated, GestureResponderEvent, Dimensions } from 'react-native';
 import { cameraStyles, zoomStyles, overlayStyles } from '@/styles/camera.styles';
 import GeoOverlay from '@/components/GeoOverlay';
-import type { GridStyle } from '@/contexts/CameraSettingsContext';
+import type { GridStyle, AspectRatio } from '@/contexts/CameraSettingsContext';
+import { StyleSheet } from 'react-native';
+
 import type { FocusPoint } from '@/types/camera';
 import type { GeoData } from '@/utils/geoOverlay';
 
@@ -23,6 +25,7 @@ interface CameraOverlayProps {
     liveGeoData: GeoData | null;
     liveMapTile: string | null;
     currentMode: string;
+    photoAspectRatio: AspectRatio;
 }
 
 export default function CameraOverlay({
@@ -40,6 +43,7 @@ export default function CameraOverlay({
     liveGeoData,
     liveMapTile,
     currentMode,
+    photoAspectRatio,
 }: CameraOverlayProps) {
     return (
         <>
@@ -65,6 +69,20 @@ export default function CameraOverlay({
                 </View>
             )}
 
+            {/* Aspect Ratio Masking */}
+            {photoAspectRatio === '4:3' && (
+                <View style={StyleSheet.absoluteFill} pointerEvents="none">
+                    <View style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 60, backgroundColor: 'black' }} />
+                    <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 160, backgroundColor: 'black' }} />
+                </View>
+            )}
+            {photoAspectRatio === '1:1' && (
+                <View style={StyleSheet.absoluteFill} pointerEvents="none">
+                    <View style={{ position: 'absolute', top: 0, left: 0, right: 0, height: (Dimensions.get('window').height - Dimensions.get('window').width) / 2, backgroundColor: 'black' }} />
+                    <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: (Dimensions.get('window').height - Dimensions.get('window').width) / 2, backgroundColor: 'black' }} />
+                </View>
+            )}
+
             {/* Focus Indicator */}
             {focusPoint && (
                 <Animated.View
@@ -84,7 +102,7 @@ export default function CameraOverlay({
             {/* Zoom Controls */}
             {!showZoomSlider && (
                 <TouchableOpacity style={zoomStyles.singleZoomButton} onPress={handleZoomButtonTap}>
-                    <Text style={zoomStyles.singleZoomText}>{(zoom * 10).toFixed(1)}×</Text>
+                    <Text style={zoomStyles.singleZoomText}>{zoom < 1 ? '1.0' : zoom.toFixed(1)}×</Text>
                 </TouchableOpacity>
             )}
 
@@ -105,7 +123,7 @@ export default function CameraOverlay({
                             handleZoomSliderChange(value);
                         }}
                     >
-                        <View style={[zoomStyles.verticalSliderFill, { height: `${((zoom * 10 - 0.5) / 9.5) * 100}%` }]} />
+                        <View style={[zoomStyles.verticalSliderFill, { height: `${((zoom - 1) / 9) * 100}%` }]} />
                     </Pressable>
                 </View>
             )}

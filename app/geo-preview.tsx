@@ -16,7 +16,10 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { getGeoData, GeoData, getCachedMapTile } from '@/utils/geoOverlay';
 import GeoOverlay from '@/components/GeoOverlay';
 import EditDataModal from '@/components/EditDataModal';
+import { saveFileToAppFolder } from '@/utils/mediaUtils';
 import { captureRef } from 'react-native-view-shot';
+import * as FileSystem from 'expo-file-system/legacy';
+
 import * as MediaLibrary from 'expo-media-library';
 import { useCameraSettings } from '@/contexts/CameraSettingsContext';
 
@@ -72,14 +75,19 @@ export default function GeoPreviewScreen() {
         quality: 1,
       });
 
-      // Save the photo to the gallery with minimal media library interaction
-      const asset = await MediaLibrary.createAssetAsync(uri);
-      console.log('Photo with GPS overlay saved:', asset.uri);
-      setLastPhotoUri(asset.uri);
+      // Save using shared utility
+      const savedUri = await saveFileToAppFolder(uri, 'photo');
 
-      Alert.alert('Success', 'Photo saved with GPS overlay', [
-        { text: 'OK', onPress: () => router.back() },
-      ]);
+      if (savedUri) {
+        console.log('Photo with GPS overlay saved:', savedUri);
+        setLastPhotoUri(savedUri);
+
+        Alert.alert('Success', 'Photo saved to GeoShot album', [
+          { text: 'OK', onPress: () => router.back() },
+        ]);
+      } else {
+        Alert.alert('Error', 'Failed to save photo.');
+      }
     } catch (error) {
       console.error('Save error:', error);
       Alert.alert('Error', 'Failed to save photo. Please try again.');

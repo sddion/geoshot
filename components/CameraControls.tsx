@@ -53,6 +53,7 @@ export default function CameraControls({
 
     const getFlashIcon = () => {
         if (flashMode === 'off') return <MaterialCommunityIcons name="flash-off" size={24} color="#fff" />;
+        if (flashMode === 'torch') return <MaterialCommunityIcons name="flashlight" size={24} color="#FFD700" />;
         return <MaterialCommunityIcons name="flash" size={24} color={flashMode === 'on' ? '#FFD700' : '#fff'} />;
     };
 

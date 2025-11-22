@@ -20,9 +20,9 @@ function RootLayoutNav() {
       <Stack.Screen
         name="settings"
         options={{
-          title: "Camera Settings",
-          headerStyle: { backgroundColor: "#000" },
-          headerTintColor: "#fff",
+          headerShown: false,
+          presentation: "transparentModal",
+          animation: "fade",
         }}
       />
       <Stack.Screen
@@ -53,10 +53,17 @@ function RootLayout() {
     const configureImmersiveMode = async () => {
       if (Platform.OS === 'android') {
         try {
-          // Hide the navigation bar (back, home, overview)
+          // Hide the navigation bar initially
           await NavigationBar.setVisibilityAsync('hidden');
-          // Allow swiping up to reveal it temporarily
-          await NavigationBar.setBehaviorAsync('overlay-swipe');
+
+          // Auto-hide navigation bar when it becomes visible (e.g. after swipe up)
+          NavigationBar.addVisibilityListener(({ visibility }) => {
+            if (visibility === 'visible') {
+              setTimeout(async () => {
+                await NavigationBar.setVisibilityAsync('hidden');
+              }, 1500);
+            }
+          });
         } catch (e) {
           console.warn("Error configuring navigation bar:", e);
         }

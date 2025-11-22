@@ -23,8 +23,12 @@ const showToast = (message: string) => {
   }
 };
 
+import { BlurView } from 'expo-blur';
+import { useRouter } from 'expo-router';
+
 export default function SettingsScreen() {
   const { settings, updateSetting, resetSettings } = useCameraSettings();
+  const router = useRouter();
 
   const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
     <View style={styles.section}>
@@ -90,176 +94,178 @@ export default function SettingsScreen() {
   };
 
   return (
-    <ScrollView style={styles.container}>
-      <Section title="GENERAL">
-        <SettingRow
-          label="Storage location"
-          value={settings.storageLocation === 'phone' ? 'Phone' : 'SD Card'}
-          onPress={() => {
-            const newValue = settings.storageLocation === 'phone' ? 'sd' : 'phone';
-            updateSetting('storageLocation', newValue);
-          }}
-        />
-        <SettingRow
-          label="Volume button action"
-          value={settings.volumeAction === 'shutter' ? 'Shutter' : settings.volumeAction === 'zoom' ? 'Zoom' : 'Off'}
-          onPress={() => {
-            const actions = ['shutter', 'zoom', 'off'] as const;
-            const currentIndex = actions.indexOf(settings.volumeAction);
-            const newValue = actions[(currentIndex + 1) % actions.length];
-            updateSetting('volumeAction', newValue);
-          }}
-        />
-        <SettingRow
-          label="Shutter sound"
-          showToggle
-          toggleValue={settings.shutterSound}
-          onToggle={(value) => updateSetting('shutterSound', value)}
-        />
-        <SettingRow
-          label="Save location information"
-          showToggle
-          toggleValue={settings.saveLocation}
-          onToggle={(value) => updateSetting('saveLocation', value)}
-        />
-        <SettingRow
-          label="Grid style"
-          value={settings.gridStyle === 'off' ? 'Off' : settings.gridStyle === '3x3' ? '3×3' : 'Golden Ratio'}
-          onPress={() => {
-            const styles = ['off', '3x3', 'golden'] as const;
-            const currentIndex = styles.indexOf(settings.gridStyle);
-            const newValue = styles[(currentIndex + 1) % styles.length];
-            updateSetting('gridStyle', newValue);
-          }}
-        />
-        <SettingRow
-          label="Timer"
-          value={settings.timer === 'off' ? 'Off' : settings.timer === '2s' ? '2 seconds' : settings.timer === '5s' ? '5 seconds' : '10 seconds'}
-          onPress={() => {
-            const timers = ['off', '2s', '5s', '10s'] as const;
-            const currentIndex = timers.indexOf(settings.timer);
-            const newValue = timers[(currentIndex + 1) % timers.length];
-            updateSetting('timer', newValue);
-          }}
-        />
-        <SettingRow
-          label="Touch to capture"
-          showToggle
-          toggleValue={settings.touchToCapture}
-          onToggle={(value) => updateSetting('touchToCapture', value)}
-        />
-      </Section>
+    <BlurView intensity={80} tint="dark" style={[styles.container, { backgroundColor: 'transparent' }]}>
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 40 }}>
+        <Section title="GENERAL">
+          <SettingRow
+            label="Storage location"
+            value={settings.storageLocation === 'phone' ? 'Phone' : 'SD Card'}
+            onPress={() => {
+              const newValue = settings.storageLocation === 'phone' ? 'sd' : 'phone';
+              updateSetting('storageLocation', newValue);
+            }}
+          />
+          <SettingRow
+            label="Volume button action"
+            value={settings.volumeAction === 'shutter' ? 'Shutter' : settings.volumeAction === 'zoom' ? 'Zoom' : 'Off'}
+            onPress={() => {
+              const actions = ['shutter', 'zoom', 'off'] as const;
+              const currentIndex = actions.indexOf(settings.volumeAction);
+              const newValue = actions[(currentIndex + 1) % actions.length];
+              updateSetting('volumeAction', newValue);
+            }}
+          />
+          <SettingRow
+            label="Shutter sound"
+            showToggle
+            toggleValue={settings.shutterSound}
+            onToggle={(value) => updateSetting('shutterSound', value)}
+          />
+          <SettingRow
+            label="Save location information"
+            showToggle
+            toggleValue={settings.saveLocation}
+            onToggle={(value) => updateSetting('saveLocation', value)}
+          />
+          <SettingRow
+            label="Grid style"
+            value={settings.gridStyle === 'off' ? 'Off' : settings.gridStyle === '3x3' ? '3×3' : 'Golden Ratio'}
+            onPress={() => {
+              const styles = ['off', '3x3', 'golden'] as const;
+              const currentIndex = styles.indexOf(settings.gridStyle);
+              const newValue = styles[(currentIndex + 1) % styles.length];
+              updateSetting('gridStyle', newValue);
+            }}
+          />
+          <SettingRow
+            label="Timer"
+            value={settings.timer === 'off' ? 'Off' : settings.timer === '2s' ? '2 seconds' : settings.timer === '5s' ? '5 seconds' : '10 seconds'}
+            onPress={() => {
+              const timers = ['off', '2s', '5s', '10s'] as const;
+              const currentIndex = timers.indexOf(settings.timer);
+              const newValue = timers[(currentIndex + 1) % timers.length];
+              updateSetting('timer', newValue);
+            }}
+          />
+          <SettingRow
+            label="Touch to capture"
+            showToggle
+            toggleValue={settings.touchToCapture}
+            onToggle={(value) => updateSetting('touchToCapture', value)}
+          />
+        </Section>
 
-      <Section title="PHOTO">
-        <SettingRow
-          label="Aspect ratio"
-          value={settings.photoAspectRatio}
-          onPress={() => {
-            const ratios = ['4:3', '16:9', '1:1'] as const;
-            const currentIndex = ratios.indexOf(settings.photoAspectRatio);
-            const newValue = ratios[(currentIndex + 1) % ratios.length];
-            updateSetting('photoAspectRatio', newValue);
-          }}
-        />
-        <SettingRow
-          label="Photo resolution"
-          value={settings.photoResolution.toUpperCase()}
-          onPress={() => {
-            const resolutions = ['1080p', '4k', '8k', 'max'] as const;
-            const currentIndex = resolutions.indexOf(settings.photoResolution);
-            const newValue = resolutions[(currentIndex + 1) % resolutions.length];
-            updateSetting('photoResolution', newValue);
-          }}
-        />
-        <SettingRow
-          label="Image quality"
-          value={settings.imageQuality === 'normal' ? 'Normal' : settings.imageQuality === 'fine' ? 'Fine' : 'Superfine'}
-          onPress={() => {
-            const qualities = ['normal', 'fine', 'superfine'] as const;
-            const currentIndex = qualities.indexOf(settings.imageQuality);
-            const newValue = qualities[(currentIndex + 1) % qualities.length];
-            updateSetting('imageQuality', newValue);
-          }}
-        />
-        <SettingRow
-          label="Gesture zoom"
-          showToggle
-          toggleValue={settings.gestureZoom}
-          onToggle={(value) => updateSetting('gestureZoom', value)}
-        />
-      </Section>
+        <Section title="PHOTO">
+          <SettingRow
+            label="Aspect ratio"
+            value={settings.photoAspectRatio}
+            onPress={() => {
+              const ratios = ['4:3', '16:9', '1:1'] as const;
+              const currentIndex = ratios.indexOf(settings.photoAspectRatio);
+              const newValue = ratios[(currentIndex + 1) % ratios.length];
+              updateSetting('photoAspectRatio', newValue);
+            }}
+          />
+          <SettingRow
+            label="Photo resolution"
+            value={settings.photoResolution.toUpperCase()}
+            onPress={() => {
+              const resolutions = ['1080p', '4k', '8k', 'max'] as const;
+              const currentIndex = resolutions.indexOf(settings.photoResolution);
+              const newValue = resolutions[(currentIndex + 1) % resolutions.length];
+              updateSetting('photoResolution', newValue);
+            }}
+          />
+          <SettingRow
+            label="Image quality"
+            value={settings.imageQuality === 'normal' ? 'Normal' : settings.imageQuality === 'fine' ? 'Fine' : 'Superfine'}
+            onPress={() => {
+              const qualities = ['normal', 'fine', 'superfine'] as const;
+              const currentIndex = qualities.indexOf(settings.imageQuality);
+              const newValue = qualities[(currentIndex + 1) % qualities.length];
+              updateSetting('imageQuality', newValue);
+            }}
+          />
+          <SettingRow
+            label="Gesture zoom"
+            showToggle
+            toggleValue={settings.gestureZoom}
+            onToggle={(value) => updateSetting('gestureZoom', value)}
+          />
+        </Section>
 
-      <Section title="VIDEO">
-        <SettingRow
-          label="Video resolution"
-          value={settings.videoResolution.toUpperCase()}
-          onPress={() => {
-            const resolutions = ['720p', '1080p', '4k'] as const;
-            const currentIndex = resolutions.indexOf(settings.videoResolution);
-            const newValue = resolutions[(currentIndex + 1) % resolutions.length];
-            updateSetting('videoResolution', newValue);
-          }}
-        />
-        <SettingRow
-          label="FPS"
-          value={`${settings.videoFPS} FPS`}
-          onPress={() => {
-            const fps = [30, 60, 120] as const;
-            const currentIndex = fps.indexOf(settings.videoFPS);
-            const newValue = fps[(currentIndex + 1) % fps.length];
-            updateSetting('videoFPS', newValue);
-          }}
-        />
-        <SettingRow
-          label="Video stabilization"
-          showToggle
-          toggleValue={settings.videoStabilization}
-          onToggle={(value) => updateSetting('videoStabilization', value)}
-        />
-        <SettingRow
-          label="GPS overlay on video"
-          showToggle
-          toggleValue={settings.videoGPSOverlayEnabled}
-          onToggle={(value) => updateSetting('videoGPSOverlayEnabled', value)}
-        />
-      </Section>
+        <Section title="VIDEO">
+          <SettingRow
+            label="Video resolution"
+            value={settings.videoResolution.toUpperCase()}
+            onPress={() => {
+              const resolutions = ['720p', '1080p', '4k'] as const;
+              const currentIndex = resolutions.indexOf(settings.videoResolution);
+              const newValue = resolutions[(currentIndex + 1) % resolutions.length];
+              updateSetting('videoResolution', newValue);
+            }}
+          />
+          <SettingRow
+            label="FPS"
+            value={`${settings.videoFPS} FPS`}
+            onPress={() => {
+              const fps = [30, 60, 120] as const;
+              const currentIndex = fps.indexOf(settings.videoFPS);
+              const newValue = fps[(currentIndex + 1) % fps.length];
+              updateSetting('videoFPS', newValue);
+            }}
+          />
+          <SettingRow
+            label="Video stabilization"
+            showToggle
+            toggleValue={settings.videoStabilization}
+            onToggle={(value) => updateSetting('videoStabilization', value)}
+          />
+          <SettingRow
+            label="GPS overlay on video"
+            showToggle
+            toggleValue={settings.videoGPSOverlayEnabled}
+            onToggle={(value) => updateSetting('videoGPSOverlayEnabled', value)}
+          />
+        </Section>
 
-      <Section title="ADVANCED">
-        <TouchableOpacity style={styles.dangerButton} onPress={handleReset}>
-          <Text style={styles.dangerButtonText}>Reset Camera Settings</Text>
-        </TouchableOpacity>
+        <Section title="ADVANCED">
+          <TouchableOpacity style={styles.dangerButton} onPress={handleReset}>
+            <Text style={styles.dangerButtonText}>Reset Camera Settings</Text>
+          </TouchableOpacity>
 
-        <View style={styles.aboutContainer}>
-          <Text style={styles.aboutTitle}>GeoShot v1.0.2</Text>
-          <Text style={styles.aboutDescription}>
-            Built by Sddion
-          </Text>
-          <Text style={styles.aboutSubtext}>
-            Passionate about open-source development
-          </Text>
+          <View style={styles.aboutContainer}>
+            <Text style={styles.aboutTitle}>GeoShot v1.0.2</Text>
+            <Text style={styles.aboutDescription}>
+              Built by Sddion
+            </Text>
+            <Text style={styles.aboutSubtext}>
+              Passionate about open-source development
+            </Text>
 
-          <View style={styles.buttonGroup}>
-            <TouchableOpacity
-              style={styles.githubButton}
-              onPress={() => Linking.openURL('https://github.com/sddion/geoshot.git')}
-            >
-              <MaterialCommunityIcons name="github" size={20} color="#fff" />
-              <Text style={styles.githubButtonText}>GitHub</Text>
-            </TouchableOpacity>
+            <View style={styles.buttonGroup}>
+              <TouchableOpacity
+                style={styles.githubButton}
+                onPress={() => Linking.openURL('https://github.com/sddion/geoshot.git')}
+              >
+                <MaterialCommunityIcons name="github" size={20} color="#fff" />
+                <Text style={styles.githubButtonText}>GitHub</Text>
+              </TouchableOpacity>
 
-            <TouchableOpacity
-              style={styles.donateButton}
-              onPress={() => { }}
-            >
-              <MaterialCommunityIcons name="heart" size={20} color="#fff" />
-              <Text style={styles.donateButtonText}>Donate</Text>
-            </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.donateButton}
+                onPress={() => { }}
+              >
+                <MaterialCommunityIcons name="heart" size={20} color="#fff" />
+                <Text style={styles.donateButtonText}>Donate</Text>
+              </TouchableOpacity>
+            </View>
           </View>
-        </View>
-      </Section>
+        </Section>
 
-      <View style={{ height: 40 }} />
-    </ScrollView>
+        <View style={{ height: 40 }} />
+      </ScrollView>
+    </BlurView>
   );
 }
 
