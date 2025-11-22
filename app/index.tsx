@@ -6,7 +6,7 @@ import { useRouter } from 'expo-router';
 import PermissionsScreen from '@/components/PermissionsScreen';
 import { useLiveGeoData } from '@/utils/useLiveGeoData';
 import React, { useRef, useState, useEffect } from 'react';
-import { View, Text, Linking, Platform, StyleSheet } from 'react-native';
+import { View, Text, Linking, Platform, StyleSheet, Alert } from 'react-native';
 import { useGPSVideoOverlay } from '@/utils/videoFrameProcessor';
 import { useCameraControls } from '@/hooks/useCameraControls';
 import { useCameraCapture } from '@/hooks/useCameraCapture';
@@ -148,6 +148,12 @@ export default function CameraScreen() {
           video={currentMode === 'video'}
           frameProcessor={currentMode === 'video' && settings.videoGPSOverlayEnabled ? (skiaFrameProcessor as any) : undefined}
           zoom={zoom}
+          onError={(error) => {
+            console.error('Camera Runtime Error:', error);
+            if (error.code === 'system/camera-is-restricted') {
+              Alert.alert('Camera Restricted', 'Camera is restricted by the OS. Please check device policies or parental controls.');
+            }
+          }}
         />
 
         {currentMode === 'video' && settings.videoGPSOverlayEnabled && (
