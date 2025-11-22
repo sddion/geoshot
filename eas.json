@@ -6,50 +6,56 @@
   "build": {
     "development": {
       "developmentClient": true,
-      "distribution": "internal"
-    },
-    "preview": {
-      "distribution": "internal"
-    },
-    "production": {
-      "autoIncrement": true
-    },
-    "production-apk": {
+      "extends": "production",
+      "distribution": "internal",
       "android": {
         "buildType": "apk",
+        "buildArchs": [
+          "arm64-v8a",
+          "armeabi-v7a"
+        ],
         "gradleCommand": ":app:assembleRelease"
       }
     },
-    "arm64-v8a": {
-      "extends": "production-apk",
+    "preview": {
+      "distribution": "internal",
+      "extends": "production",
       "android": {
         "buildType": "apk",
-        "gradleCommand": ":app:assembleRelease -Pandroid.abiFilters=arm64-v8a"
+        "buildArchs": [
+          "arm64-v8a",
+          "armeabi-v7a"
+        ],
+        "gradleCommand": ":app:assembleRelease"
       }
     },
-    "armeabi-v7a": {
+    "production": {
+      "autoIncrement": true,
       "extends": "production-apk",
       "android": {
         "buildType": "apk",
-        "gradleCommand": ":app:assembleRelease -Pandroid.abiFilters=armeabi-v7a"
-      }
-    },
-    "x86_64": {
-      "extends": "production-apk",
-      "android": {
-        "buildType": "apk",
-        "gradleCommand": ":app:assembleRelease -Pandroid.abiFilters=x86_64"
-      }
-    },
-    "x86": {
-      "extends": "production-apk",
-      "android": {
-        "buildType": "apk",
-        "gradleCommand": ":app:assembleRelease -Pandroid.abiFilters=x86"
+        "buildArchs": [
+          "arm64-v8a",
+          "armeabi-v7a"
+        ],
+        "gradleCommand": ":app:assembleRelease"
       }
     }
   },
+  "updates": {
+    "url": "https://github.com/sddion/geoshot/releases/latest/download/updates.json",
+    "fallbackToCacheTimeout": 0,
+    "enabled": true,
+    "checkAutomatically": "ON_LOAD"
+  },
   "submit": {
-    "production": {}
+    "production": {
+      "channel": "production",
+      "github": {
+        "owner": "sddion",
+        "repo": "geoshot",
+        "branch": "main"
+      }
+    }
   }
 }
