@@ -19,7 +19,8 @@ export function useCameraControls(
     const previousVolumeRef = useRef<number | null>(null);
     const volumeListenerRef = useRef<any>(null);
     const lastCaptureTimeRef = useRef<number>(0); // For debouncing captures
-    const CAPTURE_DEBOUNCE_MS = 500; // Minimum time between captures
+    const isCapturingRef = useRef<boolean>(false); // Track ongoing captures
+    const CAPTURE_DEBOUNCE_MS = 800; // Minimum time between captures (increased for better prevention)
 
     // Volume button listener
     useEffect(() => {
@@ -50,14 +51,20 @@ export function useCameraControls(
                     if (volumeAction === 'shutter') {
                         // Debounce to prevent multiple rapid captures
                         const now = Date.now();
-                        if (now - lastCaptureTimeRef.current < CAPTURE_DEBOUNCE_MS) {
-                            // Too soon, ignore this capture
+                        if (now - lastCaptureTimeRef.current < CAPTURE_DEBOUNCE_MS || isCapturingRef.current) {
+                            // Too soon or already capturing, ignore this capture
                             return;
                         }
                         lastCaptureTimeRef.current = now;
+                        isCapturingRef.current = true;
 
                         // Trigger capture on any volume change
                         onCapture?.();
+
+                        // Reset capturing flag after debounce period
+                        setTimeout(() => {
+                            isCapturingRef.current = false;
+                        }, CAPTURE_DEBOUNCE_MS);
 
                         // Restore volume
                         setTimeout(() => {
@@ -69,7 +76,7 @@ export function useCameraControls(
                             }
                         }, 50);
                     } else if (volumeAction === 'zoom') {
-                        // Detect zoom direction
+                        // Detect zoom direction - ONLY zoom, do not capture
                         if (previousVolumeRef.current !== null) {
                             const volumeDelta = currentVolume - previousVolumeRef.current;
 

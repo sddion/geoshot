@@ -9,10 +9,10 @@ export default function AboutScreen() {
     const version = Constants.expoConfig?.version || '1.0.0';
 
     const features = [
-        { icon: 'map-marker', title: 'GPS Overlay', description: 'Embed location data directly on photos' },
-        { icon: 'shield-check', title: 'Privacy First', description: 'No ads, no tracking, no data collection' },
-        { icon: 'camera', title: 'Pro Features', description: 'Manual controls, grid overlays, and more' },
-        { icon: 'open-source-initiative', title: 'Open Source', description: 'Free forever, community-driven' },
+        { icon: 'map-marker', title: 'GPS Overlay', description: 'Location data on photos' },
+        { icon: 'shield-check', title: 'Privacy First', description: 'No tracking, no ads' },
+        { icon: 'camera', title: 'Pro Features', description: 'Manual controls & grids' },
+        { icon: 'open-source-initiative', title: 'Open Source', description: 'Free forever' },
     ];
 
     return (
@@ -27,72 +27,68 @@ export default function AboutScreen() {
                 }}
             />
             <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-                <View style={styles.logoContainer}>
+                {/* App Header */}
+                <View style={styles.header}>
                     <Image
                         source={require('@/assets/images/android/mipmap-xxxhdpi/geoshot.png')}
                         style={styles.logo}
                     />
                     <Text style={styles.appName}>GeoShot</Text>
                     <Text style={styles.tagline}>Camera with GPS Overlay</Text>
-                    <View style={styles.versionBadge}>
-                        <Text style={styles.version}>v{version}</Text>
-                    </View>
+                    <Text style={styles.version}>Version {version}</Text>
                 </View>
 
-                <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Features</Text>
-                    <View style={styles.featureGrid}>
-                        {features.map((feature, index) => (
-                            <View key={index} style={styles.featureCard}>
+                {/* Description */}
+                <View style={styles.descriptionContainer}>
+                    <Text style={styles.description}>
+                        GeoShot embeds GPS data, location info, and weather conditions directly onto your photos. Perfect for documentation, field work, and travel.
+                    </Text>
+                </View>
+
+                {/* Features List */}
+                <View style={styles.featuresContainer}>
+                    {features.map((feature, index) => (
+                        <View key={index} style={styles.featureRow}>
+                            <View style={styles.iconContainer}>
                                 <MaterialCommunityIcons
                                     name={feature.icon as any}
-                                    size={28}
+                                    size={24}
                                     color="#FFD700"
                                 />
+                            </View>
+                            <View style={styles.featureContent}>
                                 <Text style={styles.featureTitle}>{feature.title}</Text>
                                 <Text style={styles.featureDescription}>{feature.description}</Text>
                             </View>
-                        ))}
-                    </View>
+                        </View>
+                    ))}
                 </View>
 
-                <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>About</Text>
-                    <Text style={styles.text}>
-                        GeoShot is a privacy-focused camera app that embeds GPS data, location info, and weather conditions directly onto your photos. Perfect for documentation, field work, and travel photography.
-                    </Text>
-                    <Text style={styles.text}>
-                        Built with React Native and Expo, GeoShot is completely open source and free to use.
-                    </Text>
+                {/* Action Buttons */}
+                <View style={styles.actionsContainer}>
+                    <TouchableOpacity
+                        style={styles.actionButton}
+                        onPress={() => Linking.openURL('https://github.com/sddion/geoshot')}
+                    >
+                        <MaterialCommunityIcons name="github" size={20} color="#fff" />
+                        <Text style={styles.actionButtonText}>View on GitHub</Text>
+                        <MaterialCommunityIcons name="chevron-right" size={20} color="#666" />
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                        style={styles.actionButton}
+                        onPress={() => Linking.openURL('https://buymeacoffee.com/sddion')}
+                    >
+                        <MaterialCommunityIcons name="heart" size={20} color="#E91E63" />
+                        <Text style={styles.actionButtonText}>Support Development</Text>
+                        <MaterialCommunityIcons name="chevron-right" size={20} color="#666" />
+                    </TouchableOpacity>
                 </View>
 
-                <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Support</Text>
-                    <Text style={styles.text}>
-                        This project is maintained by Sddion. If you find it useful, consider supporting development.
-                    </Text>
-
-                    <View style={styles.buttonGroup}>
-                        <TouchableOpacity
-                            style={[styles.button, styles.githubButton]}
-                            onPress={() => Linking.openURL('https://github.com/sddion/geoshot')}
-                        >
-                            <MaterialCommunityIcons name="github" size={20} color="#fff" />
-                            <Text style={styles.buttonText}>GitHub</Text>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity
-                            style={[styles.button, styles.donateButton]}
-                            onPress={() => Linking.openURL('https://buymeacoffee.com/sddion')}
-                        >
-                            <MaterialCommunityIcons name="heart" size={20} color="#fff" />
-                            <Text style={styles.buttonText}>Support</Text>
-                        </TouchableOpacity>
-                    </View>
-                </View>
-
+                {/* Footer */}
                 <View style={styles.footer}>
-                    <Text style={styles.footerText}>Made by Sddion</Text>
+                    <Text style={styles.footerText}>Made with ❤️ by Sddion</Text>
+                    <Text style={styles.footerSubtext}>Open Source • React Native • Expo</Text>
                 </View>
             </ScrollView>
         </>
