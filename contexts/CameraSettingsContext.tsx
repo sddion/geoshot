@@ -1,6 +1,7 @@
 import createContextHook from '@nkzw/create-context-hook';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
+import { AppState, AppStateStatus } from 'react-native';
 
 export type CameraMode = 'photo' | 'video' | 'night' | 'portrait';
 export type FlashMode = 'on' | 'off' | 'torch';
@@ -67,6 +68,9 @@ export const [CameraSettingsProvider, useCameraSettings] = createContextHook(() 
   const [currentMode, setCurrentMode] = useState<CameraMode>('photo');
   const [zoom, setZoom] = useState<number>(0); // 0 = neutral zoom for CameraView
 
+  // Ref to track if we've already fetched thumbnail after permission grant
+  const hasFetchedAfterPermission = useRef(false);
+
   const loadSettings = useCallback(async () => {
     try {
       const stored = await AsyncStorage.getItem(STORAGE_KEY);
@@ -83,7 +87,8 @@ export const [CameraSettingsProvider, useCameraSettings] = createContextHook(() 
 
   const fetchLastGeoShotAsset = useCallback(async () => {
     try {
-      const { status } = await MediaLibrary.requestPermissionsAsync();
+      // Use getPermissionsAsync instead of requestPermissionsAsync to avoid triggering app state changes
+      const { status } = await MediaLibrary.getPermissionsAsync();
       if (status !== 'granted') return;
 
       const album = await MediaLibrary.getAlbumAsync('GeoShot');
@@ -120,6 +125,23 @@ export const [CameraSettingsProvider, useCameraSettings] = createContextHook(() 
     loadSettings();
     fetchLastGeoShotAsset();
   }, [loadSettings, fetchLastGeoShotAsset]);
+
+  // Re-fetch thumbnail when app returns to foreground (e.g., after granting permissions)
+  // Only run this once after permission is granted to avoid infinite loops
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', async (nextAppState: AppStateStatus) => {
+      if (nextAppState === 'active' && !hasFetchedAfterPermission.current) {
+        // Check if media library permission is now granted and re-fetch thumbnail
+        const { status } = await MediaLibrary.getPermissionsAsync();
+        if (status === 'granted') {
+          hasFetchedAfterPermission.current = true; // Prevent running again
+          fetchLastGeoShotAsset();
+        }
+      }
+    });
+
+    return () => subscription.remove();
+  }, [fetchLastGeoShotAsset]);
 
   useEffect(() => {
     if (isLoaded) {

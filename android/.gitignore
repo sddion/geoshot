@@ -12,5 +12,8 @@ local.properties
 *.hprof
 .cxx/
 
+# Keystore credentials (contains sensitive passwords)
+gradle.properties
+
 # Bundle artifacts
 *.jsbundle

@@ -49,8 +49,8 @@ jobs:
         run: |
           echo "MYAPP_UPLOAD_STORE_FILE=../../tools/geoshot.keystore" >> android/gradle.properties
           echo "MYAPP_UPLOAD_STORE_PASSWORD=${{ secrets.KEYSTORE }}" >> android/gradle.properties
-          echo "MYAPP_UPLOAD_KEY_ALIAS=geoshot" >> android/gradle.properties
-          echo "MYAPP_UPLOAD_KEY_PASSWORD=${{ secrets.KEYSTORE }}" >> android/gradle.properties
+          echo "MYAPP_UPLOAD_KEY_ALIAS=${{ secrets.UPLOAD_KEY_ALIAS }}" >> android/gradle.properties
+          echo "MYAPP_UPLOAD_KEY_PASSWORD=${{ secrets.KEYSTORE}}" >> android/gradle.properties
 
       - name: Build APK
         run: |
@@ -68,7 +68,7 @@ jobs:
     name: Create Release
     needs: build_apk
     runs-on: ubuntu-latest
-    if: always() && needs.build_apk.result == 'success'
+    if: ${{ !cancelled() }}
     steps:
       - uses: actions/download-artifact@v4
 

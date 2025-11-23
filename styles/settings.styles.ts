@@ -1,99 +1,115 @@
-import { StyleSheet, Platform } from 'react-native';
+import { StyleSheet } from 'react-native';
 
-const ACCENT_COLOR = '#FFD700'; // Gold to match camera
-const BG_COLOR = '#000000';
-const CARD_COLOR = '#1C1C1E'; // iOS-like dark gray
-const TEXT_PRIMARY = '#FFFFFF';
-const TEXT_SECONDARY = '#8E8E93';
+// Material Design Dark Theme Colors
+const BACKGROUND = '#121212'; // Material Dark surface
+const SURFACE = '#1E1E1E'; // Slightly elevated surface
+const PRIMARY = '#BB86FC'; // Material Purple 200
+const TEXT_PRIMARY = '#E1E1E1'; // High emphasis
+const TEXT_SECONDARY = '#A0A0A0'; // Medium emphasis
+const DIVIDER = '#303030'; // Material divider
+const ERROR = '#CF6679'; // Material error color
 
 export const settingsStyles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: BG_COLOR,
+        backgroundColor: BACKGROUND,
     },
     scrollContent: {
         paddingBottom: 60,
         paddingTop: 80,
     },
     section: {
-        marginBottom: 32,
-        paddingHorizontal: 16,
+        marginBottom: 8,
     },
     sectionTitle: {
-        fontSize: 13,
-        fontWeight: '700',
-        color: ACCENT_COLOR,
-        marginBottom: 12,
-        marginLeft: 4,
+        fontSize: 14,
+        fontWeight: '500',
+        color: PRIMARY,
+        marginBottom: 8,
+        marginTop: 16,
+        marginLeft: 16,
         textTransform: 'uppercase',
-        letterSpacing: 1,
+        letterSpacing: 0.5,
     },
     sectionCard: {
-        backgroundColor: CARD_COLOR,
-        borderRadius: 16,
+        backgroundColor: SURFACE,
         overflow: 'hidden',
     },
     settingRow: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        paddingVertical: 18,
+        paddingVertical: 16,
         paddingHorizontal: 16,
-        backgroundColor: CARD_COLOR,
+        backgroundColor: SURFACE,
+        minHeight: 56, // Material Design minimum touch target
     },
-    // Separator line between rows
-    separator: {
-        height: StyleSheet.hairlineWidth,
-        backgroundColor: '#38383A',
-        marginLeft: 16,
+    settingRowContent: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        flex: 1,
+    },
+    iconContainer: {
+        width: 24,
+        height: 24,
+        marginRight: 16,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
     settingLabel: {
-        fontSize: 17,
+        fontSize: 16,
         color: TEXT_PRIMARY,
-        fontWeight: '500',
+        fontWeight: '400',
         flex: 1,
+    },
+    // Full-width separator (Android style)
+    separator: {
+        height: StyleSheet.hairlineWidth,
+        backgroundColor: DIVIDER,
     },
     settingValue: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 6,
+        gap: 4,
     },
     settingValueText: {
-        fontSize: 17,
+        fontSize: 14,
         color: TEXT_SECONDARY,
     },
+    // Material Design button
     dangerButton: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: 'rgba(255, 59, 48, 0.15)', // Soft red
+        backgroundColor: SURFACE,
         paddingVertical: 16,
-        borderRadius: 16,
         marginHorizontal: 16,
-        marginBottom: 24,
-        borderWidth: 1,
-        borderColor: 'rgba(255, 59, 48, 0.3)',
+        marginBottom: 16,
+        marginTop: 8,
+        minHeight: 48,
     },
     dangerButtonText: {
-        fontSize: 17,
-        fontWeight: '600',
-        color: '#FF453A', // iOS Red
+        fontSize: 14,
+        fontWeight: '500',
+        color: ERROR,
+        textTransform: 'uppercase',
+        letterSpacing: 0.5,
     },
     aboutContainer: {
         marginHorizontal: 16,
-        backgroundColor: CARD_COLOR,
-        borderRadius: 16,
-        padding: 20,
+        backgroundColor: SURFACE,
+        padding: 16,
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
+        minHeight: 72,
     },
     aboutInfo: {
         flex: 1,
     },
     aboutTitle: {
-        fontSize: 20,
-        fontWeight: '700',
+        fontSize: 16,
+        fontWeight: '400',
         color: TEXT_PRIMARY,
         marginBottom: 4,
     },

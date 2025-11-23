@@ -56,6 +56,7 @@ export default function SettingsScreen() {
     showToggle,
     toggleValue,
     onToggle,
+    icon,
   }: {
     label: string;
     value?: string;
@@ -63,6 +64,7 @@ export default function SettingsScreen() {
     showToggle?: boolean;
     toggleValue?: boolean;
     onToggle?: (value: boolean) => void;
+    icon?: string;
   }) => (
     <TouchableOpacity
       style={styles.settingRow}
@@ -70,18 +72,25 @@ export default function SettingsScreen() {
       disabled={showToggle || !onPress}
       activeOpacity={onPress ? 0.6 : 1}
     >
-      <Text style={styles.settingLabel}>{label}</Text>
+      <View style={styles.settingRowContent}>
+        {icon && (
+          <View style={styles.iconContainer}>
+            <MaterialCommunityIcons name={icon as any} size={24} color="#A0A0A0" />
+          </View>
+        )}
+        <Text style={styles.settingLabel}>{label}</Text>
+      </View>
       {showToggle ? (
         <Switch
           value={toggleValue}
           onValueChange={onToggle}
-          trackColor={{ false: '#3A3A3C', true: '#FFD700' }} // Gold accent
-          thumbColor="#fff"
+          trackColor={{ false: '#424242', true: '#BB86FC' }} // Material Design colors
+          thumbColor={toggleValue ? '#E1E1E1' : '#9E9E9E'}
         />
       ) : (
         <View style={styles.settingValue}>
           <Text style={styles.settingValueText}>{value}</Text>
-          {onPress && <MaterialCommunityIcons name="chevron-right" size={20} color="#555" />}
+          {onPress && <MaterialCommunityIcons name="chevron-right" size={20} color="#666" />}
         </View>
       )}
     </TouchableOpacity>
@@ -110,6 +119,7 @@ export default function SettingsScreen() {
       <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.scrollContent}>
         <Section title="General">
           <SettingRow
+            icon="folder"
             label="Storage Location"
             value={settings.storageLocation === 'phone' ? 'Phone' : 'SD Card'}
             onPress={() => {
@@ -118,6 +128,7 @@ export default function SettingsScreen() {
             }}
           />
           <SettingRow
+            icon="volume-high"
             label="Volume Button Action"
             value={settings.volumeAction === 'shutter' ? 'Shutter' : settings.volumeAction === 'zoom' ? 'Zoom' : 'Off'}
             onPress={() => {
@@ -128,18 +139,21 @@ export default function SettingsScreen() {
             }}
           />
           <SettingRow
+            icon="music-note"
             label="Shutter Sound"
             showToggle
             toggleValue={settings.shutterSound}
             onToggle={(value) => updateSetting('shutterSound', value)}
           />
           <SettingRow
+            icon="map-marker"
             label="Save Location Info"
             showToggle
             toggleValue={settings.saveLocation}
             onToggle={(value) => updateSetting('saveLocation', value)}
           />
           <SettingRow
+            icon="grid"
             label="Grid Overlay"
             value={settings.gridStyle === 'off' ? 'Off' : settings.gridStyle === '3x3' ? '3×3' : 'Golden Ratio'}
             onPress={() => {
@@ -150,6 +164,7 @@ export default function SettingsScreen() {
             }}
           />
           <SettingRow
+            icon="timer"
             label="Timer"
             value={settings.timer === 'off' ? 'Off' : settings.timer}
             onPress={() => {
@@ -160,6 +175,7 @@ export default function SettingsScreen() {
             }}
           />
           <SettingRow
+            icon="gesture-tap"
             label="Touch to Capture"
             showToggle
             toggleValue={settings.touchToCapture}
@@ -169,6 +185,7 @@ export default function SettingsScreen() {
 
         <Section title="Photo">
           <SettingRow
+            icon="crop"
             label="Aspect Ratio"
             value={settings.photoAspectRatio}
             onPress={() => {
@@ -179,6 +196,7 @@ export default function SettingsScreen() {
             }}
           />
           <SettingRow
+            icon="image-filter-hdr"
             label="Quality"
             value={settings.imageQuality === 'normal' ? 'Normal' : settings.imageQuality === 'fine' ? 'Fine' : 'Superfine'}
             onPress={() => {
@@ -189,6 +207,7 @@ export default function SettingsScreen() {
             }}
           />
           <SettingRow
+            icon="gesture-pinch"
             label="Gesture Zoom"
             showToggle
             toggleValue={settings.gestureZoom}
@@ -198,6 +217,7 @@ export default function SettingsScreen() {
 
         <Section title="Video">
           <SettingRow
+            icon="video"
             label="Resolution"
             value={settings.videoResolution.toUpperCase()}
             onPress={() => {
@@ -208,6 +228,7 @@ export default function SettingsScreen() {
             }}
           />
           <SettingRow
+            icon="speedometer"
             label="Frame Rate"
             value={`${settings.videoFPS} FPS`}
             onPress={() => {
@@ -218,6 +239,7 @@ export default function SettingsScreen() {
             }}
           />
           <SettingRow
+            icon="video-stabilization"
             label="Stabilization"
             showToggle
             toggleValue={settings.videoStabilization}
@@ -227,8 +249,8 @@ export default function SettingsScreen() {
 
         <View style={{ marginTop: 20 }}>
           <TouchableOpacity style={styles.dangerButton} onPress={handleReset}>
-            <MaterialCommunityIcons name="restore" size={22} color="#FF453A" style={{ marginRight: 8 }} />
-            <Text style={styles.dangerButtonText}>Reset Camera Settings</Text>
+            <MaterialCommunityIcons name="restore" size={20} color="#CF6679" style={{ marginRight: 8 }} />
+            <Text style={styles.dangerButtonText}>Reset Settings</Text>
           </TouchableOpacity>
 
           <TouchableOpacity

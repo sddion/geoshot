@@ -2,7 +2,7 @@
   "expo": {
     "name": "GeoShot",
     "slug": "geoshot",
-    "version": "2.1.0",
+    "version": "2.1.1",
     "orientation": "portrait",
     "icon": "./assets/images/android/mipmap-xxxhdpi/geoshot.png",
     "scheme": "geoshot-camera-app",
@@ -131,18 +131,6 @@
     "experiments": {
       "typedRoutes": true
     },
-    "jsEngine": "hermes",
-    "updates": {
-      "url": "https://u.expo.dev/d2eae4c7-d983-4e08-9597-b22cbd01ea98"
-    },
-    "runtimeVersion": "2.0.0",
-    "extra": {
-      "router": {
-        "origin": "https://geoshot.vercel.app/"
-      },
-      "eas": {
-        "projectId": "d2eae4c7-d983-4e08-9597-b22cbd01ea98"
-      }
-    }
+    "jsEngine": "hermes"
   }
 }

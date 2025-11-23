@@ -132,8 +132,7 @@ export function useAutoPermissions() {
                 const micResult = await Camera.requestMicrophonePermission();
                 if (micResult === 'denied') {
                     console.log('Microphone permission denied');
-                    await checkPermissions();
-                    return;
+                    // Don't return early - continue to next permission
                 }
             }
 
@@ -145,16 +144,14 @@ export function useAutoPermissions() {
                 // Prevent loop: Only ask if we can ask again, or if it's undetermined.
                 if (currentMedia.status === MediaLibrary.PermissionStatus.DENIED && !currentMedia.canAskAgain) {
                     console.log('Media library permission permanently denied.');
-                    await checkPermissions();
-                    return;
-                }
-
-                console.log('Requesting media library permission...');
-                const mediaResult = await requestMediaLibrary();
-                if (mediaResult.status !== MediaLibrary.PermissionStatus.GRANTED) {
-                    console.log('Media library permission denied');
-                    await checkPermissions();
-                    return;
+                    // Permanently denied - continue to next permission anyway
+                } else {
+                    console.log('Requesting media library permission...');
+                    const mediaResult = await requestMediaLibrary();
+                    if (mediaResult.status !== MediaLibrary.PermissionStatus.GRANTED) {
+                        console.log('Media library permission denied');
+                        // Don't return early - continue to next permission
+                    }
                 }
             }
 

@@ -34,7 +34,7 @@ export default function AboutScreen() {
                         style={styles.logo}
                     />
                     <Text style={styles.appName}>GeoShot</Text>
-                    <Text style={styles.tagline}>Camera with GPS Overlay</Text>
+                    <Text style={styles.tagline}>GPS Camera</Text>
                     <Text style={styles.version}>Version {version}</Text>
                 </View>
 
