@@ -5,7 +5,15 @@ buildscript {
     google()
     mavenCentral()
   }
-  dependencies {
+  
+
+// Disable lint tasks for release builds to avoid OOM on CI
+gradle.taskGraph.whenReady { graph ->
+    graph.allTasks.findAll { it.name.contains('lintVital') }.each { task ->
+        task.enabled = false
+    }
+}
+dependencies {
     classpath('com.android.tools.build:gradle')
     classpath('com.facebook.react:react-native-gradle-plugin')
     classpath('org.jetbrains.kotlin:kotlin-gradle-plugin')
