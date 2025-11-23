@@ -2,9 +2,7 @@
 
 # dependencies
 node_modules/
-expo-build/
 
-ios/
 # Expo
 .expo/
 dist/
