@@ -131,6 +131,7 @@
     "experiments": {
       "typedRoutes": true
     },
-    "jsEngine": "hermes"
+    "jsEngine": "hermes",
+    "runtimeVersion": "2.1.1"
   }
 }
