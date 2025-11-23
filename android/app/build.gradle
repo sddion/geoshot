@@ -143,8 +143,6 @@ android {
             useLegacyPackaging enableLegacyPackaging.toBoolean()
         }
     }
-    androidResources {
-
     splits {
         abi {
             enable true
@@ -153,7 +151,7 @@ android {
             universalApk true
         }
     }
-
+    androidResources {
         ignoreAssetsPattern '!.svn:!.git:!.ds_store:!*.scc:!CVS:!thumbs.db:!picasa.ini:!*~'
     }
 }
