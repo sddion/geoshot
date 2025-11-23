@@ -125,7 +125,8 @@
       ],
       "expo-router",
       "./plugins/withAndroidSplits",
-      "./plugins/withAndroidSigning"
+      "./plugins/withAndroidSigning",
+      "./plugins/withDisableLint"
     ],
     "experiments": {
       "typedRoutes": true
