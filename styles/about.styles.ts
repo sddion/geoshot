@@ -1,148 +1,130 @@
 import { StyleSheet } from 'react-native';
 
-const CARD_BG = '#1C1C1E';
-const TEXT_PRIMARY = '#FFFFFF';
-const TEXT_SECONDARY = '#A1A1AA';
-const ACCENT_COLOR = '#FFD700';
-
 export const aboutStyles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#000000',
     },
     contentContainer: {
-        padding: 20,
-        paddingTop: 30,
+        paddingHorizontal: 20,
+        paddingTop: 24,
         paddingBottom: 40,
     },
-    logoContainer: {
+
+    // Header
+    header: {
         alignItems: 'center',
-        marginBottom: 32,
+        paddingVertical: 32,
+        borderBottomWidth: 1,
+        borderBottomColor: 'rgba(255, 255, 255, 0.06)',
+        marginBottom: 24,
     },
     logo: {
-        width: 100,
-        height: 100,
-        borderRadius: 24,
+        width: 80,
+        height: 80,
+        borderRadius: 18,
         marginBottom: 16,
-        borderWidth: 1,
-        borderColor: 'rgba(255, 255, 255, 0.1)',
     },
     appName: {
-        fontSize: 28,
+        fontSize: 24,
         fontWeight: '700',
-        color: TEXT_PRIMARY,
+        color: '#FFFFFF',
         marginBottom: 4,
-        letterSpacing: 0.5,
+        letterSpacing: 0.3,
     },
     tagline: {
         fontSize: 14,
-        color: TEXT_SECONDARY,
+        color: '#888',
         marginBottom: 12,
-    },
-    versionBadge: {
-        backgroundColor: 'rgba(255, 215, 0, 0.15)',
-        paddingHorizontal: 12,
-        paddingVertical: 6,
-        borderRadius: 12,
-        borderWidth: 1,
-        borderColor: 'rgba(255, 215, 0, 0.3)',
     },
     version: {
         fontSize: 13,
-        color: ACCENT_COLOR,
-        fontWeight: '600',
+        color: '#666',
+        fontWeight: '500',
     },
-    section: {
-        backgroundColor: CARD_BG,
-        borderRadius: 20,
-        padding: 20,
-        marginBottom: 16,
-        borderWidth: 1,
-        borderColor: 'rgba(255, 255, 255, 0.05)',
+
+    // Description
+    descriptionContainer: {
+        marginBottom: 32,
     },
-    sectionTitle: {
-        fontSize: 18,
-        fontWeight: '700',
-        color: TEXT_PRIMARY,
-        marginBottom: 16,
-    },
-    featureGrid: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        gap: 12,
-        marginTop: 4,
-    },
-    featureCard: {
-        flex: 1,
-        minWidth: '45%',
-        backgroundColor: 'rgba(255, 255, 255, 0.03)',
-        borderRadius: 16,
-        padding: 16,
-        alignItems: 'center',
-        borderWidth: 1,
-        borderColor: 'rgba(255, 255, 255, 0.05)',
-    },
-    featureTitle: {
-        fontSize: 14,
-        fontWeight: '600',
-        color: TEXT_PRIMARY,
-        marginTop: 8,
-        marginBottom: 4,
-        textAlign: 'center',
-    },
-    featureDescription: {
-        fontSize: 12,
-        color: TEXT_SECONDARY,
-        textAlign: 'center',
-        lineHeight: 16,
-    },
-    text: {
+    description: {
         fontSize: 15,
-        color: TEXT_SECONDARY,
-        lineHeight: 24,
-        marginBottom: 12,
+        lineHeight: 22,
+        color: '#999',
+        textAlign: 'center',
     },
-    highlight: {
-        color: ACCENT_COLOR,
-        fontWeight: '700',
+
+    // Features
+    featuresContainer: {
+        marginBottom: 32,
     },
-    buttonGroup: {
+    featureRow: {
         flexDirection: 'row',
-        gap: 12,
-        marginTop: 16,
+        alignItems: 'flex-start',
+        paddingVertical: 16,
+        borderBottomWidth: 1,
+        borderBottomColor: 'rgba(255, 255, 255, 0.06)',
     },
-    button: {
-        flexDirection: 'row',
+    iconContainer: {
+        width: 40,
+        height: 40,
+        borderRadius: 12,
+        backgroundColor: 'rgba(255, 215, 0, 0.08)',
         alignItems: 'center',
         justifyContent: 'center',
-        paddingVertical: 14,
-        paddingHorizontal: 16,
-        borderRadius: 14,
+        marginRight: 16,
+    },
+    featureContent: {
         flex: 1,
+        paddingTop: 2,
     },
-    githubButton: {
-        backgroundColor: '#24292E',
-        borderWidth: 1,
-        borderColor: 'rgba(255, 255, 255, 0.1)',
-    },
-    donateButton: {
-        backgroundColor: '#E91E63',
-    },
-    buttonText: {
-        color: '#fff',
-        fontSize: 14,
+    featureTitle: {
+        fontSize: 16,
         fontWeight: '600',
-        marginLeft: 6,
+        color: '#FFFFFF',
+        marginBottom: 4,
     },
-    footer: {
-        marginTop: 24,
+    featureDescription: {
+        fontSize: 14,
+        color: '#888',
+        lineHeight: 20,
+    },
+
+    // Action Buttons
+    actionsContainer: {
+        marginBottom: 40,
+    },
+    actionButton: {
+        flexDirection: 'row',
         alignItems: 'center',
+        paddingVertical: 16,
+        paddingHorizontal: 16,
+        backgroundColor: 'rgba(255, 255, 255, 0.03)',
+        borderRadius: 14,
+        marginBottom: 12,
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.06)',
+    },
+    actionButtonText: {
+        flex: 1,
+        fontSize: 16,
+        fontWeight: '500',
+        color: '#FFFFFF',
+        marginLeft: 12,
+    },
+
+    // Footer
+    footer: {
+        alignItems: 'center',
+        paddingTop: 24,
+        borderTopWidth: 1,
+        borderTopColor: 'rgba(255, 255, 255, 0.06)',
     },
     footerText: {
         color: '#666',
-        fontSize: 13,
+        fontSize: 14,
         fontWeight: '500',
-        marginBottom: 4,
+        marginBottom: 8,
     },
     footerSubtext: {
         color: '#444',

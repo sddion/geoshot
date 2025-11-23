@@ -117,9 +117,8 @@ export function useAutoPermissions() {
                 console.log('Requesting camera permission...');
                 const cameraResult = await Camera.requestCameraPermission();
                 if (cameraResult === 'denied') {
-                    console.log('Camera permission denied');
-                    await checkPermissions();
-                    return;
+                    console.log('Camera permission denied, continuing to next permission...');
+                    // Don't return - continue to next permission
                 }
             }
 
@@ -131,9 +130,8 @@ export function useAutoPermissions() {
                 console.log('Requesting microphone permission...');
                 const micResult = await Camera.requestMicrophonePermission();
                 if (micResult === 'denied') {
-                    console.log('Microphone permission denied');
-                    await checkPermissions();
-                    return;
+                    console.log('Microphone permission denied, continuing to next permission...');
+                    // Don't return - continue to next permission
                 }
             }
 
@@ -144,17 +142,15 @@ export function useAutoPermissions() {
             if (currentMedia.status !== MediaLibrary.PermissionStatus.GRANTED) {
                 // Prevent loop: Only ask if we can ask again, or if it's undetermined.
                 if (currentMedia.status === MediaLibrary.PermissionStatus.DENIED && !currentMedia.canAskAgain) {
-                    console.log('Media library permission permanently denied.');
-                    await checkPermissions();
-                    return;
-                }
-
-                console.log('Requesting media library permission...');
-                const mediaResult = await requestMediaLibrary();
-                if (mediaResult.status !== MediaLibrary.PermissionStatus.GRANTED) {
-                    console.log('Media library permission denied');
-                    await checkPermissions();
-                    return;
+                    console.log('Media library permission permanently denied, continuing to next permission...');
+                    // Don't return - continue to next permission
+                } else {
+                    console.log('Requesting media library permission...');
+                    const mediaResult = await requestMediaLibrary();
+                    if (mediaResult.status !== MediaLibrary.PermissionStatus.GRANTED) {
+                        console.log('Media library permission denied, continuing to next permission...');
+                        // Don't return - continue to next permission
+                    }
                 }
             }
 
@@ -172,7 +168,7 @@ export function useAutoPermissions() {
 
             if (!loc.granted) {
                 console.log("Foreground location not granted.");
-                // If we can't ask again, open settings
+                // If we can't ask again, open settings and stop flow
                 if (!loc.canAskAgain) {
                     console.log("Foreground location blocked. Opening settings...");
                     waitingForSettingsRef.current = true;
@@ -180,7 +176,7 @@ export function useAutoPermissions() {
                     await checkPermissions();
                     return;
                 }
-                // If denied but can ask again, continue to next permission
+                // If denied but can ask again, just log and continue
                 console.log("Foreground location denied, but can ask again. Continuing...");
             }
 
@@ -198,9 +194,12 @@ export function useAutoPermissions() {
                     Linking.openSettings().catch(() => console.warn("Unable to open settings"));
                     await checkPermissions();
                     return;
+                } else if (!bg.granted) {
+                    console.log("Background location denied but can ask again.");
                 }
             }
 
+            // Final check of all permissions after the flow completes
             const finalState = await checkPermissions();
             console.log('All permissions requested. Final state:', finalState);
 
