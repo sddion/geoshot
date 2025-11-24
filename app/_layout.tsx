@@ -4,6 +4,7 @@ import { Stack } from 'expo-router';
 import React, { useEffect } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { CameraSettingsProvider } from '@/contexts/CameraSettingsContext';
+import { UpdateProvider } from '@/utils/UpdateContext';
 import { useAutoPermissions } from '@/hooks/Permissions';
 import * as SplashScreen from 'expo-splash-screen';
 
@@ -74,11 +75,13 @@ function RootLayout() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <CameraSettingsProvider>
-        <GestureHandlerRootView style={{ flex: 1 }}>
-          <RootLayoutNav />
-        </GestureHandlerRootView>
-      </CameraSettingsProvider>
+      <UpdateProvider>
+        <CameraSettingsProvider>
+          <GestureHandlerRootView style={{ flex: 1 }}>
+            <RootLayoutNav />
+          </GestureHandlerRootView>
+        </CameraSettingsProvider>
+      </UpdateProvider>
     </QueryClientProvider>
   );
 }

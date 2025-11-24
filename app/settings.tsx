@@ -1,7 +1,7 @@
 import { settingsStyles as styles } from '@/styles/settings.styles';
 import { useCameraSettings } from '@/contexts/CameraSettingsContext';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -11,9 +11,14 @@ import {
   Alert,
   ToastAndroid,
   Platform,
+  Modal,
+  Linking,
+  ActivityIndicator,
 } from 'react-native';
 import { useRouter, Href } from 'expo-router';
 import Constants from 'expo-constants';
+import { useUpdate } from '@/utils/UpdateContext';
+import { downloadAndInstallUpdate } from '@/utils/updater';
 
 // Toast utility function
 const showToast = (message: string) => {
@@ -22,6 +27,126 @@ const showToast = (message: string) => {
   } else {
     Alert.alert('', message);
   }
+};
+
+// UpdateRow Component
+const UpdateRow = () => {
+  const { updateInfo, refresh } = useUpdate();
+  const [showChangelog, setShowChangelog] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await refresh();
+    setRefreshing(false);
+    showToast(updateInfo ? 'Update available!' : 'App is up to date');
+  };
+
+  const handleUpdate = () => {
+    if (updateInfo) {
+      downloadAndInstallUpdate(updateInfo);
+    }
+  };
+
+  const openChangelog = () => {
+    if (updateInfo?.html_url) {
+      Linking.openURL(updateInfo.html_url);
+    }
+  };
+
+  return (
+    <>
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>SYSTEM</Text>
+        <View style={styles.sectionCard}>
+          <View style={styles.settingRow}>
+            <View style={styles.settingRowContent}>
+              <View style={styles.iconContainer}>
+                <MaterialCommunityIcons name="download" size={24} color="#A0A0A0" />
+              </View>
+              <Text style={styles.settingLabel}>App Update</Text>
+            </View>
+            <View style={styles.updateStatusContainer}>
+              <View
+                style={[
+                  styles.updateDot,
+                  { backgroundColor: updateInfo ? '#FF5252' : '#4CAF50' },
+                ]}
+              />
+              {refreshing ? (
+                <ActivityIndicator size="small" color="#BB86FC" />
+              ) : (
+                <TouchableOpacity onPress={handleRefresh}>
+                  <MaterialCommunityIcons name="refresh" size={20} color="#A0A0A0" />
+                </TouchableOpacity>
+              )}
+            </View>
+          </View>
+          {updateInfo && (
+            <View style={styles.changelogContainer}>
+              <View style={styles.updateActionsRow}>
+                <TouchableOpacity
+                  style={styles.updateButton}
+                  onPress={handleUpdate}
+                >
+                  <Text style={styles.updateButtonText}>Install Update</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => setShowChangelog(true)}>
+                  <Text style={styles.changelogLink}>View Changelog</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          )}
+        </View>
+      </View>
+
+      {/* Changelog Modal */}
+      <Modal
+        visible={showChangelog}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setShowChangelog(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>
+                Release {updateInfo?.tag_name}
+              </Text>
+              <TouchableOpacity onPress={() => setShowChangelog(false)}>
+                <MaterialCommunityIcons name="close" size={24} color="#E1E1E1" />
+              </TouchableOpacity>
+            </View>
+            <ScrollView style={styles.modalBody}>
+              <Text style={styles.modalBodyText}>{updateInfo?.body || 'No changelog available.'}</Text>
+            </ScrollView>
+            <View style={styles.modalFooter}>
+              <TouchableOpacity
+                style={styles.modalButtonSecondary}
+                onPress={() => {
+                  setShowChangelog(false);
+                  if (updateInfo?.html_url) {
+                    Linking.openURL(updateInfo.html_url);
+                  }
+                }}
+              >
+                <Text style={styles.modalButtonSecondaryText}>Open on GitHub</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.modalButtonPrimary}
+                onPress={() => {
+                  setShowChangelog(false);
+                  handleUpdate();
+                }}
+              >
+                <Text style={styles.modalButtonPrimaryText}>Install Now</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+    </>
+  );
 };
 
 export default function SettingsScreen() {
@@ -117,6 +242,8 @@ export default function SettingsScreen() {
   return (
     <View style={styles.container}>
       <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.scrollContent}>
+        {/* OTA Update Row */}
+        <UpdateRow />
         <Section title="General">
           <SettingRow
             icon="folder"

@@ -50,7 +50,7 @@ export default function CameraScreen() {
   const [isActive, setIsActive] = useState(appState.current === 'active');
   const [hasCameraError, setHasCameraError] = useState(false);
 
-  // ⭐ NEW: Delay before mounting camera to avoid keep-awake crash
+  // NEW: Delay before mounting camera to avoid keep-awake crash
   const [canMountCamera, setCanMountCamera] = useState(false);
 
   useEffect(() => {

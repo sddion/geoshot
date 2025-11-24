@@ -1,5 +1,3 @@
-/* 
-
 import * as Application from 'expo-application';
 import * as FileSystem from 'expo-file-system';
 import { getContentUriAsync, createDownloadResumable } from 'expo-file-system/legacy';
@@ -16,18 +14,13 @@ interface ReleaseAsset {
     content_type: string;
 }
 
-interface GitHubRelease {
+export interface GitHubRelease {
     tag_name: string;
     assets: ReleaseAsset[];
     body: string;
+    html_url: string;
 }
 
-/**
- * Compare two semantic version strings.
- * Returns 1 if v1 > v2, -1 if v1 < v2, 0 if equal.
- */
-
-/*
 
 function compareVersions(v1: string, v2: string): number {
     const cleanV1 = v1.replace(/^v/, '');
@@ -145,5 +138,3 @@ export async function downloadAndInstallUpdate(release: GitHubRelease) {
         Alert.alert('Update Failed', 'Could not download or install the update.');
     }
 }
-
-*/

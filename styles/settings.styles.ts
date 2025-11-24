@@ -118,5 +118,107 @@ export const settingsStyles = StyleSheet.create({
         fontSize: 14,
         color: TEXT_SECONDARY,
     },
+    updateStatusContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+    },
+    updateDot: {
+        width: 10,
+        height: 10,
+        borderRadius: 5,
+    },
+    updateButton: {
+        backgroundColor: '#FF5252',
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 6,
+    },
+    updateButtonText: {
+        color: '#FFFFFF',
+        fontSize: 12,
+        fontWeight: '600',
+        textTransform: 'uppercase',
+        letterSpacing: 0.5,
+    },
+    changelogContainer: {
+        paddingHorizontal: 16,
+        paddingBottom: 12,
+        paddingTop: 4,
+    },
+    changelogLink: {
+        color: '#BB86FC',
+        fontSize: 13,
+        fontWeight: '500',
+    },
+    updateActionsRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 16,
+        paddingHorizontal: 16,
+        paddingBottom: 12,
+    },
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.6)',
+        justifyContent: 'flex-end',
+    },
+    modalContent: {
+        backgroundColor: SURFACE,
+        borderTopLeftRadius: 20,
+        borderTopRightRadius: 20,
+        maxHeight: '70%',
+    },
+    modalHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingHorizontal: 20,
+        paddingTop: 20,
+        paddingBottom: 12,
+    },
+    modalTitle: {
+        fontSize: 18,
+        fontWeight: '600',
+        color: TEXT_PRIMARY,
+    },
+    modalBody: {
+        paddingHorizontal: 20,
+        paddingVertical: 8,
+    },
+    modalBodyText: {
+        fontSize: 14,
+        lineHeight: 20,
+        color: TEXT_SECONDARY,
+    },
+    modalFooter: {
+        flexDirection: 'row',
+        padding: 16,
+        gap: 12,
+    },
+    modalButtonPrimary: {
+        flex: 1,
+        backgroundColor: PRIMARY,
+        paddingVertical: 14,
+        borderRadius: 8,
+        alignItems: 'center',
+    },
+    modalButtonPrimaryText: {
+        color: '#000000',
+        fontSize: 15,
+        fontWeight: '600',
+    },
+    modalButtonSecondary: {
+        flex: 1,
+        backgroundColor: DIVIDER,
+        paddingVertical: 14,
+        borderRadius: 8,
+        alignItems: 'center',
+    },
+    modalButtonSecondaryText: {
+        color: TEXT_PRIMARY,
+        fontSize: 15,
+        fontWeight: '600',
+    },
 });
 
