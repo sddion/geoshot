@@ -58,11 +58,15 @@ jobs:
           chmod +x gradlew
           ./gradlew assembleRelease -PreactNativeArchitectures=${{ matrix.arch }}
 
+      - name: Rename APK
+        run: |
+          mv android/app/build/outputs/apk/release/app-${{ matrix.arch }}-release.apk android/app/build/outputs/apk/release/geoshot-${{ matrix.arch }}-${{ github.ref_name }}.apk
+
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: "app-${{ matrix.arch }}-release"
-          path: android/app/build/outputs/apk/release/app-${{ matrix.arch }}-release.apk
+          name: "geoshot-${{ matrix.arch }}-${{ github.ref_name }}"
+          path: android/app/build/outputs/apk/release/geoshot-${{ matrix.arch }}-${{ github.ref_name }}.apk
 
   release:
     name: Create Release
@@ -80,11 +84,8 @@ jobs:
           # Create a directory for all APKs
           mkdir -p apks
           
-          # Move each architecture-specific APK to the apks directory
-          find . -name "app-armeabi-v7a-release.apk" -exec cp {} apks/ \;
-          find . -name "app-arm64-v8a-release.apk" -exec cp {} apks/ \;
-          find . -name "app-x86-release.apk" -exec cp {} apks/ \;
-          find . -name "app-x86_64-release.apk" -exec cp {} apks/ \;
+          # Move all geoshot APKs to the apks directory
+          find . -name "geoshot-*.apk" -exec cp {} apks/ \;
           
           echo "Organized APKs:"
           ls -lh apks/
