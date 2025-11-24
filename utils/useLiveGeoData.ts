@@ -7,10 +7,34 @@ export function useLiveGeoData(enabled: boolean) {
     const [data, setData] = useState<GeoData | null>(null);
     const [mapTile, setMapTile] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
+    const [permissionStatus, setPermissionStatus] = useState<string>('unknown');
 
     // Refs for throttling
     const lastFullUpdate = useRef<number>(0);
     const FULL_UPDATE_INTERVAL = 15000; // 15 seconds for weather/address
+
+    // Watch for permission changes
+    useEffect(() => {
+        let isMounted = true;
+
+        const checkPermissionStatus = async () => {
+            const { status } = await Location.getForegroundPermissionsAsync();
+            if (isMounted) {
+                setPermissionStatus(status);
+            }
+        };
+
+        // Check immediately
+        checkPermissionStatus();
+
+        // Check periodically (in case permissions change)
+        const interval = setInterval(checkPermissionStatus, 2000);
+
+        return () => {
+            isMounted = false;
+            clearInterval(interval);
+        };
+    }, []);
 
     useEffect(() => {
         let locationSub: Location.LocationSubscription | null = null;
@@ -22,11 +46,13 @@ export function useLiveGeoData(enabled: boolean) {
 
             const { status } = await Location.getForegroundPermissionsAsync();
             if (status !== 'granted') {
+                console.log('GPS: Foreground location permission not granted yet');
                 setLoading(false);
                 return;
             }
 
             try {
+                console.log('GPS: Starting location updates...');
                 // Initial full fetch
                 const initialData = await getGeoData();
                 if (isMounted && initialData) {
@@ -95,6 +121,7 @@ export function useLiveGeoData(enabled: boolean) {
 
             } catch (error) {
                 console.error('Live geo data error:', error);
+                setLoading(false);
             }
         };
 
@@ -109,7 +136,7 @@ export function useLiveGeoData(enabled: boolean) {
             if (locationSub) locationSub.remove();
             if (magSub) magSub.remove();
         };
-    }, [enabled]);
+    }, [enabled, permissionStatus]); // Re-run when permission status changes
 
     return { data, mapTile, loading };
 }

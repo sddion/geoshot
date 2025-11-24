@@ -244,7 +244,7 @@ export async function getCachedMapTile(
     const tileX = Math.floor(centerX / tileSize);
     const tileY = Math.floor(centerY / tileSize);
 
-    const fileName = `${zoom}_${tileX}_${tileY}.png`;
+    const fileName = `${zoom}_${tileX}_${tileY}.jpg`;
     const fileUri = TILE_CACHE_DIR + fileName;
 
     const fileInfo = await FileSystem.getInfoAsync(fileUri);
@@ -253,7 +253,8 @@ export async function getCachedMapTile(
       return fileUri;
     }
 
-    const url = `https://tile.openstreetmap.org/${zoom}/${tileX}/${tileY}.png`;
+    // Use ESRI World Imagery for satellite view
+    const url = `https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${zoom}/${tileY}/${tileX}`;
 
     // Download with User-Agent
     const downloadRes = await FileSystem.downloadAsync(url, fileUri, {
@@ -283,6 +284,6 @@ export async function getCachedMapTile(
       tileSize;
     const tileX = Math.floor(centerX / tileSize);
     const tileY = Math.floor(centerY / tileSize);
-    return `https://tile.openstreetmap.org/${zoom}/${tileX}/${tileY}.png`;
+    return `https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${zoom}/${tileY}/${tileX}`;
   }
 }

@@ -45,7 +45,7 @@ export const cameraStyles = StyleSheet.create({
     },
     liveOverlayContainer: {
         position: 'absolute',
-        bottom: 240,
+        bottom: 200,
         left: 16,
         right: 16,
         alignItems: 'center',

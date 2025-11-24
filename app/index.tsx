@@ -84,6 +84,7 @@ export default function CameraScreen() {
     cycleFlash,
     lastPhotoUri,
     setLastPhotoUri,
+    thumbnailVersion,
   } = useCameraSettings();
 
   // Camera controls (zoom, focus)
@@ -137,6 +138,7 @@ export default function CameraScreen() {
     liveGeoData: liveGeoData,
     router,
     setLastPhotoUri,
+    shutterSound: settings.shutterSound,
   });
 
   // VisionCamera device
@@ -355,6 +357,7 @@ export default function CameraScreen() {
         currentMode={currentMode}
         setCurrentMode={setCurrentMode}
         lastPhotoUri={lastPhotoUri}
+        thumbnailVersion={thumbnailVersion}
         openGallery={openSystemGallery}
         toggleCameraFacing={toggleCameraFacing}
         onSettingsPress={() => router.push('/settings')}

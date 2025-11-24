@@ -116,11 +116,8 @@ export function useAutoPermissions() {
             if (currentCamera !== 'granted') {
                 console.log('Requesting camera permission...');
                 const cameraResult = await Camera.requestCameraPermission();
-                if (cameraResult === 'denied') {
-                    console.log('Camera permission denied');
-                    await checkPermissions();
-                    return;
-                }
+                console.log('Camera permission result:', cameraResult);
+                // Don't return early - continue to next permission
             }
 
             await new Promise(resolve => setTimeout(resolve, 300));
@@ -130,10 +127,8 @@ export function useAutoPermissions() {
             if (currentMic !== 'granted') {
                 console.log('Requesting microphone permission...');
                 const micResult = await Camera.requestMicrophonePermission();
-                if (micResult === 'denied') {
-                    console.log('Microphone permission denied');
-                    // Don't return early - continue to next permission
-                }
+                console.log('Microphone permission result:', micResult);
+                // Don't return early - continue to next permission
             }
 
             await new Promise(resolve => setTimeout(resolve, 300));
@@ -144,62 +139,57 @@ export function useAutoPermissions() {
                 // Prevent loop: Only ask if we can ask again, or if it's undetermined.
                 if (currentMedia.status === MediaLibrary.PermissionStatus.DENIED && !currentMedia.canAskAgain) {
                     console.log('Media library permission permanently denied.');
-                    // Permanently denied - continue to next permission anyway
+                    // Continue to next permission anyway
                 } else {
                     console.log('Requesting media library permission...');
                     const mediaResult = await requestMediaLibrary();
-                    if (mediaResult.status !== MediaLibrary.PermissionStatus.GRANTED) {
-                        console.log('Media library permission denied');
-                        // Don't return early - continue to next permission
-                    }
+                    console.log('Media library permission result:', mediaResult.status);
+                    // Don't return early - continue to next permission
                 }
             }
 
             await new Promise(resolve => setTimeout(resolve, 300));
 
-            // 4. LOCATION PERMISSION
-            console.log("Checking location permission...");
+            // 4. LOCATION PERMISSION (Foreground)
+            console.log("Checking foreground location permission...");
             let loc = await Location.getForegroundPermissionsAsync();
 
             // Request foreground location if not granted
             if (!loc.granted && loc.canAskAgain) {
-                console.log("Asking for foreground location...");
+                console.log("Requesting foreground location...");
                 loc = await Location.requestForegroundPermissionsAsync();
+                console.log("Foreground location result:", loc.granted);
             }
 
-            if (!loc.granted) {
-                console.log("Foreground location not granted.");
-                // If we can't ask again, open settings
-                if (!loc.canAskAgain) {
-                    console.log("Foreground location blocked. Opening settings...");
-                    waitingForSettingsRef.current = true;
-                    Linking.openSettings();
-                    await checkPermissions();
-                    return;
-                }
-                // If denied but can ask again, continue to next permission
-                console.log("Foreground location denied, but can ask again. Continuing...");
-            }
+            await new Promise(resolve => setTimeout(resolve, 300));
 
-            // Request Background Location (only if foreground is granted)
+            // 5. LOCATION PERMISSION (Background) - only if foreground is granted
             if (loc.granted) {
+                console.log("Checking background location permission...");
                 let bg = await Location.getBackgroundPermissionsAsync();
                 if (!bg.granted && bg.canAskAgain) {
-                    console.log("Asking for background location...");
+                    console.log("Requesting background location...");
                     bg = await Location.requestBackgroundPermissionsAsync();
-                }
-
-                if (!bg.granted && !bg.canAskAgain) {
-                    console.log("Background location permanently denied. Opening settings...");
-                    waitingForSettingsRef.current = true;
-                    Linking.openSettings().catch(() => console.warn("Unable to open settings"));
-                    await checkPermissions();
-                    return;
+                    console.log("Background location result:", bg.granted);
                 }
             }
 
+            // All permissions have been attempted - check final state
             const finalState = await checkPermissions();
             console.log('All permissions requested. Final state:', finalState);
+
+            // Only open settings if critical permissions are permanently denied
+            if (!finalState.allGranted) {
+                const cameraStatus = await Camera.getCameraPermissionStatus();
+                const locStatus = await Location.getForegroundPermissionsAsync();
+
+                // Open settings only if camera or location is permanently denied
+                if (cameraStatus === 'denied' || (locStatus.status === 'denied' && !locStatus.canAskAgain)) {
+                    console.log("Critical permissions permanently denied. User may need to enable in settings.");
+                    // Don't automatically open settings - let user decide
+                    // They can see which permissions are missing from the UI
+                }
+            }
 
         } catch (error) {
             console.error('Error requesting permissions:', error);

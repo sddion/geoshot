@@ -32,7 +32,6 @@ export interface CameraSettings {
   videoStabilization: boolean;
   flashMode: FlashMode;
   geoOverlayEnabled: boolean;
-  videoGPSOverlayEnabled: boolean;
 }
 
 const defaultSettings: CameraSettings = {
@@ -42,7 +41,7 @@ const defaultSettings: CameraSettings = {
   saveLocation: true,
   gridStyle: '3x3',
   timer: 'off',
-  touchToCapture: false,
+  touchToCapture: true,
   photoAspectRatio: '4:3',
   photoResolution: '4k',
   imageQuality: 'fine',
@@ -52,7 +51,7 @@ const defaultSettings: CameraSettings = {
   videoStabilization: true,
   flashMode: 'off',
   geoOverlayEnabled: true,
-  videoGPSOverlayEnabled: true,
+
 };
 
 const STORAGE_KEY = '@geoshot_camera_settings';
@@ -64,9 +63,16 @@ import * as MediaLibrary from 'expo-media-library';
 export const [CameraSettingsProvider, useCameraSettings] = createContextHook(() => {
   const [settings, setSettings] = useState<CameraSettings>(defaultSettings);
   const [isLoaded, setIsLoaded] = useState<boolean>(false);
-  const [lastPhotoUri, setLastPhotoUri] = useState<string | null>(null);
+  const [lastPhotoUri, setLastPhotoUriInternal] = useState<string | null>(null);
+  const [thumbnailVersion, setThumbnailVersion] = useState<number>(0);
   const [currentMode, setCurrentMode] = useState<CameraMode>('photo');
   const [zoom, setZoom] = useState<number>(0); // 0 = neutral zoom for CameraView
+
+  // Wrapper to increment version when URI changes
+  const setLastPhotoUri = (uri: string) => {
+    setLastPhotoUriInternal(uri);
+    setThumbnailVersion(prev => prev + 1);
+  };
 
   // Ref to track if we've already fetched thumbnail after permission grant
   const hasFetchedAfterPermission = useRef(false);
@@ -187,5 +193,6 @@ export const [CameraSettingsProvider, useCameraSettings] = createContextHook(() 
     zoom,
     setZoom,
     cycleFlash,
+    thumbnailVersion,
   };
 });

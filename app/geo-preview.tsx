@@ -161,7 +161,7 @@ export default function GeoPreviewScreen() {
             style={styles.image}
             contentFit="cover"
           />
-          <GeoOverlay geoData={geoData} mapTile={mapTile} imageWidth={SCREEN_WIDTH} />
+          <GeoOverlay geoData={geoData} mapTile={mapTile} imageWidth={SCREEN_WIDTH - 34} />
         </View>
       </View>
 

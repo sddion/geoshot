@@ -1,8 +1,7 @@
 import React from 'react';
-import { View, TouchableOpacity, Text } from 'react-native';
+import { View, TouchableOpacity, Text, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { Image } from 'expo-image';
 import { controlStyles, modeStyles, captureStyles } from '@/styles/camera.styles';
 import type { CameraMode, FlashMode } from '@/contexts/CameraSettingsContext';
 import { isVideoUri } from '@/utils/videoThumbnail';
@@ -16,6 +15,7 @@ interface CameraControlsProps {
     currentMode: CameraMode;
     setCurrentMode: (mode: CameraMode) => void;
     lastPhotoUri: string | null;
+    thumbnailVersion: number;
     openGallery: () => void;
     toggleCameraFacing: () => void;
     onSettingsPress: () => void;
@@ -31,6 +31,7 @@ export default function CameraControls({
     currentMode,
     setCurrentMode,
     lastPhotoUri,
+    thumbnailVersion,
     openGallery,
     toggleCameraFacing,
     onSettingsPress,
@@ -132,11 +133,15 @@ export default function CameraControls({
                         {lastPhotoUri ? (
                             <View style={captureStyles.thumbnailContainer}>
                                 <Image
-                                    key={lastPhotoUri}
-                                    source={{ uri: lastPhotoUri }}
+                                    key={`thumbnail-${thumbnailVersion}`}
+                                    source={{
+                                        uri: lastPhotoUri.includes('?')
+                                            ? `${lastPhotoUri}&v=${thumbnailVersion}`
+                                            : `${lastPhotoUri}?v=${thumbnailVersion}`,
+                                        cache: 'reload'
+                                    }}
                                     style={captureStyles.thumbnail}
-                                    contentFit="cover"
-                                    cachePolicy="memory-disk"
+                                    resizeMode="cover"
                                 />
                                 {/* Video indicator overlay */}
                                 {isVideoUri(lastPhotoUri) ? (

@@ -70,16 +70,17 @@ export default function CameraOverlay({
             )}
 
             {/* Aspect Ratio Masking */}
-            {photoAspectRatio === '4:3' && (
-                <View style={StyleSheet.absoluteFill} pointerEvents="none">
-                    <View style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 60, backgroundColor: 'black' }} />
-                    <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 160, backgroundColor: 'black' }} />
-                </View>
-            )}
-            {photoAspectRatio === '1:1' && (
+            {/* Portrait mode always uses 1:1, otherwise use settings */}
+            {(currentMode === 'portrait' || photoAspectRatio === '1:1') && (
                 <View style={StyleSheet.absoluteFill} pointerEvents="none">
                     <View style={{ position: 'absolute', top: 0, left: 0, right: 0, height: (Dimensions.get('window').height - Dimensions.get('window').width) / 2, backgroundColor: 'black' }} />
                     <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: (Dimensions.get('window').height - Dimensions.get('window').width) / 2, backgroundColor: 'black' }} />
+                </View>
+            )}
+            {photoAspectRatio === '4:3' && currentMode !== 'portrait' && (
+                <View style={StyleSheet.absoluteFill} pointerEvents="none">
+                    <View style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 60, backgroundColor: 'black' }} />
+                    <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 160, backgroundColor: 'black' }} />
                 </View>
             )}
 

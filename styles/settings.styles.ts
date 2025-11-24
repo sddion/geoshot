@@ -17,22 +17,23 @@ export const settingsStyles = StyleSheet.create({
     scrollContent: {
         paddingBottom: 60,
         paddingTop: 80,
+        paddingHorizontal: 16,
     },
     section: {
-        marginBottom: 8,
+        marginBottom: 24,
     },
     sectionTitle: {
         fontSize: 14,
-        fontWeight: '500',
+        fontWeight: '600',
         color: PRIMARY,
-        marginBottom: 8,
-        marginTop: 16,
-        marginLeft: 16,
+        marginBottom: 12,
+        marginLeft: 4,
         textTransform: 'uppercase',
-        letterSpacing: 0.5,
+        letterSpacing: 0.8,
     },
     sectionCard: {
         backgroundColor: SURFACE,
+        borderRadius: 12,
         overflow: 'hidden',
     },
     settingRow: {
@@ -62,10 +63,10 @@ export const settingsStyles = StyleSheet.create({
         fontWeight: '400',
         flex: 1,
     },
-    // Full-width separator (Android style)
     separator: {
         height: StyleSheet.hairlineWidth,
         backgroundColor: DIVIDER,
+        marginLeft: 56, // Indent to align with text
     },
     settingValue: {
         flexDirection: 'row',
@@ -75,30 +76,30 @@ export const settingsStyles = StyleSheet.create({
     settingValueText: {
         fontSize: 14,
         color: TEXT_SECONDARY,
+        fontWeight: '500',
     },
-    // Material Design button
     dangerButton: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
         backgroundColor: SURFACE,
         paddingVertical: 16,
-        marginHorizontal: 16,
         marginBottom: 16,
         marginTop: 8,
         minHeight: 48,
+        borderRadius: 12,
     },
     dangerButtonText: {
         fontSize: 14,
-        fontWeight: '500',
+        fontWeight: '600',
         color: ERROR,
         textTransform: 'uppercase',
-        letterSpacing: 0.5,
+        letterSpacing: 0.8,
     },
     aboutContainer: {
-        marginHorizontal: 16,
         backgroundColor: SURFACE,
         padding: 16,
+        borderRadius: 12,
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
@@ -109,7 +110,7 @@ export const settingsStyles = StyleSheet.create({
     },
     aboutTitle: {
         fontSize: 16,
-        fontWeight: '400',
+        fontWeight: '500',
         color: TEXT_PRIMARY,
         marginBottom: 4,
     },
@@ -118,3 +119,4 @@ export const settingsStyles = StyleSheet.create({
         color: TEXT_SECONDARY,
     },
 });
+

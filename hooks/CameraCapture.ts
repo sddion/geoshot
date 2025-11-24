@@ -18,6 +18,7 @@ interface UseCameraCaptureProps {
     liveGeoData: GeoData | null;
     router: Router;
     setLastPhotoUri: (uri: string) => void;
+    shutterSound: boolean;
 }
 
 /**
@@ -32,6 +33,7 @@ export function useCameraCapture({
     liveGeoData,
     router,
     setLastPhotoUri,
+    shutterSound,
 }: UseCameraCaptureProps) {
     const [isCapturing, setIsCapturing] = useState<boolean>(false);
     const [isRecording, setIsRecording] = useState<boolean>(false);
@@ -59,32 +61,84 @@ export function useCameraCapture({
         try {
             const photo: PhotoFile = await cameraRef.current.takePhoto({
                 flash: currentMode === 'night' ? 'off' : flashMode, // Disable flash for night mode to rely on exposure
-                enableShutterSound: false,
-
+                enableShutterSound: shutterSound,
             });
 
             if (photo?.path) {
                 const photoUri = `file://${photo.path}`;
 
-                // ...
-
-                // Compress image based on quality setting
+                // Crop to 1:1 if in portrait mode
                 let finalUri = photoUri;
-                if (imageQuality !== 'superfine') {
-                    const compression = imageQuality === 'fine' ? 0.8 : 0.5;
-                    const manipulated = await ImageManipulator.manipulateAsync(
+                if (currentMode === 'portrait') {
+                    // Get image dimensions to calculate square crop
+                    const imageInfo = await ImageManipulator.manipulateAsync(
                         photoUri,
                         [],
-                        { compress: compression, format: ImageManipulator.SaveFormat.JPEG }
+                        { format: ImageManipulator.SaveFormat.JPEG }
                     );
-                    finalUri = manipulated.uri;
 
-                    // Clean up the original uncompressed file
+                    const { width, height } = imageInfo;
+                    const size = Math.min(width, height);
+                    const originX = (width - size) / 2;
+                    const originY = (height - size) / 2;
+
+                    // Crop to 1:1 square
+                    const croppedResult = await ImageManipulator.manipulateAsync(
+                        photoUri,
+                        [
+                            {
+                                crop: {
+                                    originX,
+                                    originY,
+                                    width: size,
+                                    height: size,
+                                },
+                            },
+                        ],
+                        { compress: 1.0, format: ImageManipulator.SaveFormat.JPEG }
+                    );
+                    finalUri = croppedResult.uri;
+
+                    // Clean up original photo
                     try {
                         await FileSystem.deleteAsync(photoUri, { idempotent: true });
                     } catch (e) {
                         console.warn('Failed to delete original photo:', e);
                     }
+                }
+
+                // Compress image based on quality setting (skip if already processed for portrait)
+                if (imageQuality !== 'superfine' && currentMode !== 'portrait') {
+                    const compression = imageQuality === 'fine' ? 0.8 : 0.5;
+                    const manipulated = await ImageManipulator.manipulateAsync(
+                        finalUri,
+                        [],
+                        { compress: compression, format: ImageManipulator.SaveFormat.JPEG }
+                    );
+
+                    // Clean up the previous file
+                    try {
+                        await FileSystem.deleteAsync(finalUri, { idempotent: true });
+                    } catch (e) {
+                        console.warn('Failed to delete uncompressed photo:', e);
+                    }
+                    finalUri = manipulated.uri;
+                } else if (currentMode === 'portrait' && imageQuality !== 'superfine') {
+                    // Apply compression to already-cropped portrait photo
+                    const compression = imageQuality === 'fine' ? 0.8 : 0.5;
+                    const manipulated = await ImageManipulator.manipulateAsync(
+                        finalUri,
+                        [],
+                        { compress: compression, format: ImageManipulator.SaveFormat.JPEG }
+                    );
+
+                    // Clean up the uncompressed cropped file
+                    try {
+                        await FileSystem.deleteAsync(finalUri, { idempotent: true });
+                    } catch (e) {
+                        console.warn('Failed to delete uncompressed photo:', e);
+                    }
+                    finalUri = manipulated.uri;
                 }
 
                 if (geoOverlayEnabled) {
@@ -114,7 +168,7 @@ export function useCameraCapture({
             console.error('Photo capture error:', error);
             Alert.alert('Error', 'Failed to capture photo. Please try again.');
         }
-    }, [cameraRef, flashMode, imageQuality, geoOverlayEnabled, router, setLastPhotoUri]);
+    }, [cameraRef, currentMode, flashMode, imageQuality, geoOverlayEnabled, router, setLastPhotoUri, shutterSound]);
 
     const startVideoRecording = useCallback(async () => {
         if (!cameraRef.current || isRecording) return;

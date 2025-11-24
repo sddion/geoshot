@@ -20,8 +20,8 @@ export default function AboutScreen() {
             <Stack.Screen
                 options={{
                     title: "About",
-                    headerStyle: { backgroundColor: '#000' },
-                    headerTintColor: '#fff',
+                    headerStyle: { backgroundColor: '#121212' },
+                    headerTintColor: '#E1E1E1',
                     headerBackTitle: "Settings",
                     headerShadowVisible: false,
                 }}
@@ -53,7 +53,7 @@ export default function AboutScreen() {
                                 <MaterialCommunityIcons
                                     name={feature.icon as any}
                                     size={24}
-                                    color="#FFD700"
+                                    color="#BB86FC"
                                 />
                             </View>
                             <View style={styles.featureContent}>
@@ -88,7 +88,6 @@ export default function AboutScreen() {
                 {/* Footer */}
                 <View style={styles.footer}>
                     <Text style={styles.footerText}>Made with ❤️ by Sddion</Text>
-                    <Text style={styles.footerSubtext}>Open Source • React Native • Expo</Text>
                 </View>
             </ScrollView>
         </>
