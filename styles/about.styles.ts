@@ -22,33 +22,37 @@ export const aboutStyles = StyleSheet.create({
     // Header
     header: {
         alignItems: 'center',
-        paddingVertical: 32,
-        borderBottomWidth: 1,
-        borderBottomColor: DIVIDER,
+        justifyContent: 'center',
+        paddingVertical: 60,
+        backgroundColor: '#461E64', // Splash screen color
         marginBottom: 24,
+        position: 'relative',
+        overflow: 'hidden',
     },
     logo: {
-        width: 80,
-        height: 80,
-        borderRadius: 18,
-        marginBottom: 16,
+        width: 100,
+        height: 100,
+        borderRadius: 20,
+        marginBottom: 10,
+        zIndex: 2,
+        marginTop: -20, // Move logo up a bit
     },
-    appName: {
-        fontSize: 24,
-        fontWeight: '700',
-        color: TEXT_PRIMARY,
-        marginBottom: 4,
-        letterSpacing: 0.3,
-    },
-    tagline: {
-        fontSize: 14,
-        color: TEXT_SECONDARY,
-        marginBottom: 12,
+    headerBackgroundText: {
+        position: 'absolute',
+        bottom: -15,
+        fontSize: 80,
+        fontWeight: '900',
+        color: 'rgba(255, 255, 255, 0.15)',
+        letterSpacing: 2,
+        zIndex: 1,
+        fontStyle: 'italic',
     },
     version: {
         fontSize: 13,
-        color: TEXT_SECONDARY,
+        color: 'rgba(255, 255, 255, 0.7)',
         fontWeight: '500',
+        zIndex: 2,
+        marginTop: 8,
     },
 
     // Description
