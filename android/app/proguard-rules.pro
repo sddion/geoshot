@@ -120,3 +120,9 @@
 # ===================================
 # Add any project specific keep options here:
 # ===================================
+
+# Expo Device dependencies
+-keep class com.facebook.device.yearclass.** { *; }
+
+# Expo Application dependencies
+-keep class com.android.installreferrer.** { *; }
