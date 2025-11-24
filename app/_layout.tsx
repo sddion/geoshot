@@ -1,10 +1,11 @@
 
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Stack } from "expo-router";
-import * as SplashScreen from "expo-splash-screen";
-import React, { useEffect } from "react";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { CameraSettingsProvider } from "@/contexts/CameraSettingsContext";
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Stack } from 'expo-router';
+import React, { useEffect } from 'react';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { CameraSettingsProvider } from '@/contexts/CameraSettingsContext';
+import { useAutoPermissions } from '@/hooks/Permissions';
+import * as SplashScreen from 'expo-splash-screen';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync().catch(() => {
@@ -41,14 +42,14 @@ import { Platform } from 'react-native';
 
 
 function RootLayout() {
+  const { allGranted } = useAutoPermissions();
+
+  // Immersive mode configuration (runs once)
   useEffect(() => {
     const configureImmersiveMode = async () => {
       if (Platform.OS === 'android') {
         try {
-          // Hide the navigation bar initially
           await NavigationBar.setVisibilityAsync('hidden');
-
-          // Auto-hide navigation bar when it becomes visible (e.g. after swipe up)
           NavigationBar.addVisibilityListener(({ visibility }) => {
             if (visibility === 'visible') {
               setTimeout(async () => {
@@ -57,27 +58,19 @@ function RootLayout() {
             }
           });
         } catch (e) {
-          console.warn("Error configuring navigation bar:", e);
+          console.warn('Error configuring navigation bar:', e);
         }
       }
-
-      const hideSplash = async () => {
-        try {
-          await SplashScreen.hideAsync();
-        } catch (e) {
-          console.warn("Error hiding splash screen:", e);
-        }
-      };
-
-      hideSplash();
     };
-
     configureImmersiveMode();
-
-    // Fallback: force hide splash after 3 seconds
-    const timeout = setTimeout(SplashScreen.hideAsync, 3000);
-    return () => clearTimeout(timeout);
   }, []);
+
+  // Hide splash screen only after all permissions are granted
+  useEffect(() => {
+    if (allGranted) {
+      SplashScreen.hideAsync().catch(() => { });
+    }
+  }, [allGranted]);
 
   return (
     <QueryClientProvider client={queryClient}>
