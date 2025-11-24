@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, TouchableOpacity, Text, Image } from 'react-native';
+import { View, TouchableOpacity, Text, Image, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { controlStyles, modeStyles, captureStyles } from '@/styles/camera.styles';
@@ -133,12 +133,10 @@ export default function CameraControls({
                         {lastPhotoUri ? (
                             <View style={captureStyles.thumbnailContainer}>
                                 <Image
-                                    key={`thumbnail-${thumbnailVersion}`}
+                                    key={`thumb-${thumbnailVersion}`}
                                     source={{
-                                        uri: lastPhotoUri.includes('?')
-                                            ? `${lastPhotoUri}&v=${thumbnailVersion}`
-                                            : `${lastPhotoUri}?v=${thumbnailVersion}`,
-                                        cache: 'reload'
+                                        uri: `${lastPhotoUri}?v=${thumbnailVersion}`,
+                                        ...(Platform.OS === 'ios' && { cache: 'reload' })
                                     }}
                                     style={captureStyles.thumbnail}
                                     resizeMode="cover"
