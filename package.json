@@ -1,7 +1,7 @@
 {
   "name": "geoshot",
   "main": "expo-router/entry",
-  "version": "2.4.0",
+  "version": "2.3.3",
   "scripts": {
     "start": "bunx start -p  --tunnel",
     "start-web": "bunx start -p  --web --tunnel",
