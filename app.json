@@ -2,7 +2,7 @@
   "expo": {
     "name": "GeoShot",
     "slug": "geoshot",
-    "version": "2.3.0",
+    "version": "2.3.1",
     "orientation": "portrait",
     "icon": "./assets/images/android/mipmap-xxxhdpi/geoshot.png",
     "scheme": "geoshot-camera-app",
