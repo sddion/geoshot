@@ -12,8 +12,8 @@ import * as MediaLibrary from 'expo-media-library';
  */
 export const saveFileToAppFolder = async (uri: string, type: 'photo' | 'video'): Promise<string | null> => {
     try {
-        // 1. Request permissions if not already granted (just in case)
-        const { status } = await MediaLibrary.requestPermissionsAsync();
+        // 1. Check if permissions are already granted (should be from app startup)
+        const { status } = await MediaLibrary.getPermissionsAsync();
         if (status !== 'granted') {
             console.error('Media Library permission not granted');
             return null;

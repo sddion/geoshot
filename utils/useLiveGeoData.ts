@@ -11,7 +11,7 @@ export function useLiveGeoData(enabled: boolean) {
 
     // Refs for throttling
     const lastFullUpdate = useRef<number>(0);
-    const FULL_UPDATE_INTERVAL = 15000; // 15 seconds for weather/address
+    const FULL_UPDATE_INTERVAL = 10000; // 10 seconds for weather/address
 
     // Watch for permission changes
     useEffect(() => {

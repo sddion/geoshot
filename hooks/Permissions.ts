@@ -174,6 +174,9 @@ export function useAutoPermissions() {
                 }
             }
 
+            // Reset the requesting flag BEFORE final check
+            isRequestingRef.current = false;
+
             // All permissions have been attempted - check final state
             const finalState = await checkPermissions();
             console.log('All permissions requested. Final state:', finalState);
@@ -193,8 +196,7 @@ export function useAutoPermissions() {
 
         } catch (error) {
             console.error('Error requesting permissions:', error);
-        } finally {
-            console.log("Permission request flow finished. Resetting isRequesting.");
+            // Make sure to reset isRequesting even on error
             isRequestingRef.current = false;
             setPermissionState(prev => ({ ...prev, isRequesting: false }));
         }
