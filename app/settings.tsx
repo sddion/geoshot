@@ -34,6 +34,12 @@ const UpdateRow = () => {
   const { updateInfo, refresh } = useUpdate();
   const [showChangelog, setShowChangelog] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [downloading, setDownloading] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [downloadedMB, setDownloadedMB] = useState(0);
+  const [totalMB, setTotalMB] = useState(0);
+  const [status, setStatus] = useState('');
+  const [needsPermission, setNeedsPermission] = useState(false);
 
   const handleRefresh = async () => {
     setRefreshing(true);
@@ -42,16 +48,52 @@ const UpdateRow = () => {
     showToast(updateInfo ? 'Update available!' : 'App is up to date');
   };
 
-  const handleUpdate = () => {
-    if (updateInfo) {
-      downloadAndInstallUpdate(updateInfo);
+  const checkPermissionAndUpdate = async () => {
+    if (!updateInfo) return;
+
+    // Check permission for Android 8.0+
+    if (Platform.OS === 'android' && Platform.Version >= 26) {
+      try {
+        // For now, we'll just proceed - permission will be requested by system
+        // In future, add proper permission check using permissionUtils
+        setNeedsPermission(false);
+      } catch (error) {
+        console.warn('Permission check failed:', error);
+      }
     }
+
+    handleUpdate();
   };
 
-  const openChangelog = () => {
-    if (updateInfo?.html_url) {
-      Linking.openURL(updateInfo.html_url);
-    }
+  const handleUpdate = () => {
+    if (!updateInfo || downloading) return;
+
+    setDownloading(true);
+    setProgress(0);
+    setStatus('Starting download...');
+
+    downloadAndInstallUpdate(
+      updateInfo,
+      (progressData) => {
+        const percentComplete = Math.round(progressData.progress * 100);
+        const dlMB = (progressData.downloadedBytes / (1024 * 1024)).toFixed(1);
+        const totMB = (progressData.totalBytes / (1024 * 1024)).toFixed(1);
+
+        setProgress(progressData.progress);
+        setDownloadedMB(parseFloat(dlMB));
+        setTotalMB(parseFloat(totMB));
+      },
+      (statusMessage) => {
+        setStatus(statusMessage);
+        if (statusMessage === 'Installation started' || statusMessage === 'Installation failed') {
+          setDownloading(false);
+        }
+      }
+    );
+  };
+
+  const openPermissionSettings = () => {
+    Linking.openSettings();
   };
 
   return (
@@ -82,19 +124,72 @@ const UpdateRow = () => {
               )}
             </View>
           </View>
+
           {updateInfo && (
-            <View style={styles.changelogContainer}>
-              <View style={styles.updateActionsRow}>
-                <TouchableOpacity
-                  style={styles.updateButton}
-                  onPress={handleUpdate}
-                >
-                  <Text style={styles.updateButtonText}>Install Update</Text>
-                </TouchableOpacity>
-                <TouchableOpacity onPress={() => setShowChangelog(true)}>
-                  <Text style={styles.changelogLink}>View Changelog</Text>
-                </TouchableOpacity>
+            <View style={styles.updateCard}>
+              {/* Version Info */}
+              <View style={styles.versionInfo}>
+                <Text style={styles.versionText}>
+                  Update available: {updateInfo.tag_name}
+                </Text>
               </View>
+
+              {/* Permission Prompt (if needed) */}
+              {needsPermission && (
+                <View style={styles.permissionPrompt}>
+                  <Text style={styles.permissionPromptText}>
+                    Enable "Install from unknown sources" to install updates
+                  </Text>
+                  <TouchableOpacity
+                    style={styles.permissionButton}
+                    onPress={openPermissionSettings}
+                  >
+                    <Text style={styles.permissionButtonText}>Open Settings</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+
+              {/* Progress Bar */}
+              {downloading && (
+                <View style={styles.progressContainer}>
+                  <View style={styles.progressBarBackground}>
+                    <View
+                      style={[
+                        styles.progressBarFill,
+                        { width: `${progress * 100}%` },
+                      ]}
+                    />
+                  </View>
+                  <Text style={styles.progressText}>
+                    {downloadedMB > 0
+                      ? `${downloadedMB} MB / ${totalMB} MB (${Math.round(progress * 100)}%)`
+                      : status}
+                  </Text>
+                </View>
+              )}
+
+              {/* Status Text */}
+              {status && downloading && (
+                <Text style={styles.statusText}>{status}</Text>
+              )}
+
+              {/* Action Buttons */}
+              {!downloading && (
+                <View style={styles.updateActionsContainer}>
+                  <TouchableOpacity
+                    style={styles.primaryButton}
+                    onPress={checkPermissionAndUpdate}
+                  >
+                    <Text style={styles.primaryButtonText}>Update Now</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.secondaryButton}
+                    onPress={() => setShowChangelog(true)}
+                  >
+                    <Text style={styles.secondaryButtonText}>View Changelog</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
             </View>
           )}
         </View>
@@ -136,10 +231,10 @@ const UpdateRow = () => {
                 style={styles.modalButtonPrimary}
                 onPress={() => {
                   setShowChangelog(false);
-                  handleUpdate();
+                  checkPermissionAndUpdate();
                 }}
               >
-                <Text style={styles.modalButtonPrimaryText}>Install Now</Text>
+                <Text style={styles.modalButtonPrimaryText}>Update Now</Text>
               </TouchableOpacity>
             </View>
           </View>

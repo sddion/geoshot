@@ -90,7 +90,17 @@ export async function checkForUpdate(): Promise<GitHubRelease | null> {
     }
 }
 
-export async function downloadAndInstallUpdate(release: GitHubRelease) {
+export interface DownloadProgress {
+    totalBytes: number;
+    downloadedBytes: number;
+    progress: number; // 0-1
+}
+
+export async function downloadAndInstallUpdate(
+    release: GitHubRelease,
+    onProgress?: (progress: DownloadProgress) => void,
+    onStatusChange?: (status: string) => void
+) {
     if (Platform.OS !== 'android') return;
 
     try {
@@ -100,6 +110,8 @@ export async function downloadAndInstallUpdate(release: GitHubRelease) {
             return;
         }
 
+        onStatusChange?.('Preparing download...');
+
         const apkAsset = getBestApkAsset(release.assets);
 
         if (!apkAsset) {
@@ -107,15 +119,27 @@ export async function downloadAndInstallUpdate(release: GitHubRelease) {
             return;
         }
 
-        // 1. Download the APK
+        // 1. Download the APK with progress tracking
         // @ts-ignore
         const cacheDir = FileSystem.cacheDirectory;
         if (!cacheDir) {
             throw new Error('Cache directory not available');
         }
+
+        onStatusChange?.('Downloading update...');
+
         const downloadResumable = createDownloadResumable(
             apkAsset.browser_download_url,
-            cacheDir + 'update.apk'
+            cacheDir + 'update.apk',
+            {},
+            (downloadProgress) => {
+                const progress = downloadProgress.totalBytesWritten / downloadProgress.totalBytesExpectedToWrite;
+                onProgress?.({
+                    totalBytes: downloadProgress.totalBytesExpectedToWrite,
+                    downloadedBytes: downloadProgress.totalBytesWritten,
+                    progress: progress,
+                });
+            }
         );
 
         const result = await downloadResumable.downloadAsync();
@@ -123,8 +147,12 @@ export async function downloadAndInstallUpdate(release: GitHubRelease) {
             throw new Error("Download failed");
         }
 
+        onStatusChange?.('Preparing installation...');
+
         // 2. Get Content URI (Required for Android N+)
         const contentUri = await getContentUriAsync(result.uri);
+
+        onStatusChange?.('Opening installer...');
 
         // 3. Launch Intent to Install
         await IntentLauncher.startActivityAsync('android.intent.action.VIEW', {
@@ -133,8 +161,12 @@ export async function downloadAndInstallUpdate(release: GitHubRelease) {
             type: 'application/vnd.android.package-archive',
         });
 
+        onStatusChange?.('Installation started');
+
     } catch (error) {
         console.error('Update installation failed:', error);
         Alert.alert('Update Failed', 'Could not download or install the update.');
+        onStatusChange?.('Installation failed');
     }
 }
+
