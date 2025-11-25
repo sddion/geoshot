@@ -205,36 +205,21 @@ export default function CameraScreen() {
             padding: 20,
           }}
         >
-          {isRequesting ? (
-            <>
-              <ActivityIndicator size="large" color="#fff" />
-              <Text
-                style={{
-                  color: '#fff',
-                  fontSize: 16,
-                  marginTop: 20,
-                  textAlign: 'center',
-                }}
-              >
-                Setting up permissions...
-              </Text>
-            </>
-          ) : (
-            <>
-              <Text
-                style={{
-                  color: '#fff',
-                  fontSize: 18,
-                  textAlign: 'center',
-                  marginBottom: 10,
-                }}
-              >
-                Permissions Required
-              </Text>
-              <Text style={{ color: '#aaa', textAlign: 'center' }}>
-                Please grant camera, microphone, location, and photo library permissions in Settings to use GeoShot.
-              </Text>
-            </>
+          <ActivityIndicator size="large" color="#fff" />
+          <Text
+            style={{
+              color: '#fff',
+              fontSize: 16,
+              marginTop: 20,
+              textAlign: 'center',
+            }}
+          >
+            {isRequesting ? 'Requesting permissions...' : 'Permissions Required'}
+          </Text>
+          {!isRequesting && (
+            <Text style={{ color: '#aaa', textAlign: 'center', marginTop: 10 }}>
+              Please grant camera, microphone, location, and photo library permissions in Settings to use GeoShot.
+            </Text>
           )}
         </View>
       </View>

@@ -7,9 +7,34 @@ const path = require('path');
  * This prevents important build customizations from being deleted
  */
 const withCustomAndroidConfig = (config) => {
-    // 1. Preserve ABI splits configuration in build.gradle
+    // 1. Preserve ABI splits configuration and auto versionCode in build.gradle
     config = withAppBuildGradle(config, (config) => {
         let contents = config.modResults.contents;
+
+        // Inject auto versionCode calculation in defaultConfig
+        const appVersion = config.version || '2.3.3';
+
+        if (!contents.includes('Auto-calculate versionCode')) {
+            const versionCodeLogic = `
+        // Auto-calculate versionCode from versionName
+        // Format: versionName "X.Y.Z" -> versionCode XXYYZZ
+        // Example: "2.3.4" -> 20304
+        def appVersionName = "${appVersion}"
+        def versionParts = appVersionName.tokenize('.')
+        def versionMajor = versionParts[0].toInteger()
+        def versionMinor = versionParts[1].toInteger()
+        def versionPatch = versionParts[2].toInteger()
+        def calculatedVersionCode = (versionMajor * 10000) + (versionMinor * 100) + versionPatch
+
+        versionCode calculatedVersionCode
+        versionName appVersionName`;
+
+            // Replace hardcoded versionCode and versionName
+            contents = contents.replace(
+                /versionCode\s+\d+\s*\n\s*versionName\s+"[^"]*"/,
+                versionCodeLogic.trim()
+            );
+        }
 
         // Add ABI splits configuration before androidResources block
         if (!contents.includes('splits {')) {
