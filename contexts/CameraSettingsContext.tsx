@@ -1,6 +1,5 @@
-import createContextHook from '@nkzw/create-context-hook';
+import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useEffect, useState, useCallback, useRef } from 'react';
 import { AppState, AppStateStatus } from 'react-native';
 
 export type CameraMode = 'photo' | 'video' | 'night' | 'portrait';
@@ -58,12 +57,31 @@ const STORAGE_KEY = '@geoshot_camera_settings';
 
 import * as MediaLibrary from 'expo-media-library';
 
-// ... imports
+// Define the context value type
+interface CameraSettingsContextValue {
+  settings: CameraSettings;
+  updateSetting: <K extends keyof CameraSettings>(key: K, value: CameraSettings[K]) => void;
+  resetSettings: () => Promise<void>;
+  isLoaded: boolean;
+  lastPhotoUri: string | null;
+  setLastPhotoUri: (uri: string) => void;
+  fetchLastGeoShotAsset: () => Promise<void>;
+  currentMode: CameraMode;
+  setCurrentMode: (mode: CameraMode) => void;
+  zoom: number;
+  setZoom: (zoom: number) => void;
+  cycleFlash: () => void;
+  thumbnailVersion: number;
+}
 
-export const [CameraSettingsProvider, useCameraSettings] = createContextHook(() => {
+// Create context with undefined default
+const CameraSettingsContext = createContext<CameraSettingsContextValue | undefined>(undefined);
+
+// Provider component
+export function CameraSettingsProvider({ children }: { children: React.ReactNode }) {
   const [settings, setSettings] = useState<CameraSettings>(defaultSettings);
   const [isLoaded, setIsLoaded] = useState<boolean>(false);
-  const [lastPhotoUri, setLastPhotoUriInternal] = useState<string | null>(null);
+  const [lastPhotoUriInternal, setLastPhotoUriInternal] = useState<string | null>(null);
   const [thumbnailVersion, setThumbnailVersion] = useState<number>(0);
   const [currentMode, setCurrentMode] = useState<CameraMode>('photo');
   const [zoom, setZoom] = useState<number>(0); // 0 = neutral zoom for CameraView
@@ -180,12 +198,12 @@ export const [CameraSettingsProvider, useCameraSettings] = createContextHook(() 
     });
   };
 
-  return {
+  const value: CameraSettingsContextValue = {
     settings,
     updateSetting,
     resetSettings,
     isLoaded,
-    lastPhotoUri,
+    lastPhotoUri: lastPhotoUriInternal,
     setLastPhotoUri,
     fetchLastGeoShotAsset,
     currentMode,
@@ -195,4 +213,19 @@ export const [CameraSettingsProvider, useCameraSettings] = createContextHook(() 
     cycleFlash,
     thumbnailVersion,
   };
-});
+
+  return (
+    <CameraSettingsContext.Provider value={value}>
+      {children}
+    </CameraSettingsContext.Provider>
+  );
+}
+
+// Custom hook to use the context
+export function useCameraSettings() {
+  const context = useContext(CameraSettingsContext);
+  if (context === undefined) {
+    throw new Error('useCameraSettings must be used within a CameraSettingsProvider');
+  }
+  return context;
+}

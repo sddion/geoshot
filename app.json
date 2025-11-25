@@ -2,7 +2,7 @@
   "expo": {
     "name": "GeoShot",
     "slug": "geoshot",
-    "version": "2.3.3",
+    "version": "3.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/android/mipmap-xxxhdpi/geoshot.png",
     "scheme": "geoshot-camera-app",
@@ -58,9 +58,6 @@
         "android.permission.HIGH_SAMPLING_RATE_SENSORS"
       ]
     },
-    "web": {
-      "favicon": "./assets/images/android/mipmap-hdpi/geoshot_round.png"
-    },
     "plugins": [
       [
         "expo-router",
@@ -80,7 +77,6 @@
         }
       ],
       "expo-font",
-      "expo-web-browser",
       [
         "expo-media-library",
         {
