@@ -205,12 +205,12 @@ export default function CameraScreen() {
             padding: 20,
           }}
         >
-          <ActivityIndicator size="large" color="#fff" />
+          {isRequesting && <ActivityIndicator size="large" color="#fff" />}
           <Text
             style={{
               color: '#fff',
               fontSize: 16,
-              marginTop: 20,
+              marginTop: isRequesting ? 20 : 0,
               textAlign: 'center',
             }}
           >

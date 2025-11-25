@@ -58,16 +58,27 @@ function addSigningConfig(buildGradle) {
     }
 
     // Replace the signingConfigs block (Expo generates a basic one)
+    // Use flexible regex that handles nested braces
+    const originalLengthSigning = buildGradle.length;
     buildGradle = buildGradle.replace(
-        /signingConfigs\s*\{[^}]*debug\s*\{[^}]*\}[^}]*\}/s,
+        /signingConfigs\s*\{(?:[^{}]|\{[^{}]*\})*\}/s,
         signingConfigsBlock
     );
 
-    // Replace the buildTypes block
+    if (buildGradle.length === originalLengthSigning) {
+        console.warn('[withAndroidSigning] Warning: signingConfigs block replacement may have failed');
+    }
+
+    // Replace the buildTypes block with flexible indentation matching
+    const originalLengthBuild = buildGradle.length;
     buildGradle = buildGradle.replace(
-        /buildTypes\s*\{[\s\S]*?\n    \}/,
+        /buildTypes\s*\{(?:[^{}]|\{(?:[^{}]|\{[^{}]*\})*\})*\}/s,
         buildTypesBlock
     );
+
+    if (buildGradle.length === originalLengthBuild) {
+        console.warn('[withAndroidSigning] Warning: buildTypes block replacement may have failed');
+    }
 
     return buildGradle;
 }
