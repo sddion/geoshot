@@ -1,18 +1,97 @@
-# Add project specific ProGuard rules here.
-# By default, the flags in this file are appended to flags specified
-# in /usr/local/Cellar/android-sdk/24.3.3/tools/proguard/proguard-android.txt
-# You can edit the include path and order by changing the proguardFiles
-# directive in build.gradle.
-#
-# For more details, see
-#   http://developer.android.com/guide/developing/tools/proguard.html
+const { withAppBuildGradle, withGradleProperties, withDangerousMod } = require('@expo/config-plugins');
+const fs = require('fs');
+const path = require('path');
 
-# react-native-reanimated
--keep class com.swmansion.reanimated.** { *; }
--keep class com.facebook.react.turbomodule.** { *; }
+/**
+ * Plugin to preserve custom Android build configurations during prebuild
+ * This prevents important build customizations from being deleted
+ */
+const withCustomAndroidConfig = (config) => {
+    // 1. Preserve ABI splits configuration in build.gradle
+    config = withAppBuildGradle(config, (config) => {
+        let contents = config.modResults.contents;
 
-# Add any project specific keep options here:
+        // Add ABI splits configuration before androidResources block
+        if (!contents.includes('splits {')) {
+            const splitsConfig = `
+    splits {
+      abi {
+        enable true
+        reset()
+        include "armeabi-v7a", "arm64-v8a", "x86", "x86_64"
+        universalApk true
+      }
+    }
+  `;
 
+            contents = contents.replace(
+                /androidResources\s*{/,
+                `${splitsConfig}\n  androidResources {`
+            );
+        }
+
+        config.modResults.contents = contents;
+        return config;
+    });
+
+    // 2. Preserve gradle.properties custom settings
+    config = withGradleProperties(config, (config) => {
+        const properties = config.modResults;
+
+        // Ensure critical properties are set
+        const criticalProps = {
+            // Memory settings for CI
+            'org.gradle.jvmargs': '-Xmx4096m -XX:MaxMetaspaceSize=1024m -Dfile.encoding=UTF-8',
+            'org.gradle.parallel': 'true',
+
+            // Enable PNG crunching
+            'android.enablePngCrunchInReleaseBuilds': 'true',
+
+            // React Native architectures
+            'reactNativeArchitectures': 'armeabi-v7a,arm64-v8a,x86,x86_64',
+
+            // Image format support
+            'expo.gif.enabled': 'true',
+            'expo.webp.enabled': 'true',
+            'expo.webp.animated': 'false',
+
+            // Network inspector
+            'EX_DEV_CLIENT_NETWORK_INSPECTOR': 'true',
+
+            // Legacy packaging
+            'expo.useLegacyPackaging': 'false',
+
+            // Android SDK versions - prevent deletion during prebuild
+            'android.compileSdkVersion': '35',
+            'android.targetSdkVersion': '35',
+            'android.buildToolsVersion': '35.0.0',
+        };
+
+        // Add or update properties
+        Object.entries(criticalProps).forEach(([key, value]) => {
+            const existingProp = properties.find(prop => prop.key === key);
+            if (existingProp) {
+                existingProp.value = value;
+            } else {
+                properties.push({ type: 'property', key, value });
+            }
+        });
+
+        return config;
+    });
+
+
+    // 3. Preserve ProGuard rules
+    config = withDangerousMod(config, [
+        'android',
+        async (config) => {
+            const proguardPath = path.join(
+                config.modRequest.platformProjectRoot,
+                'app',
+                'proguard-rules.pro'
+            );
+
+            const customRules = `
 # ===================================
 # React Native Core
 # ===================================
@@ -132,3 +211,25 @@
 # Expo Application dependencies
 # ===================================
 -keep class com.android.installreferrer.** { *; }
+`;
+
+            // Read existing proguard rules
+            let existingRules = '';
+            if (fs.existsSync(proguardPath)) {
+                existingRules = fs.readFileSync(proguardPath, 'utf-8');
+            }
+
+            // Append custom rules if not already present
+            if (!existingRules.includes('React Native Core')) {
+                const updatedRules = existingRules + customRules;
+                fs.writeFileSync(proguardPath, updatedRules, 'utf-8');
+            }
+
+            return config;
+        },
+    ]);
+
+    return config;
+};
+
+module.exports = withCustomAndroidConfig;
