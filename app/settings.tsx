@@ -48,23 +48,6 @@ const UpdateRow = () => {
     showToast(updateInfo ? 'Update available!' : 'App is up to date');
   };
 
-  const checkPermissionAndUpdate = async () => {
-    if (!updateInfo) return;
-
-    // Check permission for Android 8.0+
-    if (Platform.OS === 'android' && Platform.Version >= 26) {
-      try {
-        // For now, we'll just proceed - permission will be requested by system
-        // In future, add proper permission check using permissionUtils
-        setNeedsPermission(false);
-      } catch (error) {
-        console.warn('Permission check failed:', error);
-      }
-    }
-
-    handleUpdate();
-  };
-
   const handleUpdate = () => {
     if (!updateInfo || downloading) return;
 
@@ -75,7 +58,6 @@ const UpdateRow = () => {
     downloadAndInstallUpdate(
       updateInfo,
       (progressData) => {
-        const percentComplete = Math.round(progressData.progress * 100);
         const dlMB = (progressData.downloadedBytes / (1024 * 1024)).toFixed(1);
         const totMB = (progressData.totalBytes / (1024 * 1024)).toFixed(1);
 
@@ -88,12 +70,17 @@ const UpdateRow = () => {
         if (statusMessage === 'Installation started' || statusMessage === 'Installation failed') {
           setDownloading(false);
         }
+      },
+      () => {
+        // Permission required callback
+        setDownloading(false);
+        setNeedsPermission(true);
       }
     );
   };
 
   const openPermissionSettings = () => {
-    Linking.openSettings();
+    setNeedsPermission(false);
   };
 
   return (
@@ -138,7 +125,7 @@ const UpdateRow = () => {
               {needsPermission && (
                 <View style={styles.permissionPrompt}>
                   <Text style={styles.permissionPromptText}>
-                    Enable "Install from unknown sources" to install updates
+                    Enable &quot;Install from unknown sources&quot; to install updates
                   </Text>
                   <TouchableOpacity
                     style={styles.permissionButton}
@@ -178,7 +165,7 @@ const UpdateRow = () => {
                 <View style={styles.updateActionsContainer}>
                   <TouchableOpacity
                     style={styles.primaryButton}
-                    onPress={checkPermissionAndUpdate}
+                    onPress={handleUpdate}
                   >
                     <Text style={styles.primaryButtonText}>Update Now</Text>
                   </TouchableOpacity>
@@ -231,7 +218,7 @@ const UpdateRow = () => {
                 style={styles.modalButtonPrimary}
                 onPress={() => {
                   setShowChangelog(false);
-                  checkPermissionAndUpdate();
+                  handleUpdate();
                 }}
               >
                 <Text style={styles.modalButtonPrimaryText}>Update Now</Text>

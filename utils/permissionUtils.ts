@@ -1,8 +1,6 @@
-import { Platform, Linking, NativeModules } from 'react-native';
+import { Platform, Linking } from 'react-native';
 import * as IntentLauncher from 'expo-intent-launcher';
 import Constants from 'expo-constants';
-
-const { PackageManager } = NativeModules;
 
 /**
  * Check if the app has permission to install unknown apps (Android 8.0+)
@@ -19,12 +17,8 @@ export async function canInstallFromUnknownSources(): Promise<boolean> {
         return true;
     }
 
-    try {
-        return true; // We'll let the system handle the permission request
-    } catch (error) {
-        console.warn('Error checking install permission:', error);
-        return false;
-    }
+    // Android 8.0+ - permission is per-app, let the system handle it
+    return true;
 }
 
 /**
