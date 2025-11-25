@@ -95,7 +95,7 @@ android {
         // Auto-calculate versionCode from versionName
         // Format: versionName "X.Y.Z" -> versionCode XXYYZZ
         // Example: "2.3.4" -> 20304
-        def appVersionName = "2.3.5"
+        def appVersionName = "2.3.6"
         def versionParts = appVersionName.tokenize('.')
         def versionMajor = versionParts[0].toInteger()
         def versionMinor = versionParts[1].toInteger()
