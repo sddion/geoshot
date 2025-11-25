@@ -56,13 +56,7 @@ export default function GeoPreviewScreen() {
         const tile = await getCachedMapTile(data.latitude, data.longitude);
         setMapTile(tile);
 
-        // Auto-save if enabled
-        if (settings.autoSave) {
-          // Wait a bit for the view to render
-          setTimeout(() => {
-            handleSave();
-          }, 100);
-        }
+        // Auto-save logic is now handled in a separate useEffect
       } else {
         setError('Failed to get GPS data');
       }
@@ -73,6 +67,19 @@ export default function GeoPreviewScreen() {
       setLoading(false);
     }
   };
+
+  const [imageLoaded, setImageLoaded] = useState(false);
+
+  // Handle Auto-Save
+  useEffect(() => {
+    if (settings.autoSave && geoData && imageLoaded && !saving) {
+      // Small delay to ensure rendering is complete
+      const timeout = setTimeout(() => {
+        handleSave();
+      }, 100);
+      return () => clearTimeout(timeout);
+    }
+  }, [settings.autoSave, geoData, imageLoaded]);
 
   const handleEditSave = (newData: Partial<GeoData>) => {
     if (geoData) {
@@ -168,6 +175,9 @@ export default function GeoPreviewScreen() {
             source={{ uri: photoUri }}
             style={isPortrait === 'true' ? styles.imagePortrait : styles.image}
             contentFit="cover"
+            onLoad={() => {
+              setImageLoaded(true);
+            }}
           />
           <GeoOverlay geoData={geoData} mapTile={mapTile} imageWidth={SCREEN_WIDTH - 34} isPortrait={isPortrait === 'true'} />
         </View>

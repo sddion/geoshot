@@ -54,15 +54,12 @@ export default function CameraScreen() {
   const [canMountCamera, setCanMountCamera] = useState(false);
 
   useEffect(() => {
-    if (isActive) {
-      const timeout = setTimeout(() => {
-        setCanMountCamera(true);
-      }, 500); // Android needs time after permission dialogs
-      return () => clearTimeout(timeout);
-    } else {
-      setCanMountCamera(false);
-    }
-  }, [isActive]);
+    // Only run this once on mount
+    const timeout = setTimeout(() => {
+      setCanMountCamera(true);
+    }, 500); // Android needs time after permission dialogs
+    return () => clearTimeout(timeout);
+  }, []);
 
   useEffect(() => {
     const subscription = AppState.addEventListener('change', (nextAppState) => {

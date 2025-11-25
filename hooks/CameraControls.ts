@@ -22,6 +22,12 @@ export function useCameraControls(
     const isCapturingRef = useRef<boolean>(false); // Track ongoing captures
     const CAPTURE_DEBOUNCE_MS = 800; // Minimum time between captures (increased for better prevention)
 
+    // Ref to keep track of current volume action without re-binding listener constantly
+    const volumeActionRef = useRef(volumeAction);
+    useEffect(() => {
+        volumeActionRef.current = volumeAction;
+    }, [volumeAction]);
+
     // Volume button listener
     useEffect(() => {
         if (volumeAction === 'off') {
@@ -47,8 +53,9 @@ export function useCameraControls(
                 // Add volume listener
                 volumeListenerRef.current = VolumeManager.addVolumeListener((result) => {
                     const currentVolume = result.volume;
+                    const currentAction = volumeActionRef.current;
 
-                    if (volumeAction === 'shutter') {
+                    if (currentAction === 'shutter') {
                         // Debounce to prevent multiple rapid captures
                         const now = Date.now();
                         if (now - lastCaptureTimeRef.current < CAPTURE_DEBOUNCE_MS || isCapturingRef.current) {
@@ -75,7 +82,7 @@ export function useCameraControls(
                                 });
                             }
                         }, 50);
-                    } else if (volumeAction === 'zoom') {
+                    } else if (currentAction === 'zoom') {
                         // ZOOM MODE: Only zoom, explicitly prevent capture
                         if (previousVolumeRef.current !== null) {
                             const volumeDelta = currentVolume - previousVolumeRef.current;

@@ -39,39 +39,40 @@ function RootLayoutNav() {
 }
 
 import * as NavigationBar from 'expo-navigation-bar';
-import { Platform } from 'react-native';
+import { Platform, AppState } from 'react-native';
 
 
 function RootLayout() {
-  const { allGranted } = useAutoPermissions();
+  useAutoPermissions();
 
   // Immersive mode configuration (runs once)
   useEffect(() => {
     const configureImmersiveMode = async () => {
       if (Platform.OS === 'android') {
         try {
+          // Initial hide
           await NavigationBar.setVisibilityAsync('hidden');
-          NavigationBar.addVisibilityListener(({ visibility }) => {
+          await NavigationBar.setBehaviorAsync('overlay-swipe');
+
+          // Re-hide on visibility change
+          const listener = NavigationBar.addVisibilityListener(({ visibility }) => {
             if (visibility === 'visible') {
               setTimeout(async () => {
                 await NavigationBar.setVisibilityAsync('hidden');
-              }, 1500);
+              }, 2000);
             }
           });
+
+          return () => listener.remove();
         } catch (e) {
           console.warn('Error configuring navigation bar:', e);
         }
       }
     };
-    configureImmersiveMode();
-  }, []);
 
-  // Hide splash screen only after all permissions are granted
-  useEffect(() => {
-    if (allGranted) {
-      SplashScreen.hideAsync().catch(() => { });
-    }
-  }, [allGranted]);
+    configureImmersiveMode();
+
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>

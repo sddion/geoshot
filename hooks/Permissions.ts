@@ -232,31 +232,14 @@ export function useAutoPermissions() {
             if (nextAppState === 'active') {
                 console.log("App returned to foreground, re-checking permissions...");
 
-                // If we are currently requesting (e.g. dialog open), don't interrupt.
-                if (isRequestingRef.current) {
-                    console.log("Already requesting, skipping re-check.");
-                    return;
-                }
-
-                const newState = await checkPermissions();
-
-                // Resume the flow if:
-                // 1. We were explicitly waiting for settings, OR
-                // 2. Not all permissions are granted AND we haven't requested yet (first time), OR
-                // 3. Not all permissions are granted AND we have requested before (continue sequential flow)
-                const shouldResume = waitingForSettingsRef.current ||
-                    (!newState.allGranted && hasRequestedRef.current);
-
-                if (shouldResume) {
-                    console.log("Resuming permission flow...");
-                    waitingForSettingsRef.current = false;
-                    requestPermissionsSequentially();
-                }
+                // Just check status, do NOT automatically trigger a new request flow
+                // This prevents infinite loops if a permission is permanently denied
+                await checkPermissions();
             }
         });
 
         return () => subscription.remove();
-    }, [checkPermissions, requestPermissionsSequentially]);
+    }, [checkPermissions]);
 
     return {
         ...permissionState,
