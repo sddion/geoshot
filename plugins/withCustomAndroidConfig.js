@@ -43,7 +43,8 @@ const withCustomAndroidConfig = (config) => {
       abi {
         enable true
         reset()
-        include "armeabi-v7a", "arm64-v8a", "x86", "x86_64"
+         // include "armeabi-v7a", "arm64-v8a", "x86", "x86_64"
+         include "armeabi-v7a", "arm64-v8a"
         universalApk true
       }
     }
@@ -73,7 +74,8 @@ const withCustomAndroidConfig = (config) => {
             'android.enablePngCrunchInReleaseBuilds': 'true',
 
             // React Native architectures
-            'reactNativeArchitectures': 'armeabi-v7a,arm64-v8a,x86,x86_64',
+            // 'reactNativeArchitectures': 'armeabi-v7a,arm64-v8a,x86,x86_64',
+            'reactNativeArchitectures': 'armeabi-v7a,arm64-v8a',
 
             // Image format support
             'expo.gif.enabled': 'true',

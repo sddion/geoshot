@@ -95,7 +95,7 @@ android {
         // Auto-calculate versionCode from versionName
         // Format: versionName "X.Y.Z" -> versionCode XXYYZZ
         // Example: "2.3.4" -> 20304
-        def appVersionName = "2.3.6"
+        def appVersionName = "2.3.7"
         def versionParts = appVersionName.tokenize('.')
         def versionMajor = versionParts[0].toInteger()
         def versionMinor = versionParts[1].toInteger()
@@ -154,7 +154,8 @@ android {
       abi {
         enable true
         reset()
-        include "armeabi-v7a", "arm64-v8a", "x86", "x86_64"
+        // x86 and x86_64 commented out - primarily for emulators, not needed for physical devices
+        include "armeabi-v7a", "arm64-v8a" //, "x86", "x86_64"
         universalApk true
       }
     }

@@ -15,8 +15,9 @@ jobs:
         arch:
           - armeabi-v7a
           - arm64-v8a
-          - x86
-          - x86_64
+          # x86 builds commented out - primarily for emulators, not needed for physical devices
+          # - x86
+          # - x86_64
       fail-fast: false
     steps:
       - name: Setup repo
@@ -90,11 +91,11 @@ jobs:
           echo "Organized APKs:"
           ls -lh apks/
           
-          # Verify we have all 4 APKs
+          # Verify we have all 2 APKs (ARM architectures only)
           apk_count=$(ls -1 apks/*.apk 2>/dev/null | wc -l)
           echo "Found $apk_count APK files"
-          if [ "$apk_count" -ne 4 ]; then
-            echo "Warning: Expected 4 APKs, found $apk_count"
+          if [ "$apk_count" -ne 2 ]; then
+            echo "Warning: Expected 2 APKs, found $apk_count"
           fi
 
       - name: Create Release
