@@ -76,7 +76,7 @@ export function useCameraControls(
                             }
                         }, 50);
                     } else if (volumeAction === 'zoom') {
-                        // Detect zoom direction - ONLY zoom, do not capture
+                        // ZOOM MODE: Only zoom, explicitly prevent capture
                         if (previousVolumeRef.current !== null) {
                             const volumeDelta = currentVolume - previousVolumeRef.current;
 
@@ -100,6 +100,9 @@ export function useCameraControls(
                                 }, 50);
                             }
                         }
+                        // DO NOT call onCapture in zoom mode - return early
+                        previousVolumeRef.current = currentVolume;
+                        return;
                     }
 
                     previousVolumeRef.current = currentVolume;

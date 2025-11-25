@@ -1,4 +1,6 @@
 import { Platform, Linking, NativeModules } from 'react-native';
+import * as IntentLauncher from 'expo-intent-launcher';
+import Constants from 'expo-constants';
 
 const { PackageManager } = NativeModules;
 
@@ -18,13 +20,9 @@ export async function canInstallFromUnknownSources(): Promise<boolean> {
     }
 
     try {
-        // For Android 8.0+ (API 26+), check if we can request package installs
-        // We'll use IntentLauncher to check settings
-        const canInstall = await Linking.canOpenURL('package:' + getPackageName());
-        return canInstall;
+        return true; // We'll let the system handle the permission request
     } catch (error) {
         console.warn('Error checking install permission:', error);
-        // If we can't check, assume we need to request it
         return false;
     }
 }
@@ -33,13 +31,11 @@ export async function canInstallFromUnknownSources(): Promise<boolean> {
  * Get the current app's package name
  */
 function getPackageName(): string {
-    // This is typically available via expo-application or react-native DeviceInfo
-    // For now, we'll use a common pattern
     try {
-        const { manifest } = require('expo-constants').default;
-        return manifest?.android?.package || 'com.geoshot.app';
+        // Use expo-constants to get the package name
+        return Constants.expoConfig?.android?.package || 'app.geoshot.camera';
     } catch {
-        return 'com.geoshot.app';
+        return 'app.geoshot.camera';
     }
 }
 
@@ -56,10 +52,20 @@ export async function openInstallPermissionSettings(): Promise<void> {
         if (Platform.Version >= 26) {
             // Android 8.0+ - Open the specific app's install unknown apps settings
             const packageName = getPackageName();
-            const url = `android.settings.MANAGE_UNKNOWN_APP_SOURCES`;
-
-            // Try to open the specific settings page
-            await Linking.openSettings();
+            
+            try {
+                // Try to open the specific "Install unknown apps" settings for this app
+                await IntentLauncher.startActivityAsync(
+                    'android.settings.MANAGE_UNKNOWN_APP_SOURCES',
+                    {
+                        data: `package:${packageName}`,
+                    }
+                );
+            } catch (intentError) {
+                console.warn('Could not open specific settings, opening general settings:', intentError);
+                // Fallback to general settings
+                await Linking.openSettings();
+            }
         } else {
             // Android 7.1 and below - Open general security settings
             await Linking.openSettings();
