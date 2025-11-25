@@ -7,7 +7,7 @@
     "lint": "expo lint",
     "android": "expo run:android",
     "ios": "expo run:ios",
-    "optimize-assets": "npx expo-optimize --quality 85",
+    "optimize": "npx expo-optimize --quality 85",
     "analyze-bundle": "EXPO_UNSTABLE_ATLAS=true expo start",
     "prepare": "husky"
   },
