@@ -18,6 +18,7 @@ import { useCameraCapture } from '@/hooks/CameraCapture';
 import { useAutoPermissions } from '@/hooks/Permissions';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { CameraPermission } from '@/hooks/CameraPermission';
+import * as SplashScreen from 'expo-splash-screen';
 
 // Modular Components
 import CameraControls from '@/components/CameraControls';
@@ -60,6 +61,23 @@ export default function CameraScreen() {
     }, 500); // Android needs time after permission dialogs
     return () => clearTimeout(timeout);
   }, []);
+
+  // Hide splash screen when app is ready
+  useEffect(() => {
+    const hideSplash = async () => {
+      // Hide splash screen when all permissions are granted AND camera is ready to mount
+      if (allGranted && vcAuthorized && canMountCamera && !vcLoading) {
+        try {
+          await SplashScreen.hideAsync();
+        } catch (e) {
+          // Splash screen might already be hidden or unavailable
+          if (__DEV__) console.error('Error hiding splash screen:', e);
+        }
+      }
+    };
+
+    hideSplash();
+  }, [allGranted, vcAuthorized, canMountCamera, vcLoading]);
 
   useEffect(() => {
     const subscription = AppState.addEventListener('change', (nextAppState) => {

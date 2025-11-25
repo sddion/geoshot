@@ -7,6 +7,7 @@ import { CameraSettingsProvider } from '@/contexts/CameraSettingsContext';
 import { UpdateProvider } from '@/utils/UpdateContext';
 import { useAutoPermissions } from '@/hooks/Permissions';
 import * as SplashScreen from 'expo-splash-screen';
+import { cleanupOldApkFiles } from '@/utils/updater';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync().catch(() => {
@@ -45,8 +46,15 @@ import { Platform, AppState } from 'react-native';
 function RootLayout() {
   useAutoPermissions();
 
+  // Clean up old APK files on app startup
+  useEffect(() => {
+    cleanupOldApkFiles();
+  }, []);
+
   // Immersive mode configuration (runs once)
   useEffect(() => {
+    let listener: { remove: () => void } | undefined;
+
     const configureImmersiveMode = async () => {
       if (Platform.OS === 'android') {
         try {
@@ -55,15 +63,13 @@ function RootLayout() {
           await NavigationBar.setBehaviorAsync('overlay-swipe');
 
           // Re-hide on visibility change
-          const listener = NavigationBar.addVisibilityListener(({ visibility }) => {
+          listener = NavigationBar.addVisibilityListener(({ visibility }) => {
             if (visibility === 'visible') {
               setTimeout(async () => {
                 await NavigationBar.setVisibilityAsync('hidden');
               }, 2000);
             }
           });
-
-          return () => listener.remove();
         } catch (e) {
           console.warn('Error configuring navigation bar:', e);
         }
@@ -72,6 +78,11 @@ function RootLayout() {
 
     configureImmersiveMode();
 
+    return () => {
+      if (listener) {
+        listener.remove();
+      }
+    };
   }, []);
 
   return (

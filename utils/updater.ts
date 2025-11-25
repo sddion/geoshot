@@ -18,7 +18,7 @@ interface ReleaseAsset {
 export interface GitHubRelease {
     tag_name: string;
     assets: ReleaseAsset[];
-    body: string; 
+    body: string;
     html_url: string;
 }
 
@@ -218,3 +218,36 @@ export async function downloadAndInstallUpdate(
     }
 }
 
+/**
+ * Clean up old downloaded APK files from cache to reduce app cache size
+ * This should be called on app startup after a successful update
+ */
+export async function cleanupOldApkFiles(): Promise<void> {
+    if (Platform.OS !== 'android') return;
+
+    try {
+        const cacheDir = (FileSystem as any).cacheDirectory || (FileSystem as any).documentDirectory;
+        if (!cacheDir) {
+            console.warn('Cache directory not available for cleanup');
+            return;
+        }
+
+        const apkPath = cacheDir + 'update.apk';
+
+        // Check if the APK file exists
+        const fileInfo = await FileSystem.getInfoAsync(apkPath);
+
+        if (fileInfo.exists) {
+            // Delete the APK file
+            await FileSystem.deleteAsync(apkPath, { idempotent: true });
+            if (__DEV__) {
+                console.log('Successfully cleaned up old APK file');
+            }
+        }
+    } catch (error) {
+        // Don't alert the user, just log the error
+        if (__DEV__) {
+            console.error('Error cleaning up old APK files:', error);
+        }
+    }
+}
