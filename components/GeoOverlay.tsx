@@ -120,4 +120,3 @@ export default function GeoOverlay({ geoData, mapTile, imageWidth, style }: GeoO
   );
 }
 
-
