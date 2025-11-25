@@ -15,7 +15,7 @@ function addSigningConfig(buildGradle) {
     // Complete signingConfigs block with debug and release
     const signingConfigsBlock = `signingConfigs {
         debug {
-            storeFile file('geoshot.keystore')
+            storeFile file('debug.keystore')
             storePassword 'android'
             keyAlias 'androiddebugkey'
             keyPassword 'android'
@@ -28,7 +28,7 @@ function addSigningConfig(buildGradle) {
                 keyPassword MYAPP_UPLOAD_KEY_PASSWORD
             } else {
                 // Fallback to debug keystore if no upload keystore is configured
-                storeFile file('geoshot.keystore')
+                storeFile file('debug.keystore')
                 storePassword 'android'
                 keyAlias 'androiddebugkey'
                 keyPassword 'android'

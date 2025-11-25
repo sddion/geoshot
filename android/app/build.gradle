@@ -95,7 +95,7 @@ android {
         // Auto-calculate versionCode from versionName
         // Format: versionName "X.Y.Z" -> versionCode XXYYZZ
         // Example: "2.3.4" -> 20304
-        def appVersionName = "2.3.3"
+        def appVersionName = "2.3.4"
         def versionParts = appVersionName.tokenize('.')
         def versionMajor = versionParts[0].toInteger()
         def versionMinor = versionParts[1].toInteger()
@@ -109,7 +109,7 @@ android {
     }
     signingConfigs {
         debug {
-            storeFile file('geoshot.keystore')
+            storeFile file('debug.keystore')
             storePassword 'android'
             keyAlias 'androiddebugkey'
             keyPassword 'android'
@@ -122,7 +122,7 @@ android {
                 keyPassword MYAPP_UPLOAD_KEY_PASSWORD
             } else {
                 // Fallback to debug keystore if no upload keystore is configured
-                storeFile file('geoshot.keystore')
+                storeFile file('debug.keystore')
                 storePassword 'android'
                 keyAlias 'androiddebugkey'
                 keyPassword 'android'
