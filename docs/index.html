@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GeoShot - Geolocation Camera App</title>
+    <meta name="description"
+        content="GeoShot is a powerful geolocation-based photo app built with React Native and Expo. Capture photos with precise location data.">
+    <link rel="apple-touch-icon" sizes="57x57" href="assets/apple-icon-57x57.png">
+    <link rel="apple-touch-icon" sizes="60x60" href="assets/apple-icon-60x60.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="assets/apple-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="assets/apple-icon-76x76.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="assets/apple-icon-114x114.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="assets/apple-icon-120x120.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="assets/apple-icon-144x144.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="assets/apple-icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-icon-180x180.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="assets/android-icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="96x96" href="assets/favicon-96x96.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="assets/favicon-16x16.png">
+    <link rel="manifest" href="assets/manifest.json">
+    <meta name="msapplication-TileColor" content="#ffffff">
+    <meta name="msapplication-TileImage" content="assets/ms-icon-144x144.png">
+    <meta name="theme-color" content="#ffffff">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700;800&family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <nav>
+        <div class="logo">
+            <img src="assets/favicon-96x96.png" alt="GeoShot Logo">
+            <span>GeoShot</span>
+        </div>
+        <div class="nav-links">
+            <a href="#features">Features</a>
+            <a href="https://github.com/sddion/geoshot" target="_blank" class="github-link">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path
+                        d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22">
+                    </path>
+                </svg>
+                GitHub
+            </a>
+        </div>
+    </nav>
+
+    <header class="hero">
+        <div class="hero-bg"></div>
+        <div class="hero-content">
+            <div class="hero-badge" id="app-version">Version 2.3.4 Available Now</div>
+            <h1>Capture the World<br>With Precision</h1>
+            <p>The advanced geolocation camera app for professionals and explorers. <br><strong>Free, Open Source, and
+                    Ad-Free.</strong></p>
+            <div class="download-info">
+                <p class="download-note">Download the APK for your device architecture from GitHub Releases:</p>
+                <ul class="arch-list">
+                    <li><strong>arm64-v8a</strong> - Most modern Android devices (64-bit)</li>
+                    <li><strong>armeabi-v7a</strong> - Older Android devices (32-bit)</li>
+                </ul>
+            </div>
+            <div class="cta-group">
+                <a href="https://github.com/sddion/geoshot/releases/latest" class="primary-btn" target="_blank">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                    Download App
+                </a>
+                <a href="#features" class="secondary-btn">Learn More</a>
+            </div>
+        </div>
+        <div class="hero-image">
+            <!-- Placeholder for app screenshot/mockup -->
+            <div class="phone-frame">
+                <img src="assets/splash.png" alt="GeoShot App Interface">
+            </div>
+        </div>
+    </header>
+
+    <section id="showcase" class="bento-section">
+        <div class="section-header">
+            <h2>Experience GeoShot</h2>
+            <p>Powerful features meet stunning design.</p>
+        </div>
+
+        <div class="bento-grid">
+            <!-- Main Feature: Geolocation (Large Card) -->
+            <div class="bento-card large tilt-card" data-tilt data-tilt-max="5" data-tilt-speed="400" data-tilt-glare
+                data-tilt-max-glare="0.2">
+                <div class="card-content">
+                    <div class="icon-box glow-blue">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path>
+                            <circle cx="12" cy="10" r="3"></circle>
+                        </svg>
+                    </div>
+                    <h3>Precise Geolocation</h3>
+                    <p>Automatically embeds high-accuracy GPS coordinates into every photo. Never forget where a memory
+                        was made.</p>
+                </div>
+                <div class="card-bg-layer"></div>
+            </div>
+
+            <!-- Screenshot 1 (Tall Card) -->
+            <div class="bento-card tall tilt-card" data-tilt data-tilt-max="5" data-tilt-speed="400">
+                <div class="card-content no-padding">
+                    <img src="assets/index-preview.png" alt="Home Screen" class="app-preview-img portrait">
+                    <div class="overlay-text">
+                        <h4>Intuitive Interface</h4>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Feature: Privacy (Medium Card) -->
+            <div class="bento-card medium tilt-card" data-tilt data-tilt-max="8" data-tilt-speed="400">
+                <div class="card-content">
+                    <div class="icon-box glow-green">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                        </svg>
+                    </div>
+                    <h3>Privacy First</h3>
+                    <p>Your location data stays on your device.</p>
+                </div>
+            </div>
+
+            <!-- Screenshot 2 (Tall Card) -->
+            <div class="bento-card tall tilt-card" data-tilt data-tilt-max="5" data-tilt-speed="400">
+                <div class="card-content no-padding">
+                    <img src="assets/edit-preview.png" alt="Edit Screen" class="app-preview-img portrait">
+                    <div class="overlay-text">
+                        <h4>Powerful Editing</h4>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Feature: Native Camera (Medium Card) -->
+            <div class="bento-card medium tilt-card" data-tilt data-tilt-max="8" data-tilt-speed="400">
+                <div class="card-content">
+                    <div class="icon-box glow-purple">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z">
+                            </path>
+                            <circle cx="12" cy="13" r="4"></circle>
+                        </svg>
+                    </div>
+                    <h3>Native Quality</h3>
+                    <p>Crystal clear images using native APIs.</p>
+                </div>
+            </div>
+
+            <!-- Screenshot 3 (Tall Card) -->
+            <div class="bento-card tall tilt-card" data-tilt data-tilt-max="5" data-tilt-speed="400">
+                <div class="card-content no-padding">
+                    <img src="assets/settings.png" alt="Settings Screen" class="app-preview-img portrait">
+                    <div class="overlay-text">
+                        <h4>Full Control</h4>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Feature: Cross Platform (Wide Card) -->
+            <div class="bento-card wide tilt-card" data-tilt data-tilt-max="5" data-tilt-speed="400">
+                <div class="card-content row">
+                    <div class="icon-box glow-orange">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
+                            <line x1="12" y1="18" x2="12.01" y2="18"></line>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3>Cross Platform</h3>
+                        <p>Seamless experience on both iOS and Android devices.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Troubleshooting: Permissions Issue (Wide Card) -->
+            <div class="bento-card wide tilt-card" data-tilt data-tilt-max="5" data-tilt-speed="400">
+                <div class="card-content no-padding">
+                    <img src="assets/permissions.png" alt="Permissions Issue" class="app-preview-img">
+                    <div class="overlay-text troubleshoot-overlay">
+                        <h4>Stuck on Permissions?</h4>
+                        <p><strong>Solution:</strong> Close and reopen the app</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Open Source Feature (Medium Card) -->
+            <div class="bento-card medium tilt-card" data-tilt data-tilt-max="8" data-tilt-speed="400">
+                <div class="card-content">
+                    <div class="icon-box glow-blue">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <path d="M12 16v-4"></path>
+                            <path d="M12 8h.01"></path>
+                        </svg>
+                    </div>
+                    <h3>100% Open Source</h3>
+                    <p>Fully transparent code on GitHub. Verify everything yourself.</p>
+                </div>
+            </div>
+
+            <!-- Troubleshooting: GPS Reload (Tall Card) -->
+            <div class="bento-card tall tilt-card" data-tilt data-tilt-max="5" data-tilt-speed="400">
+                <div class="card-content no-padding">
+                    <img src="assets/needs-reload.png" alt="GPS Not Acquiring" class="app-preview-img">
+                    <div class="overlay-text troubleshoot-overlay">
+                        <h4>GPS Not Acquiring?</h4>
+                        <p><strong>Solution:</strong> Close and reopen the app</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Verified by Play Protect (Tall Card) -->
+            <div class="bento-card tall tilt-card" data-tilt data-tilt-max="5" data-tilt-speed="400">
+                <div class="card-content no-padding">
+                    <img src="assets/verified-by-play-protect.png" alt="Verified by Play Protect"
+                        class="app-preview-img">
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+
+    <section id="support" class="support-section">
+        <div class="section-header">
+            <h2>Support Development</h2>
+            <p>GeoShot is free and open source. If you love the app, consider supporting its development.</p>
+            <a href="https://buymeacoffee.com/sddion" target="_blank" class="support-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path
+                        d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z">
+                    </path>
+                </svg>
+                Buy Me a Coffee
+            </a>
+        </div>
+    </section>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-logo">
+                <img src="assets/favicon-96x96.png" alt="GeoShot Logo">
+                <span>GeoShot</span>
+            </div>
+            <p>&copy; 2025 GeoShot. Open Source Project.</p>
+            <div class="footer-links">
+                <a href="https://github.com/sddion/geoshot">GitHub</a>
+                <a href="privacy.html">Privacy Policy</a>
+                <a href="terms.html">Terms</a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.1/vanilla-tilt.min.js"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>

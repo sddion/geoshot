@@ -5,6 +5,7 @@ import * as readline from 'readline';
 
 const packageJsonPath = join(process.cwd(), 'package.json');
 const appJsonPath = join(process.cwd(), 'app.json');
+const docsHtmlPath = join(process.cwd(), 'docs/index.html');
 
 const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
 const appJson = JSON.parse(readFileSync(appJsonPath, 'utf-8'));
@@ -46,6 +47,19 @@ rl.question('Do you want to bump the version? (y/N) ', (answer) => {
             writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2) + '\n');
             writeFileSync(appJsonPath, JSON.stringify(appJson, null, 2) + '\n');
 
+            // Update docs/index.html
+            try {
+                let htmlContent = readFileSync(docsHtmlPath, 'utf-8');
+                const versionRegex = /(<div class="hero-badge" id="app-version">Version )([\d\.]+)( Available Now<\/div>)/;
+                if (versionRegex.test(htmlContent)) {
+                    htmlContent = htmlContent.replace(versionRegex, `$1${newVersion}$3`);
+                    writeFileSync(docsHtmlPath, htmlContent, 'utf-8');
+                    console.log('  - docs/index.html');
+                }
+            } catch (e) {
+                console.warn('  - docs/index.html (Failed to update)');
+            }
+
             console.log(`\nVersion bumped to ${newVersion}`);
             console.log('\nUpdated files:');
             console.log('  - package.json');
@@ -56,7 +70,7 @@ rl.question('Do you want to bump the version? (y/N) ', (answer) => {
 
             const { execSync } = require('child_process');
             try {
-                execSync(`git add package.json app.json`);
+                execSync(`git add package.json app.json docs/index.html`);
                 console.log('\nFiles staged for commit.');
             } catch (e) {
                 console.error("\nFailed to add updated version files to git");
