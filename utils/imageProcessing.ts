@@ -1,4 +1,4 @@
-import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
+import { ImageManipulator, SaveFormat } from 'expo-image-manipulator';
 
 export interface ProcessedImage {
   uri: string;
@@ -12,11 +12,12 @@ export async function resizeImage(
   maxHeight: number
 ): Promise<ProcessedImage> {
   try {
-    const result = await manipulateAsync(
-      uri,
-      [{ resize: { width: maxWidth, height: maxHeight } }],
-      { compress: 0.9, format: SaveFormat.JPEG }
-    );
+    const context = ImageManipulator.manipulate(uri);
+    const imageRef = await context
+      .resize({ width: maxWidth, height: maxHeight })
+      .renderAsync();
+
+    const result = await imageRef.saveAsync({ compress: 0.9, format: SaveFormat.JPEG });
 
     return {
       uri: result.uri,
@@ -31,11 +32,9 @@ export async function resizeImage(
 
 export async function compressImage(uri: string, quality: number): Promise<string> {
   try {
-    const result = await manipulateAsync(
-      uri,
-      [],
-      { compress: quality, format: SaveFormat.JPEG }
-    );
+    const context = ImageManipulator.manipulate(uri);
+    const imageRef = await context.renderAsync();
+    const result = await imageRef.saveAsync({ compress: quality, format: SaveFormat.JPEG });
     return result.uri;
   } catch (error) {
     console.error('Error compressing image:', error);

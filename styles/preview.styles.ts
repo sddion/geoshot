@@ -77,6 +77,10 @@ export const previewStyles = StyleSheet.create({
         width: '100%',
         aspectRatio: 3 / 4,
     },
+    imagePortrait: {
+        width: '100%',
+        aspectRatio: 1,
+    },
     info: {
         backgroundColor: '#1a1a1a',
         borderRadius: 16,

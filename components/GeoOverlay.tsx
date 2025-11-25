@@ -10,10 +10,11 @@ interface GeoOverlayProps {
   mapTile: string | null;
   imageWidth: number;
   imageHeight?: number;
+  isPortrait?: boolean;
   style?: any;
 }
 
-export default function GeoOverlay({ geoData, mapTile, imageWidth, style }: GeoOverlayProps) {
+export default function GeoOverlay({ geoData, mapTile, imageWidth, isPortrait = false, style }: GeoOverlayProps) {
   if (!geoData) {
     // Skeleton / Loading state
     return (
@@ -40,7 +41,7 @@ export default function GeoOverlay({ geoData, mapTile, imageWidth, style }: GeoO
   };
 
   return (
-    <View style={[styles.container, { width: imageWidth }, style]}>
+    <View style={[styles.container, { width: imageWidth, marginBottom: isPortrait ? -4 : 0 }, style]}>
       <View style={styles.overlay}>
         <View style={styles.contentRow}>
           {/* Left: Map Thumbnail */}

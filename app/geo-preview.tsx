@@ -26,7 +26,7 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 export default function GeoPreviewScreen() {
   const router = useRouter();
-  const { photoUri } = useLocalSearchParams<{ photoUri: string }>();
+  const { photoUri, isPortrait } = useLocalSearchParams<{ photoUri: string; isPortrait?: string }>();
   const [geoData, setGeoData] = useState<GeoData | null>(null);
   const [mapTile, setMapTile] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -158,10 +158,10 @@ export default function GeoPreviewScreen() {
         >
           <Image
             source={{ uri: photoUri }}
-            style={styles.image}
+            style={isPortrait === 'true' ? styles.imagePortrait : styles.image}
             contentFit="cover"
           />
-          <GeoOverlay geoData={geoData} mapTile={mapTile} imageWidth={SCREEN_WIDTH - 34} />
+          <GeoOverlay geoData={geoData} mapTile={mapTile} imageWidth={SCREEN_WIDTH - 34} isPortrait={isPortrait === 'true'} />
         </View>
       </View>
 

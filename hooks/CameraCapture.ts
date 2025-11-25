@@ -5,7 +5,7 @@ import type { CameraMode } from '@/contexts/CameraSettingsContext';
 import { getGeoData, GeoData } from '@/utils/geoOverlay';
 import { Router } from 'expo-router';
 import { saveFileToAppFolder } from '@/utils/mediaUtils';
-import * as ImageManipulator from 'expo-image-manipulator';
+import { ImageManipulator, SaveFormat } from 'expo-image-manipulator';
 import * as FileSystem from 'expo-file-system/legacy';
 
 
@@ -71,11 +71,9 @@ export function useCameraCapture({
                 let finalUri = photoUri;
                 if (currentMode === 'portrait') {
                     // Get image dimensions to calculate square crop
-                    const imageInfo = await ImageManipulator.manipulateAsync(
-                        photoUri,
-                        [],
-                        { format: ImageManipulator.SaveFormat.JPEG }
-                    );
+                    const context = ImageManipulator.manipulate(photoUri);
+                    const imageRef = await context.renderAsync();
+                    const imageInfo = await imageRef.saveAsync({ format: SaveFormat.JPEG });
 
                     const { width, height } = imageInfo;
                     const size = Math.min(width, height);
@@ -83,20 +81,16 @@ export function useCameraCapture({
                     const originY = (height - size) / 2;
 
                     // Crop to 1:1 square
-                    const croppedResult = await ImageManipulator.manipulateAsync(
-                        photoUri,
-                        [
-                            {
-                                crop: {
-                                    originX,
-                                    originY,
-                                    width: size,
-                                    height: size,
-                                },
-                            },
-                        ],
-                        { compress: 1.0, format: ImageManipulator.SaveFormat.JPEG }
-                    );
+                    const cropContext = ImageManipulator.manipulate(photoUri);
+                    const croppedRef = await cropContext
+                        .crop({
+                            originX,
+                            originY,
+                            width: size,
+                            height: size,
+                        })
+                        .renderAsync();
+                    const croppedResult = await croppedRef.saveAsync({ compress: 1.0, format: SaveFormat.JPEG });
                     finalUri = croppedResult.uri;
 
                     // Clean up original photo
@@ -110,11 +104,9 @@ export function useCameraCapture({
                 // Compress image based on quality setting (skip if already processed for portrait)
                 if (imageQuality !== 'superfine' && currentMode !== 'portrait') {
                     const compression = imageQuality === 'fine' ? 0.8 : 0.5;
-                    const manipulated = await ImageManipulator.manipulateAsync(
-                        finalUri,
-                        [],
-                        { compress: compression, format: ImageManipulator.SaveFormat.JPEG }
-                    );
+                    const context = ImageManipulator.manipulate(finalUri);
+                    const imageRef = await context.renderAsync();
+                    const manipulated = await imageRef.saveAsync({ compress: compression, format: SaveFormat.JPEG });
 
                     // Clean up the previous file
                     try {
@@ -126,11 +118,9 @@ export function useCameraCapture({
                 } else if (currentMode === 'portrait' && imageQuality !== 'superfine') {
                     // Apply compression to already-cropped portrait photo
                     const compression = imageQuality === 'fine' ? 0.8 : 0.5;
-                    const manipulated = await ImageManipulator.manipulateAsync(
-                        finalUri,
-                        [],
-                        { compress: compression, format: ImageManipulator.SaveFormat.JPEG }
-                    );
+                    const context = ImageManipulator.manipulate(finalUri);
+                    const imageRef = await context.renderAsync();
+                    const manipulated = await imageRef.saveAsync({ compress: compression, format: SaveFormat.JPEG });
 
                     // Clean up the uncompressed cropped file
                     try {
@@ -147,7 +137,7 @@ export function useCameraCapture({
                     if (geoData) {
                         router.push({
                             pathname: '/geo-preview',
-                            params: { photoUri: finalUri },
+                            params: { photoUri: finalUri, isPortrait: currentMode === 'portrait' ? 'true' : 'false' },
                         });
                         return;
                     } else {
