@@ -31,6 +31,7 @@ export interface CameraSettings {
   videoStabilization: boolean;
   flashMode: FlashMode;
   geoOverlayEnabled: boolean;
+  autoSave: boolean;
 }
 
 const defaultSettings: CameraSettings = {
@@ -38,9 +39,9 @@ const defaultSettings: CameraSettings = {
   volumeAction: 'shutter',
   shutterSound: true,
   saveLocation: true,
-  gridStyle: '3x3',
+  gridStyle: 'off',
   timer: 'off',
-  touchToCapture: true,
+  touchToCapture: false,
   photoAspectRatio: '4:3',
   photoResolution: '4k',
   imageQuality: 'fine',
@@ -50,7 +51,7 @@ const defaultSettings: CameraSettings = {
   videoStabilization: true,
   flashMode: 'off',
   geoOverlayEnabled: true,
-
+  autoSave: true,
 };
 
 const STORAGE_KEY = '@geoshot_camera_settings';

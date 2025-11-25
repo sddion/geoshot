@@ -34,7 +34,7 @@ export default function GeoPreviewScreen() {
   const [saving, setSaving] = useState<boolean>(false);
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const viewRef = useRef<View>(null);
-  const { setLastPhotoUri } = useCameraSettings();
+  const { setLastPhotoUri, settings } = useCameraSettings();
 
   const showToast = (message: string) => {
     if (Platform.OS === 'android') {
@@ -55,6 +55,14 @@ export default function GeoPreviewScreen() {
         setGeoData(data);
         const tile = await getCachedMapTile(data.latitude, data.longitude);
         setMapTile(tile);
+
+        // Auto-save if enabled
+        if (settings.autoSave) {
+          // Wait a bit for the view to render
+          setTimeout(() => {
+            handleSave();
+          }, 100);
+        }
       } else {
         setError('Failed to get GPS data');
       }

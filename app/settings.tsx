@@ -403,6 +403,13 @@ export default function SettingsScreen() {
             toggleValue={settings.touchToCapture}
             onToggle={(value) => updateSetting('touchToCapture', value)}
           />
+          <SettingRow
+            icon="content-save-check"
+            label="Auto-Save Photos"
+            showToggle
+            toggleValue={settings.autoSave}
+            onToggle={(value) => updateSetting('autoSave', value)}
+          />
         </Section>
 
         <Section title="Photo">

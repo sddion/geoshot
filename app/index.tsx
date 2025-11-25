@@ -210,7 +210,7 @@ export default function CameraScreen() {
             style={{
               color: '#fff',
               fontSize: 16,
-              marginTop: isRequesting ? 20 : 0,
+              marginTop: 20,
               textAlign: 'center',
             }}
           >
