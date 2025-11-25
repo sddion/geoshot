@@ -12,7 +12,6 @@ import {
   StyleSheet,
   Alert,
   AppState,
-  ActivityIndicator
 } from 'react-native';
 import { useCameraControls } from '@/hooks/CameraControls';
 import { useCameraCapture } from '@/hooks/CameraCapture';
@@ -24,6 +23,7 @@ import { CameraPermission } from '@/hooks/CameraPermission';
 import CameraControls from '@/components/CameraControls';
 import CameraOverlay from '@/components/CameraOverlay';
 import CaptureButton from '@/components/CaptureButton';
+import Loader from '@/components/Loader';
 
 // Styles
 import { cameraStyles } from '@/styles/camera.styles';
@@ -177,7 +177,7 @@ export default function CameraScreen() {
         await Linking.openURL('photos-redirect://');
       }
     } catch (error) {
-      console.error('Error opening gallery:', error);
+      if (__DEV__) console.error('Error opening gallery:', error);
     }
   };
 
@@ -202,21 +202,23 @@ export default function CameraScreen() {
             padding: 20,
           }}
         >
-          {isRequesting && <ActivityIndicator size="large" color="#fff" />}
-          <Text
-            style={{
-              color: '#fff',
-              fontSize: 16,
-              marginTop: 20,
-              textAlign: 'center',
-            }}
-          >
-            {isRequesting ? 'Requesting permissions...' : 'Permissions Required'}
-          </Text>
-          {!isRequesting && (
-            <Text style={{ color: '#aaa', textAlign: 'center', marginTop: 10 }}>
-              Please grant camera, microphone, location, and photo library permissions in Settings to use GeoShot.
-            </Text>
+          {isRequesting ? (
+            <Loader size={50} />
+          ) : (
+            <>
+              <Text
+                style={{
+                  color: '#fff',
+                  fontSize: 16,
+                  textAlign: 'center',
+                }}
+              >
+                Permissions Required
+              </Text>
+              <Text style={{ color: '#aaa', textAlign: 'center', marginTop: 10 }}>
+                Please grant camera, microphone, location, and photo library permissions in Settings to use GeoShot.
+              </Text>
+            </>
           )}
         </View>
       </View>
@@ -238,7 +240,7 @@ export default function CameraScreen() {
   if (!vcAuthorized || vcLoading || !canMountCamera) {
     return (
       <View style={[cameraStyles.container, { justifyContent: 'center', alignItems: 'center' }]}>
-        <ActivityIndicator size="large" color="#fff" />
+        <Loader size={50} />
       </View>
     );
   }
@@ -289,7 +291,7 @@ export default function CameraScreen() {
               torch={settings.flashMode === 'torch' ? 'on' : 'off'}
               enableZoomGesture={false}
               onError={(error) => {
-                console.error('Camera Runtime Error:', error);
+                if (__DEV__) console.error('Camera Runtime Error:', error);
                 if (error.code === 'system/camera-is-restricted') {
                   setHasCameraError(true);
                   Alert.alert(

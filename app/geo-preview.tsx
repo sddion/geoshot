@@ -6,7 +6,6 @@ import {
   View,
   Text,
   TouchableOpacity,
-  ActivityIndicator,
   Alert,
   Dimensions,
   ToastAndroid,
@@ -21,6 +20,7 @@ import { saveFileToAppFolder } from '@/utils/mediaUtils';
 import { captureRef } from 'react-native-view-shot';
 
 import { useCameraSettings } from '@/contexts/CameraSettingsContext';
+import Loader from '@/components/Loader';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -61,7 +61,7 @@ export default function GeoPreviewScreen() {
         setError('Failed to get GPS data');
       }
     } catch (err) {
-      console.error('Geo data error:', err);
+      if (__DEV__) console.error('Geo data error:', err);
       setError('Error loading GPS data');
     } finally {
       setLoading(false);
@@ -101,7 +101,6 @@ export default function GeoPreviewScreen() {
       const savedUri = await saveFileToAppFolder(uri, 'photo');
 
       if (savedUri) {
-        console.log('Photo with GPS overlay saved:', savedUri);
         setLastPhotoUri(savedUri);
 
         showToast('Photo saved to GeoShot album');
@@ -110,7 +109,7 @@ export default function GeoPreviewScreen() {
         Alert.alert('Error', 'Failed to save photo.');
       }
     } catch (error) {
-      console.error('Save error:', error);
+      if (__DEV__) console.error('Save error:', error);
       Alert.alert('Error', 'Failed to save photo. Please try again.');
     } finally {
       setSaving(false);
@@ -120,8 +119,7 @@ export default function GeoPreviewScreen() {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#fff" />
-        <Text style={styles.loadingText}>Loading...</Text>
+        <Loader size={50} />
       </View>
     );
   }
@@ -157,7 +155,7 @@ export default function GeoPreviewScreen() {
             disabled={saving}
           >
             {saving ? (
-              <ActivityIndicator size="small" color="#fff" />
+              <Loader size={24} />
             ) : (
               <MaterialCommunityIcons name="check" size={28} color="#fff" />
             )}

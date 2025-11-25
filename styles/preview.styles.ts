@@ -10,11 +10,6 @@ export const previewStyles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         backgroundColor: '#000',
-        gap: 16,
-    },
-    loadingText: {
-        fontSize: 16,
-        color: '#fff',
     },
     errorContainer: {
         flex: 1,

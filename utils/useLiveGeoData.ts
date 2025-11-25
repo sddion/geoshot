@@ -44,15 +44,12 @@ export function useLiveGeoData(enabled: boolean) {
         const startUpdates = async () => {
             if (!enabled) return;
 
-            const { status } = await Location.getForegroundPermissionsAsync();
-            if (status !== 'granted') {
-                console.log('GPS: Foreground location permission not granted yet');
-                setLoading(false);
+            const { status: foregroundStatus } = await Location.getForegroundPermissionsAsync();
+            if (foregroundStatus !== 'granted') {
                 return;
             }
 
             try {
-                console.log('GPS: Starting location updates...');
                 // Initial full fetch
                 const initialData = await getGeoData();
                 if (isMounted && initialData) {
@@ -120,7 +117,7 @@ export function useLiveGeoData(enabled: boolean) {
                 }
 
             } catch (error) {
-                console.error('Live geo data error:', error);
+                if (__DEV__) console.error('Live geo data error:', error);
                 setLoading(false);
             }
         };

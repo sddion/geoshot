@@ -13,12 +13,12 @@ import {
   Platform,
   Modal,
   Linking,
-  ActivityIndicator,
 } from 'react-native';
 import { useRouter, Href } from 'expo-router';
 import Constants from 'expo-constants';
 import { useUpdate } from '@/utils/UpdateContext';
 import { downloadAndInstallUpdate } from '@/utils/updater';
+import Loader from '@/components/Loader';
 
 // Toast utility function
 const showToast = (message: string) => {
@@ -103,7 +103,7 @@ const UpdateRow = () => {
                 ]}
               />
               {refreshing ? (
-                <ActivityIndicator size="small" color="#BB86FC" />
+                <Loader size={20} />
               ) : (
                 <TouchableOpacity onPress={handleRefresh}>
                   <MaterialCommunityIcons name="refresh" size={20} color="#A0A0A0" />

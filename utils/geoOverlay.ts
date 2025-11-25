@@ -20,9 +20,8 @@ const USER_AGENT = 'GeoShotCamera/1.0 (contact@geoshot.app)';
 
 export async function getGeoData(): Promise<GeoData | null> {
   try {
-    const { status } = await Location.getForegroundPermissionsAsync();
-    if (status !== 'granted') {
-      console.log('Location permission not granted');
+    const { status: foregroundStatus } = await Location.getForegroundPermissionsAsync();
+    if (foregroundStatus !== 'granted') {
       return null;
     }
 
@@ -55,7 +54,7 @@ export async function getGeoData(): Promise<GeoData | null> {
       magneticField,
     };
   } catch (error) {
-    console.error('Error getting geo data:', error);
+    if (__DEV__) console.error('Error getting geo data:', error);
     return null;
   }
 }
@@ -91,7 +90,7 @@ async function getReverseGeocode(
 
     return { fullAddress, placeName };
   } catch (error) {
-    console.error('Reverse geocode error:', error);
+    if (__DEV__) console.error('Reverse geocode error:', error);
     return {
       fullAddress: `${lat.toFixed(6)}, ${lon.toFixed(6)}`,
       placeName: 'Unknown Location',
@@ -118,7 +117,7 @@ async function getWeather(
 
     return { temperature: null, condition: 'Unknown' };
   } catch (error) {
-    console.error('Weather fetch error:', error);
+    if (__DEV__) console.error('Weather fetch error:', error);
     return { temperature: null, condition: 'Unknown' };
   }
 }
@@ -165,7 +164,7 @@ async function getMagneticField(): Promise<number | null> {
       }, 1000);
     });
   } catch (error) {
-    console.error('Magnetometer error:', error);
+    if (__DEV__) console.error('Magnetometer error:', error);
     return null;
   }
 }
@@ -174,8 +173,8 @@ async function getMagneticField(): Promise<number | null> {
 // Use ONLY cacheDirectory to ensure tiles are deleted on app uninstall
 // Never fall back to documentDirectory as it persists after uninstall
 const TILE_CACHE_DIR = (() => {
-  if (!FileSystem.cacheDirectory) {
-    console.error('Cache directory not available');
+  const cacheDir = FileSystem.cacheDirectory;
+  if (!cacheDir) {
     return '';
   }
   return FileSystem.cacheDirectory + 'osm_tiles/';
@@ -210,9 +209,8 @@ async function cleanTileCache() {
     for (const fileInfo of filesToDelete) {
       await FileSystem.deleteAsync(fileInfo.uri, { idempotent: true });
     }
-    console.log(`Cleaned up ${filesToDelete.length} old map tiles.`);
   } catch (error) {
-    console.warn('Tile cache cleanup failed:', error);
+    if (__DEV__) console.warn('Tile cache cleanup failed:', error);
   }
 }
 
@@ -220,7 +218,7 @@ export async function getCachedMapTile(
   lat: number,
   lon: number,
   zoom: number = 15
-): Promise<string> {
+): Promise<string | null> {
   try {
     await ensureCacheDir();
 
@@ -269,21 +267,7 @@ export async function getCachedMapTile(
 
     return url; // Fallback to remote URL if download fails
   } catch (error) {
-    console.error('Tile cache error:', error);
-    // Fallback calculation without caching
-    const tileSize = 256;
-    const centerX = ((lon + 180) / 360) * Math.pow(2, zoom) * tileSize;
-    const centerY =
-      ((1 -
-        Math.log(
-          Math.tan((lat * Math.PI) / 180) + 1 / Math.cos((lat * Math.PI) / 180)
-        ) /
-        Math.PI) /
-        2) *
-      Math.pow(2, zoom) *
-      tileSize;
-    const tileX = Math.floor(centerX / tileSize);
-    const tileY = Math.floor(centerY / tileSize);
-    return `https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${zoom}/${tileY}/${tileX}`;
+    if (__DEV__) console.error('Tile cache error:', error);
+    return null;
   }
 }

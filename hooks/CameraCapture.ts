@@ -155,7 +155,7 @@ export function useCameraCapture({
                 }
             }
         } catch (error) {
-            console.error('Photo capture error:', error);
+            if (__DEV__) console.error('Photo capture error:', error);
             Alert.alert('Error', 'Failed to capture photo. Please try again.');
         }
     }, [cameraRef, currentMode, flashMode, imageQuality, geoOverlayEnabled, router, setLastPhotoUri, shutterSound]);
@@ -181,8 +181,7 @@ export function useCameraCapture({
                         // Save video to GeoShot album
                         const savedUri = await saveFileToAppFolder(videoUri, 'video');
                         if (savedUri) {
-                            setLastPhotoUri(savedUri); // Update thumbnail with video
-                            console.log('Video saved:', savedUri);
+                            setLastPhotoUri(savedUri);
                             showToast('Video saved to GeoShot album!');
                         } else {
                             showToast('Failed to save video');
@@ -190,12 +189,12 @@ export function useCameraCapture({
                     }
                 },
                 onRecordingError: (error: CameraCaptureError) => {
-                    console.error('Recording error:', error);
+                    if (__DEV__) console.error('Recording error:', error);
                     Alert.alert('Error', `Failed to record video: ${error.message}`);
                 },
             });
         } catch (error) {
-            console.error('Start recording error:', error);
+            if (__DEV__) console.error('Start recording error:', error);
             setIsRecording(false);
             if (recordingInterval.current) {
                 clearInterval(recordingInterval.current);
@@ -218,7 +217,7 @@ export function useCameraCapture({
             }
             setRecordingDuration(0);
         } catch (error) {
-            console.error('Stop recording error:', error);
+            if (__DEV__) console.error('Stop recording error:', error);
         }
     }, [cameraRef, isRecording]);
 
@@ -246,7 +245,6 @@ export function useCameraCapture({
         // Debounce to prevent multiple rapid captures
         const now = Date.now();
         if (now - lastCaptureTimeRef.current < CAPTURE_DEBOUNCE_MS) {
-            console.log('Capture debounced - too soon since last capture');
             return;
         }
         lastCaptureTimeRef.current = now;

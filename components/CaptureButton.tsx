@@ -1,7 +1,8 @@
 import React from 'react';
-import { TouchableOpacity, View, ActivityIndicator } from 'react-native';
+import { TouchableOpacity, View } from 'react-native';
 import { captureStyles } from '@/styles/camera.styles';
 import type { CameraMode } from '@/contexts/CameraSettingsContext';
+import Loader from '@/components/Loader';
 
 interface CaptureButtonProps {
     isRecording: boolean;
@@ -32,7 +33,7 @@ export default function CaptureButton({
             accessibilityLabel={getAccessibilityLabel()}
         >
             {isCapturing && currentMode !== 'video' ? (
-                <ActivityIndicator size="large" color="#FFD700" />
+                <Loader size={40} />
             ) : isRecording ? (
                 <View style={captureStyles.recordingButton} />
             ) : (
